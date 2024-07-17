@@ -19,6 +19,7 @@ class MMG_Checkout_Payment {
 
     public function __construct() {
         // Initialize plugin
+        $this->base_url = home_url('/'); // Set the base URL to the site's domain
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_shortcode('mmg_checkout_button', array($this, 'checkout_button_shortcode'));
@@ -36,7 +37,6 @@ class MMG_Checkout_Payment {
     }
 
     public function register_settings() {
-        register_setting('mmg_checkout_settings', 'mmg_base_url');
         register_setting('mmg_checkout_settings', 'mmg_client_id');
         register_setting('mmg_checkout_settings', 'mmg_merchant_id');
         register_setting('mmg_checkout_settings', 'mmg_secret_key');
@@ -55,7 +55,7 @@ class MMG_Checkout_Payment {
                 <table class="form-table">
                     <tr valign="top">
                         <th scope="row">Base URL</th>
-                        <td><input type="text" name="mmg_base_url" value="<?php echo esc_attr(get_option('mmg_base_url')); ?>" /></td>
+                        <td><input type="text" value="<?php echo esc_attr($this->base_url); ?>" readonly /></td>
                     </tr>
                     <tr valign="top">
                         <th scope="row">Client ID</th>
@@ -126,7 +126,7 @@ class MMG_Checkout_Payment {
             'X-Client-ID' => get_option('mmg_client_id'),
             'token' => $token,
             'merchantId' => get_option('mmg_merchant_id'),
-        ), get_option('mmg_base_url'));
+        ), $this->base_url);
 
         wp_send_json_success(array('checkout_url' => $checkout_url));
     }
