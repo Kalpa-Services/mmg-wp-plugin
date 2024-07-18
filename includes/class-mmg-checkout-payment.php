@@ -25,7 +25,7 @@ class MMG_Checkout_Payment {
         add_action('wp_ajax_generate_checkout_url', array($this, 'generate_checkout_url'));
         add_action('wp_ajax_nopriv_generate_checkout_url', array($this, 'generate_checkout_url'));
         add_filter('woocommerce_payment_gateways', array($this, 'add_gateway_class'));
-        add_action('plugins_loaded', array($this, 'init_gateway_class'));
+        add_action('plugins_loaded', array($this, 'init_gateway_class'), 11);
         add_action('wp_ajax_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
         add_action('wp_ajax_nopriv_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
 
@@ -98,7 +98,9 @@ class MMG_Checkout_Payment {
     }
 
     public function init_gateway_class() {
-        require_once dirname(__FILE__) . '/class-wc-mmg-gateway.php';
+        if (class_exists('WC_Payment_Gateway')) {
+            require_once dirname(__FILE__) . '/class-wc-mmg-gateway.php';
+        }
     }
 
 
