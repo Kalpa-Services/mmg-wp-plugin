@@ -71,9 +71,10 @@ class MMG_Checkout_Payment {
                 'merchantName' => get_option('mmg_merchant_name', get_bloginfo('name')),
             );
 
-            $token = $this->encrypt_and_encode($token_data);
+            $encrypted = $this->encrypt($token_data);
+            $encoded = $this->url_safe_base64_encode($encrypted);
             $checkout_url = add_query_arg(array(
-                'token' => $token,
+                'token' => $encoded,
                 'merchantId' => get_option('mmg_merchant_id'),
                 'X-Client-ID' => get_option('mmg_client_id'),
             ), $this->get_checkout_url());
@@ -89,15 +90,21 @@ class MMG_Checkout_Payment {
         return $this->mode === 'live' ? $this->live_checkout_url : $this->demo_checkout_url;
     }
 
-    private function encrypt_and_encode($data) {
+    private function encrypt($data) {
         $json = json_encode($data);
         $public_key = openssl_pkey_get_public(get_option('mmg_rsa_public_key'));
         
-        // Use OAEP padding with SHA-256
-        openssl_public_encrypt($json, $encrypted, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
+        // Convert JSON to bytes using ISO-8859-1 encoding
+        $json_bytes = iconv('UTF-8', 'ISO-8859-1', $json);
         
-        // Use URL-safe Base64 encoding
-        return rtrim(strtr(base64_encode($encrypted), '+/', '-_'), '=');
+        // Use OAEP padding with SHA-256
+        openssl_public_encrypt($json_bytes, $encrypted, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
+        
+        return $encrypted;
+    }
+
+    private function url_safe_base64_encode($data) {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
     private function validate_public_key() {
