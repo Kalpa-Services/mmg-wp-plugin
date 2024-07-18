@@ -70,6 +70,10 @@ class MMG_Checkout_Settings {
                         <th scope="row">RSA Public Key</th>
                         <td><textarea name="mmg_rsa_public_key"><?php echo esc_textarea(get_option('mmg_rsa_public_key')); ?></textarea></td>
                     </tr>
+                    <tr valign="top">
+                        <th scope="row">RSA Private Key</th>
+                        <td><textarea name="mmg_rsa_private_key"><?php echo esc_textarea(get_option('mmg_rsa_private_key')); ?></textarea></td>
+                    </tr>
                 </table>
                 <?php submit_button(); ?>
             </form>
