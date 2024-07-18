@@ -31,7 +31,7 @@ class MMG_Checkout_Payment {
     }
 
     public function enqueue_scripts() {
-        wp_enqueue_script('mmg-checkout', plugin_dir_url(__FILE__) . 'js/mmg-checkout.js', array('jquery'), '1.0', true);
+        wp_enqueue_script('mmg-checkout', plugin_dir_url(dirname(__FILE__)) . 'js/mmg-checkout.js', array('jquery'), '3.0', true);
         wp_localize_script('mmg-checkout', 'mmg_checkout_params', array(
             'ajax_url' => admin_url('admin-ajax.php'),
         ));
