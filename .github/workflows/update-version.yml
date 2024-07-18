@@ -1,0 +1,18 @@
+name: Update Version
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Update version in main.php
+      run: |
+        chmod +x .github/scripts/update-version.sh
+        .github/scripts/update-version.sh
