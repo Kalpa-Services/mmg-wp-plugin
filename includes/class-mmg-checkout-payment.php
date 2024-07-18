@@ -62,9 +62,9 @@ class MMG_Checkout_Payment {
             'secretKey' => get_option('mmg_secret_key'),
             'amount' => $amount,
             'merchantId' => get_option('mmg_merchant_id'),
-            'merchantTransactionId' => $order_id,
+            'merchantTransactionId' => (string)time(),
             'productDescription' => $description,
-            'requestInitiationTime' => (string) round(microtime(true) * 1000),
+            'requestInitiationTime' => time(),
             'merchantName' => get_option('mmg_merchant_name', get_bloginfo('name')),
         );
 
@@ -86,7 +86,11 @@ class MMG_Checkout_Payment {
     private function encrypt_and_encode($data) {
         $json = json_encode($data);
         $public_key = openssl_pkey_get_public(get_option('mmg_rsa_public_key'));
-        openssl_public_encrypt($json, $encrypted, $public_key);
+        
+        // Use OAEP padding with SHA-256
+        openssl_public_encrypt($json, $encrypted, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
+        
+        // Use URL-safe Base64 encoding
         return rtrim(strtr(base64_encode($encrypted), '+/', '-_'), '=');
     }
 
