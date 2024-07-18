@@ -98,7 +98,7 @@ class MMG_Checkout_Payment {
     }
 
     public function init_gateway_class() {
-        require_once plugin_dir_path(__FILE__) . 'includes/class-wc-mmg-gateway.php';
+        require_once dirname(__FILE__) . '/class-wc-mmg-gateway.php';
     }
 
 
