@@ -81,7 +81,8 @@ class MMG_Checkout_Payment {
 
             wp_send_json_success(array('checkout_url' => $checkout_url));
         } catch (Exception $e) {
-            error_log('MMG Checkout Error: ' . $e->getMessage());
+            error_log('MMG Checkout Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
+            error_log('MMG Checkout Error Trace: ' . $e->getTraceAsString());
             wp_send_json_error('Error generating checkout URL: ' . $e->getMessage());
         }
     }
@@ -92,19 +93,37 @@ class MMG_Checkout_Payment {
 
     private function encrypt($checkout_object) {
         $json_object = json_encode($checkout_object, JSON_PRETTY_PRINT);
-        echo "Checkout Object:\n $json_object\n";
+        error_log("Checkout Object:\n $json_object\n");
 
         // message to bytes
-        $json_bytes = mb_convert_encoding($json_object, 'ISO-8859-1', 'UTF-8');
+        if (function_exists('mb_convert_encoding')) {
+            $json_bytes = mb_convert_encoding($json_object, 'ISO-8859-1', 'UTF-8');
+        } else {
+            // Fallback method
+            $json_bytes = utf8_decode($json_object);
+        }
         
-        // encrypt message
-        $rsa = new \phpseclib3\Crypt\RSA();
-        $public_key = \phpseclib3\Crypt\PublicKeyLoader::load(get_option('mmg_rsa_public_key'));
+        // Load the public key
+        try {
+            $public_key = \phpseclib3\Crypt\PublicKeyLoader::load(get_option('mmg_rsa_public_key'));
+        } catch (Exception $e) {
+            error_log('Error loading public key: ' . $e->getMessage());
+            throw new Exception('Failed to load RSA public key');
+        }
+        
+        // Configure RSA encryption
         $rsa = $public_key->withPadding(\phpseclib3\Crypt\RSA::ENCRYPTION_OAEP)
                           ->withHash('sha256')
                           ->withMGFHash('sha256');
         
-        $ciphertext = $rsa->encrypt($json_bytes);
+        // Encrypt the data
+        try {
+            $ciphertext = $rsa->encrypt($json_bytes);
+        } catch (Exception $e) {
+            error_log('Error during encryption: ' . $e->getMessage());
+            throw new Exception('Failed to encrypt data');
+        }
+        
         return $ciphertext;
     }
 
