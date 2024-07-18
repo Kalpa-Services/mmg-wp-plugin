@@ -44,9 +44,9 @@ This plugin is released under the GPL v2 or later license.
 
 Kalpa Services Inc.
 
-## Version
+## Contributors
 
-1.0
+- Jay Carter
 
 # Roadmap
 
