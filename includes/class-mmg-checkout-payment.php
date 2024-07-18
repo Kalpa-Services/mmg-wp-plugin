@@ -3,8 +3,6 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-use phpseclib3\Crypt\PublicKeyLoader;
-
 class MMG_Checkout_Payment {
     private $client_id;
     private $merchant_id;
@@ -21,16 +19,6 @@ class MMG_Checkout_Payment {
         // Load settings
         require_once dirname(__FILE__) . '/class-mmg-settings.php';
         new MMG_Checkout_Settings();
-
-        // Include phpseclib
-        $autoload_path = dirname(__FILE__) . '/vendor/autoload.php';
-        if (!file_exists($autoload_path)) {
-            add_action('admin_notices', function() {
-                echo '<div class="error"><p>MMG Checkout Payment: phpseclib3 library is missing. Please run "composer install" in the plugin directory.</p></div>';
-            });
-            return; // Exit the constructor to prevent further errors
-        }
-        require_once $autoload_path;
 
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('wp_ajax_generate_checkout_url', array($this, 'generate_checkout_url'));
@@ -103,14 +91,10 @@ class MMG_Checkout_Payment {
 
     private function encrypt_and_encode($data) {
         $json = json_encode($data);
-        $public_key = PublicKeyLoader::load(get_option('mmg_rsa_public_key'));
-
-        if (!$public_key) {
-            throw new Exception('Failed to load public key');
-        }
-
+        $public_key = openssl_pkey_get_public(get_option('mmg_rsa_public_key'));
+        
         // Use OAEP padding with SHA-256
-        $encrypted = $public_key->withPadding(RSA::ENCRYPTION_OAEP)->withHash('sha256')->encrypt($json);
+        openssl_public_encrypt($json, $encrypted, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
         
         // Use URL-safe Base64 encoding
         return rtrim(strtr(base64_encode($encrypted), '+/', '-_'), '=');
@@ -123,7 +107,7 @@ class MMG_Checkout_Payment {
             return false;
         }
         
-        $key_resource = PublicKeyLoader::load($public_key);
+        $key_resource = openssl_pkey_get_public($public_key);
         if (!$key_resource) {
             error_log('MMG Checkout Error: Invalid RSA public key');
             return false;
