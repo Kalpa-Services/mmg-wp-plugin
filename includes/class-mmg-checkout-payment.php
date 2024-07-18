@@ -47,6 +47,38 @@ class MMG_Checkout_Payment {
     }
 
     public function generate_checkout_url() {
+        // Verify nonce and user capabilities here
+
+        $order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+        $order = wc_get_order($order_id);
+
+        if (!$order) {
+            wp_send_json_error('Invalid order');
+        }
+
+        $amount = $order->get_total();
+        $description = 'Order #' . $order->get_order_number();
+
+        $token_data = array(
+            'secretKey' => get_option('mmg_secret_key'),
+            'amount' => $amount,
+            'merchantId' => get_option('mmg_merchant_id'),
+            'merchantTransactionId' => $order_id,
+            'productDescription' => $description,
+            'requestInitiationTime' => (string) round(microtime(true) * 1000),
+            'merchantName' => get_bloginfo('name'),
+            'returnUrl' => add_query_arg('wc-api', 'mmg_payment_confirmation', home_url('/')),
+        );
+
+        $token = $this->encrypt_and_encode($token_data);
+
+        $checkout_url = add_query_arg(array(
+            'X-Client-ID' => get_option('mmg_client_id'),
+            'token' => $token,
+            'merchantId' => get_option('mmg_merchant_id'),
+        ), get_option('mmg_base_url'));
+
+        wp_send_json_success(array('checkout_url' => $checkout_url));
     }
 
     private function get_checkout_url() {
@@ -54,6 +86,10 @@ class MMG_Checkout_Payment {
     }
 
     private function encrypt_and_encode($data) {
+        $json = json_encode($data);
+        $public_key = openssl_pkey_get_public(get_option('mmg_rsa_public_key'));
+        openssl_public_encrypt($json, $encrypted, $public_key);
+        return rtrim(strtr(base64_encode($encrypted), '+/', '-_'), '=');
     }
 
     public function add_gateway_class($gateways) {
@@ -65,7 +101,30 @@ class MMG_Checkout_Payment {
         require_once plugin_dir_path(__FILE__) . 'includes/class-wc-mmg-gateway.php';
     }
 
+
     public function handle_payment_confirmation() {
+        $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+        $status = isset($_GET['status']) ? sanitize_text_field($_GET['status']) : '';
+
+        $order = wc_get_order($order_id);
+
+        if (!$order) {
+            wp_die('Invalid order', 'MMG Checkout Error', array('response' => 400));
+        }
+
+        // Verify the payment status with MMG API here
+        // This is a placeholder for the actual verification process
+        $payment_verified = $this->verify_payment_with_mmg($order_id, $status);
+
+        if ($payment_verified) {
+            $order->payment_complete();
+            $order->add_order_note('Payment completed via MMG Checkout.');
+            wp_redirect($order->get_checkout_order_received_url());
+        } else {
+            $order->update_status('failed', 'Payment failed or was cancelled.');
+            wp_redirect($order->get_checkout_payment_url());
+        }
+        exit;
     }
 
     private function verify_payment_with_mmg($order_id, $status) {
