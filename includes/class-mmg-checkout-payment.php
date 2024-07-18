@@ -65,16 +65,16 @@ class MMG_Checkout_Payment {
             'merchantTransactionId' => $order_id,
             'productDescription' => $description,
             'requestInitiationTime' => (string) round(microtime(true) * 1000),
-            'merchantName' => get_bloginfo('name'),
+            'merchantName' => get_option('mmg_merchant_name', get_bloginfo('name')),
         );
 
         $token = $this->encrypt_and_encode($token_data);
 
         $checkout_url = add_query_arg(array(
-            'X-Client-ID' => get_option('mmg_client_id'),
             'token' => $token,
             'merchantId' => get_option('mmg_merchant_id'),
-        ), get_option('mmg_base_url'));
+            'X-Client-ID' => get_option('mmg_client_id'),
+        ), $this->get_checkout_url());
 
         wp_send_json_success(array('checkout_url' => $checkout_url));
     }
