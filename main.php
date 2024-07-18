@@ -45,6 +45,7 @@ class MMG_Checkout_Payment {
         register_setting('mmg_checkout_settings', 'mmg_merchant_id');
         register_setting('mmg_checkout_settings', 'mmg_secret_key');
         register_setting('mmg_checkout_settings', 'mmg_rsa_public_key');
+        register_setting('mmg_checkout_settings', 'mmg_merchant_name');
     }
 
     public function settings_page() {
@@ -73,6 +74,10 @@ class MMG_Checkout_Payment {
                     <tr valign="top">
                         <th scope="row">Client ID</th>
                         <td><input type="text" name="mmg_client_id" value="<?php echo esc_attr(get_option('mmg_client_id')); ?>" /></td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Merchant Name</th>
+                        <td><input type="text" name="mmg_merchant_name" value="<?php echo esc_attr(get_option('mmg_merchant_name', get_bloginfo('name'))); ?>" /></td>
                     </tr>
                     <tr valign="top">
                         <th scope="row">Merchant ID</th>
@@ -153,8 +158,7 @@ class MMG_Checkout_Payment {
             'merchantTransactionId' => $order_id,
             'productDescription' => $description,
             'requestInitiationTime' => (string) round(microtime(true) * 1000),
-            'merchantName' => get_bloginfo('name'),
-            'returnUrl' => add_query_arg('wc-api', 'mmg_payment_confirmation', home_url('/')),
+            'merchantName' => get_option('mmg_merchant_name', get_bloginfo('name')),
         );
 
         $token = $this->encrypt_and_encode($token_data);
