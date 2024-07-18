@@ -46,37 +46,43 @@ class MMG_Checkout_Payment {
     }
 
     public function generate_checkout_url() {
-        // Verify nonce and user capabilities here
+        try {
+            if (!$this->validate_public_key()) {
+                throw new Exception('Invalid RSA public key');
+            }
 
-        $order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
-        $order = wc_get_order($order_id);
+            $order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+            $order = wc_get_order($order_id);
 
-        if (!$order) {
-            wp_send_json_error('Invalid order');
+            if (!$order) {
+                wp_send_json_error('Invalid order');
+            }
+
+            $amount = $order->get_total();
+            $description = 'Order #' . $order->get_order_number();
+
+            $token_data = array(
+                'secretKey' => get_option('mmg_secret_key'),
+                'amount' => $amount,
+                'merchantId' => get_option('mmg_merchant_id'),
+                'merchantTransactionId' => (string)time(),
+                'productDescription' => $description,
+                'requestInitiationTime' => (string) round(microtime(true) * 1000),
+                'merchantName' => get_option('mmg_merchant_name', get_bloginfo('name')),
+            );
+
+            $token = $this->encrypt_and_encode($token_data);
+            $checkout_url = add_query_arg(array(
+                'token' => $token,
+                'merchantId' => get_option('mmg_merchant_id'),
+                'X-Client-ID' => get_option('mmg_client_id'),
+            ), $this->get_checkout_url());
+
+            wp_send_json_success(array('checkout_url' => $checkout_url));
+        } catch (Exception $e) {
+            error_log('MMG Checkout Error: ' . $e->getMessage());
+            wp_send_json_error('Error generating checkout URL: ' . $e->getMessage());
         }
-
-        $amount = $order->get_total();
-        $description = 'Order #' . $order->get_order_number();
-
-        $token_data = array(
-            'secretKey' => get_option('mmg_secret_key'),
-            'amount' => $amount,
-            'merchantId' => get_option('mmg_merchant_id'),
-            'merchantTransactionId' => (string)time(),
-            'productDescription' => $description,
-            'requestInitiationTime' => time(),
-            'merchantName' => get_option('mmg_merchant_name', get_bloginfo('name')),
-        );
-
-        $token = $this->encrypt_and_encode($token_data);
-
-        $checkout_url = add_query_arg(array(
-            'token' => $token,
-            'merchantId' => get_option('mmg_merchant_id'),
-            'X-Client-ID' => get_option('mmg_client_id'),
-        ), $this->get_checkout_url());
-
-        wp_send_json_success(array('checkout_url' => $checkout_url));
     }
 
     private function get_checkout_url() {
@@ -92,6 +98,22 @@ class MMG_Checkout_Payment {
         
         // Use URL-safe Base64 encoding
         return rtrim(strtr(base64_encode($encrypted), '+/', '-_'), '=');
+    }
+
+    private function validate_public_key() {
+        $public_key = get_option('mmg_rsa_public_key');
+        if (!$public_key) {
+            error_log('MMG Checkout Error: RSA public key is missing');
+            return false;
+        }
+        
+        $key_resource = openssl_pkey_get_public($public_key);
+        if (!$key_resource) {
+            error_log('MMG Checkout Error: Invalid RSA public key');
+            return false;
+        }
+        
+        return true;
     }
 
     public function add_gateway_class($gateways) {
