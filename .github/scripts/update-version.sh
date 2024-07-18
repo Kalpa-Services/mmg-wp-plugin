@@ -15,5 +15,5 @@ git config --local user.name "GitHub Action"
 git add main.php
 git commit -m "Bump version to $NEW_VERSION"
 
-# Push the change
-git push
+# Push the change to the main branch
+git push origin HEAD:main
