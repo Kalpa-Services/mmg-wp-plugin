@@ -10,7 +10,6 @@ MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flo
 - Secure payment processing
 - Customizable checkout button
 - Admin settings page for easy configuration
-- Shortcode support for flexible placement of the checkout button
 
 ## Installation
 
@@ -60,3 +59,7 @@ Kalpa Services Inc.
 ## Version
 
 1.0
+
+# Roadmap
+
+- Shortcode support for flexible placement of the checkout button
