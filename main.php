@@ -11,7 +11,6 @@ if (!defined('ABSPATH')) {
 }
 
 class MMG_Checkout_Payment {
-    private $base_url;
     private $client_id;
     private $merchant_id;
     private $secret_key;
@@ -22,8 +21,7 @@ class MMG_Checkout_Payment {
 
     public function __construct() {
         // Initialize plugin
-        $this->base_url = home_url('/'); // Set the base URL to the site's domain
-        $this->mode = get_option('mmg_mode', 'demo');
+        $this->mode = get_option('mmg_mode', 'demo'); // Default mode set to 'demo'
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_shortcode('mmg_checkout_button', array($this, 'checkout_button_shortcode'));
@@ -34,6 +32,7 @@ class MMG_Checkout_Payment {
         add_action('plugins_loaded', array($this, 'init_gateway_class'));
         add_action('wp_ajax_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
         add_action('wp_ajax_nopriv_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
     }
 
     public function add_admin_menu() {
@@ -68,8 +67,8 @@ class MMG_Checkout_Payment {
                         </td>
                     </tr>
                     <tr valign="top">
-                        <th scope="row">Base URL</th>
-                        <td><input type="text" value="<?php echo esc_attr($this->base_url); ?>" readonly /></td>
+                        <th scope="row">Checkout URL</th>
+                        <td><input type="text" value="<?php echo esc_attr($this->get_checkout_url()); ?>" readonly /></td>
                     </tr>
                     <tr valign="top">
                         <th scope="row">Client ID</th>
@@ -81,7 +80,10 @@ class MMG_Checkout_Payment {
                     </tr>
                     <tr valign="top">
                         <th scope="row">Secret Key</th>
-                        <td><input type="password" name="mmg_secret_key" value="<?php echo esc_attr(get_option('mmg_secret_key')); ?>" /></td>
+                        <td>
+                            <input type="password" id="mmg_secret_key" name="mmg_secret_key" value="<?php echo esc_attr(get_option('mmg_secret_key')); ?>" />
+                            <button type="button" id="toggle_secret_key">Show</button>
+                        </td>
                     </tr>
                     <tr valign="top">
                         <th scope="row">RSA Public Key</th>
@@ -91,7 +93,28 @@ class MMG_Checkout_Payment {
                 <?php submit_button(); ?>
             </form>
         </div>
+        <script>
+        jQuery(document).ready(function($) {
+            $('#toggle_secret_key').click(function() {
+                var secretKeyInput = $('#mmg_secret_key');
+                if (secretKeyInput.attr('type') === 'password') {
+                    secretKeyInput.attr('type', 'text');
+                    $(this).text('Hide');
+                } else {
+                    secretKeyInput.attr('type', 'password');
+                    $(this).text('Show');
+                }
+            });
+        });
+        </script>
         <?php
+    }
+
+    public function enqueue_admin_scripts($hook) {
+        if ($hook != 'settings_page_mmg-checkout-settings') {
+            return;
+        }
+        wp_enqueue_script('jquery');
     }
 
     public function checkout_button_shortcode($atts) {
