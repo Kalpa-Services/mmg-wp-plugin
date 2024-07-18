@@ -28,18 +28,6 @@ MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flo
    - RSA Public Key
 3. Save the settings
 
-## Usage
-
-### Shortcode
-
-You can use the following shortcode to add the MMG Checkout button to any post or page:
-
-```
-[mmg_checkout_button amount="100" description="Product Description"]
-```
-
-Replace `100` with the desired amount and `"Product Description"` with an appropriate description for the transaction.
-
 ### WooCommerce Integration
 
 The plugin automatically adds MMG Checkout as a payment method in WooCommerce. Customers can select it during the checkout process.
