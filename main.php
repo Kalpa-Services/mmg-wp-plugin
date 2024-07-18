@@ -27,7 +27,6 @@ class MMG_Checkout_Payment {
         require_once plugin_dir_path(__FILE__) . 'includes/class-mmg-settings.php';
         new MMG_Checkout_Settings();
 
-        add_action('admin_init', array($this, 'register_settings'));
         add_shortcode('mmg_checkout_button', array($this, 'checkout_button_shortcode'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('wp_ajax_generate_checkout_url', array($this, 'generate_checkout_url'));
