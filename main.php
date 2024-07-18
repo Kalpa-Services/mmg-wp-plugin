@@ -16,10 +16,14 @@ class MMG_Checkout_Payment {
     private $merchant_id;
     private $secret_key;
     private $rsa_public_key;
+    private $mode;
+    private $live_checkout_url = 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home';
+    private $demo_checkout_url = 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
 
     public function __construct() {
         // Initialize plugin
         $this->base_url = home_url('/'); // Set the base URL to the site's domain
+        $this->mode = get_option('mmg_mode', 'demo');
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_shortcode('mmg_checkout_button', array($this, 'checkout_button_shortcode'));
@@ -37,6 +41,7 @@ class MMG_Checkout_Payment {
     }
 
     public function register_settings() {
+        register_setting('mmg_checkout_settings', 'mmg_mode');
         register_setting('mmg_checkout_settings', 'mmg_client_id');
         register_setting('mmg_checkout_settings', 'mmg_merchant_id');
         register_setting('mmg_checkout_settings', 'mmg_secret_key');
@@ -53,6 +58,15 @@ class MMG_Checkout_Payment {
                 do_settings_sections('mmg_checkout_settings');
                 ?>
                 <table class="form-table">
+                    <tr valign="top">
+                        <th scope="row">Mode</th>
+                        <td>
+                            <select name="mmg_mode">
+                                <option value="live" <?php selected(get_option('mmg_mode'), 'live'); ?>>Live</option>
+                                <option value="demo" <?php selected(get_option('mmg_mode'), 'demo'); ?>>Demo</option>
+                            </select>
+                        </td>
+                    </tr>
                     <tr valign="top">
                         <th scope="row">Base URL</th>
                         <td><input type="text" value="<?php echo esc_attr($this->base_url); ?>" readonly /></td>
@@ -123,12 +137,16 @@ class MMG_Checkout_Payment {
         $token = $this->encrypt_and_encode($token_data);
 
         $checkout_url = add_query_arg(array(
-            'X-Client-ID' => get_option('mmg_client_id'),
             'token' => $token,
             'merchantId' => get_option('mmg_merchant_id'),
-        ), $this->base_url);
+            'X-Client-ID' => get_option('mmg_client_id'),
+        ), $this->get_checkout_url());
 
         wp_send_json_success(array('checkout_url' => $checkout_url));
+    }
+
+    private function get_checkout_url() {
+        return $this->mode === 'live' ? $this->live_checkout_url : $this->demo_checkout_url;
     }
 
     private function encrypt_and_encode($data) {
