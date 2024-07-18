@@ -20,6 +20,7 @@ class MMG_Checkout_Settings {
         register_setting('mmg_checkout_settings', 'mmg_merchant_id');
         register_setting('mmg_checkout_settings', 'mmg_secret_key');
         register_setting('mmg_checkout_settings', 'mmg_rsa_public_key');
+        register_setting('mmg_checkout_settings', 'mmg_rsa_private_key');
         register_setting('mmg_checkout_settings', 'mmg_merchant_name');
     }
 
