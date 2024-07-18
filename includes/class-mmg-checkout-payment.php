@@ -94,11 +94,23 @@ class MMG_Checkout_Payment {
         $json = json_encode($data);
         $public_key = openssl_pkey_get_public(get_option('mmg_rsa_public_key'));
         
-        // Convert JSON to bytes using ISO-8859-1 encoding
-        $json_bytes = iconv('UTF-8', 'ISO-8859-1', $json);
+        if (!$public_key) {
+            throw new Exception('Invalid public key');
+        }
         
-        // Use OAEP padding with SHA-256
+        // Convert JSON to bytes using ISO-8859-1 encoding
+        $json_bytes = iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $json);
+        
+        if ($json_bytes === false) {
+            throw new Exception('Encoding conversion failed');
+        }
+        
+        // Encrypt using OpenSSL's public encrypt function with OAEP padding
         openssl_public_encrypt($json_bytes, $encrypted, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
+        
+        if ($encrypted === false) {
+            throw new Exception('Encryption failed');
+        }
         
         return $encrypted;
     }
