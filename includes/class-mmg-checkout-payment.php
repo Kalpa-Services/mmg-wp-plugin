@@ -3,6 +3,8 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+use phpseclib3\Crypt\PublicKeyLoader;
+
 class MMG_Checkout_Payment {
     private $client_id;
     private $merchant_id;
@@ -19,6 +21,9 @@ class MMG_Checkout_Payment {
         // Load settings
         require_once dirname(__FILE__) . '/class-mmg-settings.php';
         new MMG_Checkout_Settings();
+
+        // Include phpseclib
+        require_once dirname(__FILE__) . '/vendor/autoload.php';
 
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('wp_ajax_generate_checkout_url', array($this, 'generate_checkout_url'));
@@ -91,10 +96,14 @@ class MMG_Checkout_Payment {
 
     private function encrypt_and_encode($data) {
         $json = json_encode($data);
-        $public_key = openssl_pkey_get_public(get_option('mmg_rsa_public_key'));
-        
+        $public_key = PublicKeyLoader::load(get_option('mmg_rsa_public_key'));
+
+        if (!$public_key) {
+            throw new Exception('Failed to load public key');
+        }
+
         // Use OAEP padding with SHA-256
-        openssl_public_encrypt($json, $encrypted, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
+        $encrypted = $public_key->withPadding(RSA::ENCRYPTION_OAEP)->withHash('sha256')->encrypt($json);
         
         // Use URL-safe Base64 encoding
         return rtrim(strtr(base64_encode($encrypted), '+/', '-_'), '=');
@@ -107,7 +116,7 @@ class MMG_Checkout_Payment {
             return false;
         }
         
-        $key_resource = openssl_pkey_get_public($public_key);
+        $key_resource = PublicKeyLoader::load($public_key);
         if (!$key_resource) {
             error_log('MMG Checkout Error: Invalid RSA public key');
             return false;
@@ -126,7 +135,6 @@ class MMG_Checkout_Payment {
             require_once dirname(__FILE__) . '/class-wc-mmg-gateway.php';
         }
     }
-
 
     public function handle_payment_confirmation() {
         $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
@@ -159,5 +167,5 @@ class MMG_Checkout_Payment {
         // For now, we'll just check if the status is 'success'
         return $status === 'success';
     }
-
 }
+?>
