@@ -20,7 +20,6 @@ class MMG_Checkout_Payment {
         require_once dirname(__FILE__) . '/class-mmg-settings.php';
         new MMG_Checkout_Settings();
 
-        add_shortcode('mmg_checkout_button', array($this, 'checkout_button_shortcode'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('wp_ajax_generate_checkout_url', array($this, 'generate_checkout_url'));
         add_action('wp_ajax_nopriv_generate_checkout_url', array($this, 'generate_checkout_url'));
@@ -29,14 +28,6 @@ class MMG_Checkout_Payment {
         add_action('wp_ajax_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
         add_action('wp_ajax_nopriv_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
 
-    }
-    public function checkout_button_shortcode($atts) {
-        $atts = shortcode_atts(array(
-            'amount' => '',
-            'description' => '',
-        ), $atts);
-
-        return '<button class="mmg-checkout-button" data-amount="' . esc_attr($atts['amount']) . '" data-description="' . esc_attr($atts['description']) . '">Pay with MMG</button>';
     }
 
     public function enqueue_scripts() {
@@ -67,7 +58,6 @@ class MMG_Checkout_Payment {
             'productDescription' => $description,
             'requestInitiationTime' => (string) round(microtime(true) * 1000),
             'merchantName' => get_bloginfo('name'),
-            'returnUrl' => add_query_arg('wc-api', 'mmg_payment_confirmation', home_url('/')),
         );
 
         $token = $this->encrypt_and_encode($token_data);
