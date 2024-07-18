@@ -9,7 +9,8 @@ Author: Kalpa Services Inc.
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
-
+// Load composer autoloader
+require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 // Include the dependency checker
 require_once plugin_dir_path(__FILE__) . 'includes/class-mmg-dependency-checker.php';
 

@@ -81,7 +81,8 @@ class MMG_Checkout_Payment {
 
             wp_send_json_success(array('checkout_url' => $checkout_url));
         } catch (Exception $e) {
-            error_log('MMG Checkout Error: ' . $e->getMessage());
+            error_log('MMG Checkout Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
+            error_log('MMG Checkout Error Trace: ' . $e->getTraceAsString());
             wp_send_json_error('Error generating checkout URL: ' . $e->getMessage());
         }
     }
@@ -90,29 +91,40 @@ class MMG_Checkout_Payment {
         return $this->mode === 'live' ? $this->live_checkout_url : $this->demo_checkout_url;
     }
 
-    private function encrypt($data) {
-        $json = json_encode($data);
-        $public_key = openssl_pkey_get_public(get_option('mmg_rsa_public_key'));
-        
-        if (!$public_key) {
-            throw new Exception('Invalid public key');
+    private function encrypt($checkout_object) {
+        $json_object = json_encode($checkout_object, JSON_PRETTY_PRINT);
+        error_log("Checkout Object:\n $json_object\n");
+
+        // message to bytes
+        if (function_exists('mb_convert_encoding')) {
+            $json_bytes = mb_convert_encoding($json_object, 'ISO-8859-1', 'UTF-8');
+        } else {
+            // Fallback method
+            $json_bytes = utf8_decode($json_object);
         }
         
-        // Convert JSON to bytes using ISO-8859-1 encoding
-        $json_bytes = iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $json);
-        
-        if ($json_bytes === false) {
-            throw new Exception('Encoding conversion failed');
+        // Load the public key
+        try {
+            $public_key = \phpseclib3\Crypt\PublicKeyLoader::load(get_option('mmg_rsa_public_key'));
+        } catch (Exception $e) {
+            error_log('Error loading public key: ' . $e->getMessage());
+            throw new Exception('Failed to load RSA public key');
         }
         
-        // Encrypt using OpenSSL's public encrypt function with OAEP padding
-        openssl_public_encrypt($json_bytes, $encrypted, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
+        // Configure RSA encryption
+        $rsa = $public_key->withPadding(\phpseclib3\Crypt\RSA::ENCRYPTION_OAEP)
+                          ->withHash('sha256')
+                          ->withMGFHash('sha256');
         
-        if ($encrypted === false) {
-            throw new Exception('Encryption failed');
+        // Encrypt the data
+        try {
+            $ciphertext = $rsa->encrypt($json_bytes);
+        } catch (Exception $e) {
+            error_log('Error during encryption: ' . $e->getMessage());
+            throw new Exception('Failed to encrypt data');
         }
         
-        return $encrypted;
+        return $ciphertext;
     }
 
     private function url_safe_base64_encode($data) {
