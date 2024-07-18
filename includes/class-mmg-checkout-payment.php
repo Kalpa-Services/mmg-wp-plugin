@@ -35,6 +35,14 @@ class MMG_Checkout_Payment {
         wp_localize_script('mmg-checkout', 'mmg_checkout_params', array(
             'ajax_url' => admin_url('admin-ajax.php'),
         ));
+
+        // For blocks support
+        $gateway_settings = get_option('woocommerce_mmg_checkout_settings', array());
+        wp_localize_script('wc-mmg-payments-blocks', 'mmgCheckoutData', array(
+            'title' => isset($gateway_settings['title']) ? $gateway_settings['title'] : 'MMG Checkout',
+            'description' => isset($gateway_settings['description']) ? $gateway_settings['description'] : 'Pay with MMG Checkout',
+            'supports' => array('products', 'refunds'),
+        ));
     }
 
     public function generate_checkout_url() {
