@@ -22,7 +22,11 @@ class MMG_Checkout_Payment {
     public function __construct() {
         // Initialize plugin
         $this->mode = get_option('mmg_mode', 'demo'); // Default mode set to 'demo'
-        add_action('admin_menu', array($this, 'add_admin_menu'));
+        
+        // Load settings
+        require_once plugin_dir_path(__FILE__) . 'includes/class-mmg-settings.php';
+        new MMG_Checkout_Settings();
+
         add_action('admin_init', array($this, 'register_settings'));
         add_shortcode('mmg_checkout_button', array($this, 'checkout_button_shortcode'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
@@ -32,20 +36,10 @@ class MMG_Checkout_Payment {
         add_action('plugins_loaded', array($this, 'init_gateway_class'));
         add_action('wp_ajax_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
         add_action('wp_ajax_nopriv_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
     }
 
     public function add_admin_menu() {
         add_options_page('MMG Checkout Settings', 'MMG Checkout', 'manage_options', 'mmg-checkout-settings', array($this, 'settings_page'));
-    }
-
-    public function register_settings() {
-        register_setting('mmg_checkout_settings', 'mmg_mode');
-        register_setting('mmg_checkout_settings', 'mmg_client_id');
-        register_setting('mmg_checkout_settings', 'mmg_merchant_id');
-        register_setting('mmg_checkout_settings', 'mmg_secret_key');
-        register_setting('mmg_checkout_settings', 'mmg_rsa_public_key');
-        register_setting('mmg_checkout_settings', 'mmg_merchant_name');
     }
 
     public function settings_page() {
