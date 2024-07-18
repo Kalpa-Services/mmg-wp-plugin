@@ -13,6 +13,12 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
         $this->title = $this->get_option('title');
         $this->description = $this->get_option('description');
 
+        $this->supports = array(
+            'products',
+            'refunds',
+            'checkout_block_support',
+        );
+
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_receipt_' . $this->id, array($this, 'receipt_page'));
     }

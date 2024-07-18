@@ -35,6 +35,13 @@ class MMG_Checkout_Payment {
         wp_localize_script('mmg-checkout', 'mmg_checkout_params', array(
             'ajax_url' => admin_url('admin-ajax.php'),
         ));
+
+        // For blocks support
+        wp_localize_script('wc-mmg-payments-blocks', 'mmgCheckoutData', array(
+            'title' => $this->get_option('title'),
+            'description' => $this->get_option('description'),
+            'supports' => $this->supports,
+        ));
     }
 
     public function generate_checkout_url() {
