@@ -76,5 +76,3 @@ class MMG_Checkout_Payment {
     }
 
 }
-
-new MMG_Checkout_Payment();
