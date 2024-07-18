@@ -17,7 +17,7 @@ class MMG_Checkout_Payment {
         $this->mode = get_option('mmg_mode', 'demo'); // Default mode set to 'demo'
         
         // Load settings
-        require_once plugin_dir_path(__FILE__) . 'includes/class-mmg-settings.php';
+        require_once dirname(__FILE__) . '/class-mmg-settings.php';
         new MMG_Checkout_Settings();
 
         add_shortcode('mmg_checkout_button', array($this, 'checkout_button_shortcode'));
