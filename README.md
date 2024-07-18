@@ -46,7 +46,7 @@ Kalpa Services Inc.
 
 ## Contributors
 
-- Jay Carter
+- Jay Carter https://www.jaycarter.gy/
 
 # Roadmap
 
