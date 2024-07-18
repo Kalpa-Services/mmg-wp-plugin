@@ -23,7 +23,14 @@ class MMG_Checkout_Payment {
         new MMG_Checkout_Settings();
 
         // Include phpseclib
-        require_once dirname(__FILE__) . '/vendor/autoload.php';
+        $autoload_path = dirname(__FILE__) . '/vendor/autoload.php';
+        if (!file_exists($autoload_path)) {
+            add_action('admin_notices', function() {
+                echo '<div class="error"><p>MMG Checkout Payment: phpseclib3 library is missing. Please run "composer install" in the plugin directory.</p></div>';
+            });
+            return; // Exit the constructor to prevent further errors
+        }
+        require_once $autoload_path;
 
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('wp_ajax_generate_checkout_url', array($this, 'generate_checkout_url'));
