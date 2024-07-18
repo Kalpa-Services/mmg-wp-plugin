@@ -10,8 +10,6 @@ NEW_VERSION=${NEW_VERSION#v}
 sed -i "s/Version: [0-9.]\+/Version: $NEW_VERSION/" main.php
 
 # Commit the change
-git config --local user.email "action@github.com"
-git config --local user.name "GitHub Action"
 git add main.php
 git commit -m "Bump version to $NEW_VERSION"
 
