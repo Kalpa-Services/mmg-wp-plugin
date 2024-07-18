@@ -22,7 +22,7 @@ MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flo
 
 1. Go to 'Settings' > 'MMG Checkout' in the WordPress admin area
 2. Enter your MMG Merchant credentials:
-   - Base URL
+   - Merchant Name (if different from site title)
    - Client ID
    - Merchant ID
    - Secret Key
