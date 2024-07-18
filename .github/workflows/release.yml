@@ -17,12 +17,32 @@ jobs:
     - name: Zip project
       run: zip -r mmg-checkout-payment.zip . -x "*.git*"
 
-    - name: Create or Update Release
+    - name: Check for existing release
+      id: check_release
+      run: |
+        release_id=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
+          | jq -r '.id')
+        echo "release_id=$release_id" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      if: steps.check_release.outputs.release_id == 'null'
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        files: ./mmg-checkout-payment.zip
         tag_name: ${{ github.ref }}
-        name: Release ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url || format('https://uploads.github.com/repos/{0}/releases/{1}/assets{{?name,label}}', github.repository, steps.check_release.outputs.release_id) }}
+        asset_path: ./mmg-checkout-payment.zip
+        asset_name: mmg-checkout-payment.zip
+        asset_content_type: application/zip
