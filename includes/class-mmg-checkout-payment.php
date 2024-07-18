@@ -90,29 +90,22 @@ class MMG_Checkout_Payment {
         return $this->mode === 'live' ? $this->live_checkout_url : $this->demo_checkout_url;
     }
 
-    private function encrypt($data) {
-        $json = json_encode($data);
-        $public_key = openssl_pkey_get_public(get_option('mmg_rsa_public_key'));
+    private function encrypt($checkout_object) {
+        $json_object = json_encode($checkout_object, JSON_PRETTY_PRINT);
+        echo "Checkout Object:\n $json_object\n";
+
+        // message to bytes
+        $json_bytes = mb_convert_encoding($json_object, 'ISO-8859-1', 'UTF-8');
         
-        if (!$public_key) {
-            throw new Exception('Invalid public key');
-        }
+        // encrypt message
+        $rsa = new \phpseclib3\Crypt\RSA();
+        $public_key = \phpseclib3\Crypt\PublicKeyLoader::load(get_option('mmg_rsa_public_key'));
+        $rsa = $public_key->withPadding(\phpseclib3\Crypt\RSA::ENCRYPTION_OAEP)
+                          ->withHash('sha256')
+                          ->withMGFHash('sha256');
         
-        // Convert JSON to bytes using ISO-8859-1 encoding
-        $json_bytes = iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $json);
-        
-        if ($json_bytes === false) {
-            throw new Exception('Encoding conversion failed');
-        }
-        
-        // Encrypt using OpenSSL's public encrypt function with OAEP padding
-        openssl_public_encrypt($json_bytes, $encrypted, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
-        
-        if ($encrypted === false) {
-            throw new Exception('Encryption failed');
-        }
-        
-        return $encrypted;
+        $ciphertext = $rsa->encrypt($json_bytes);
+        return $ciphertext;
     }
 
     private function url_safe_base64_encode($data) {
