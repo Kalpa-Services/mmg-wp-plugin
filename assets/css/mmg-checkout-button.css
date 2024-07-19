@@ -1,0 +1,22 @@
+.mmg-checkout-button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #0070ba;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.mmg-checkout-button:hover {
+    background-color: #005ea6;
+}
+
+.mmg-checkout-button img {
+    vertical-align: middle;
+    margin-right: 10px;
+    height: 20px;
+}
