@@ -59,6 +59,7 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
         $order = wc_get_order($order_id);
         echo '<div id="mmg-checkout-container">Redirecting to MMG Checkout...</div>';
         ?>
+        <button id="mmg-checkout-button" class="mmg-checkout-button">Checkout with MMG</button>
         <script>
         jQuery(function($) {
             var data = {

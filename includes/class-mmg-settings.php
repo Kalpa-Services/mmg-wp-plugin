@@ -28,6 +28,12 @@ class MMG_Checkout_Settings {
         ?>
         <div class="wrap">
             <h1>MMG Checkout Settings</h1>
+            <p style="font-size: 14px;">
+                This plugin requires a merchant account with MMG. If you don't have one, please contact MMG to get started.
+            </p>
+            <div class="notice notice-warning">
+                <p><strong>Warning:</strong> Never share your private key with anyone. MMG will never ask for your private key. Keep it secure and confidential at all times.</p>
+            </div>
             <form method="post" action="options.php">
                 <?php
                 settings_fields('mmg_checkout_settings');
@@ -37,19 +43,71 @@ class MMG_Checkout_Settings {
                     <tr valign="top">
                         <th scope="row">Mode</th>
                         <td>
-                            <select name="mmg_mode">
+                            <select name="mmg_mode" id="mmg_mode">
                                 <option value="live" <?php selected(get_option('mmg_mode'), 'live'); ?>>Live</option>
-                                <option value="demo" <?php selected(get_option('mmg_mode'), 'demo'); ?>>Demo</option>
+                                <option value="demo" <?php selected(get_option('mmg_mode'), 'demo'); ?>>Sandbox</option>
                             </select>
+                            <span id="live-mode-indicator" style="display: none; margin-left: 10px;">
+                                <span class="blinking-dot"></span> Live Mode
+                            </span>
                         </td>
                     </tr>
+                    <style>
+                        .blinking-dot {
+                            display: inline-block;
+                            width: 10px;
+                            height: 10px;
+                            background-color: #00ff00;
+                            border-radius: 50%;
+                            animation: blink 1s infinite;
+                        }
+                        @keyframes blink {
+                            0% { opacity: 0; }
+                            50% { opacity: 1; }
+                            100% { opacity: 0; }
+                        }
+                    </style>
+                    <script>
+                        jQuery(document).ready(function($) {
+                            function toggleLiveModeIndicator() {
+                                if ($('#mmg_mode').val() === 'live') {
+                                    $('#live-mode-indicator').show();
+                                } else {
+                                    $('#live-mode-indicator').hide();
+                                }
+                            }
+                            $('#mmg_mode').on('change', toggleLiveModeIndicator);
+                            toggleLiveModeIndicator(); // Initial state
+                        });
+                    </script>
                     <tr valign="top">
                         <th scope="row">Checkout URL</th>
-                        <td><input type="text" value="<?php echo esc_attr($this->get_checkout_url()); ?>" readonly /></td>
+                        <td><?php echo esc_html($this->get_checkout_url()); ?></td>
                     </tr>
                     <tr valign="top">
                         <th scope="row">Callback URL</th>
-                        <td><input type="text" value="<?php echo esc_attr($this->get_callback_url()); ?>" readonly /></td>
+                        <td>
+                            <?php $callback_url = esc_html($this->get_callback_url()); ?>
+                            <?php echo $callback_url; ?>
+                            <button type="button" class="button" onclick="copyToClipboard('<?php echo $callback_url; ?>')">Copy</button>
+                            <span id="copy-success" style="color: green; display: none; margin-left: 10px;">Copied!</span>
+                        </td>
+                        <script>
+                        function copyToClipboard(text) {
+                            var tempInput = document.createElement('input');
+                            tempInput.value = text;
+                            document.body.appendChild(tempInput);
+                            tempInput.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(tempInput);
+                            
+                            var successMessage = document.getElementById('copy-success');
+                            successMessage.style.display = 'inline';
+                            setTimeout(function() {
+                                successMessage.style.display = 'none';
+                            }, 2000);
+                        }
+                        </script>
                     </tr>
                     <tr valign="top">
                         <th scope="row">Client ID</th>
@@ -71,11 +129,11 @@ class MMG_Checkout_Settings {
                         </td>
                     </tr>
                     <tr valign="top">
-                        <th scope="row">RSA Public Key</th>
+                        <th scope="row">RSA Public Key (MMG)</th>
                         <td><textarea name="mmg_rsa_public_key"><?php echo esc_textarea(get_option('mmg_rsa_public_key')); ?></textarea></td>
                     </tr>
                     <tr valign="top">
-                        <th scope="row">RSA Private Key</th>
+                        <th scope="row">RSA Private Key (Merchant)</th>
                         <td><textarea name="mmg_rsa_private_key"><?php echo esc_textarea(get_option('mmg_rsa_private_key')); ?></textarea></td>
                     </tr>
                 </table>

@@ -25,7 +25,8 @@ MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flo
    - Client ID
    - Merchant ID
    - Secret Key
-   - RSA Public Key
+   - RSA Public Key (MMG)
+   - RSA Private Key (Merchant) // used to decrypt the response from MMG, do not share this key with anyone.
 3. Save the settings
 
 ### WooCommerce Integration
