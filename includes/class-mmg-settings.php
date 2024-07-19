@@ -173,6 +173,8 @@ class MMG_Checkout_Settings {
 
     private function get_callback_url() {
         $callback_key = get_option('mmg_callback_key');
-        return $callback_key ? home_url('wc-api/mmg-checkout/' . $callback_key) : 'Not generated yet';
+        $callback_url = $callback_key ? home_url('wc-api/mmg-checkout/' . $callback_key) : 'Not generated yet';
+        error_log('MMG Checkout: Callback URL: ' . $callback_url);
+        return $callback_url;
     }
 }
