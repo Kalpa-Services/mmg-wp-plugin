@@ -11,10 +11,14 @@ class MMG_Checkout_Payment {
     private $mode;
     private $live_checkout_url = 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home';
     private $demo_checkout_url = 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
+    private $callback_url;
 
     public function __construct() {
         // Initialize plugin
         $this->mode = get_option('mmg_mode', 'demo'); // Default mode set to 'demo'
+        
+        // Generate or retrieve unique callback URL
+        $this->callback_url = $this->generate_unique_callback_url();
         
         // Load settings
         require_once dirname(__FILE__) . '/class-mmg-settings.php';
@@ -27,7 +31,16 @@ class MMG_Checkout_Payment {
         add_action('plugins_loaded', array($this, 'init_gateway_class'), 11);
         add_action('wp_ajax_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
         add_action('wp_ajax_nopriv_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
+        add_action('woocommerce_api_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
+    }
 
+    private function generate_unique_callback_url() {
+        $callback_key = get_option('mmg_callback_key');
+        if (!$callback_key) {
+            $callback_key = wp_generate_password(32, false);
+            update_option('mmg_callback_key', $callback_key);
+        }
+        return home_url('wc-api/mmg-checkout/' . $callback_key);
     }
 
     public function enqueue_scripts() {
@@ -65,7 +78,7 @@ class MMG_Checkout_Payment {
                 'secretKey' => get_option('mmg_secret_key'),
                 'amount' => $amount,
                 'merchantId' => get_option('mmg_merchant_id'),
-                'merchantTransactionId' => (string)time(),
+                'merchantTransactionId' => (string)$order->get_order_number(),
                 'productDescription' => $description,
                 'requestInitiationTime' => (string) round(microtime(true) * 1000),
                 'merchantName' => get_option('mmg_merchant_name', get_bloginfo('name')),
@@ -158,9 +171,59 @@ class MMG_Checkout_Payment {
         }
     }
 
+    private function decrypt($encrypted_data) {
+        // Load the private key
+        try {
+            $private_key = \phpseclib3\Crypt\PublicKeyLoader::load(get_option('mmg_rsa_private_key'));
+        } catch (Exception $e) {
+            error_log('Error loading private key: ' . $e->getMessage());
+            throw new Exception('Failed to load RSA private key');
+        }
+        
+        // Configure RSA decryption
+        $rsa = $private_key->withPadding(\phpseclib3\Crypt\RSA::ENCRYPTION_OAEP)
+                           ->withHash('sha256')
+                           ->withMGFHash('sha256');
+        
+        // Decrypt the data
+        try {
+            $decrypted = $rsa->decrypt($encrypted_data);
+        } catch (Exception $e) {
+            error_log('Error during decryption: ' . $e->getMessage());
+            throw new Exception('Failed to decrypt data');
+        }
+        
+        return $decrypted;
+    }
+
+    private function url_safe_base64_decode($data) {
+        $base64 = strtr($data, '-_', '+/');
+        return base64_decode($base64);
+    }
+
     public function handle_payment_confirmation() {
-        $order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
-        $status = isset($_GET['status']) ? sanitize_text_field($_GET['status']) : '';
+        $callback_key = isset($_GET['key']) ? sanitize_text_field($_GET['key']) : '';
+        $stored_callback_key = get_option('mmg_callback_key');
+
+        if (empty($callback_key) || $callback_key !== $stored_callback_key) {
+            wp_die('Invalid callback URL', 'MMG Checkout Error', array('response' => 403));
+        }
+
+        $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
+
+        if (empty($token)) {
+            wp_die('Invalid token', 'MMG Checkout Error', array('response' => 400));
+        }
+
+        try {
+            $decoded_token = $this->url_safe_base64_decode($token);
+            $payment_data = $this->decrypt($decoded_token);
+        } catch (Exception $e) {
+            wp_die('Error decrypting token: ' . $e->getMessage(), 'MMG Checkout Error', array('response' => 400));
+        }
+
+        $order_id = isset($payment_data['merchantTransactionId']) ? intval($payment_data['merchantTransactionId']) : 0;
+        $status = isset($payment_data['status']) ? sanitize_text_field($payment_data['status']) : '';
 
         $order = wc_get_order($order_id);
 
@@ -168,9 +231,8 @@ class MMG_Checkout_Payment {
             wp_die('Invalid order', 'MMG Checkout Error', array('response' => 400));
         }
 
-        // Verify the payment status with MMG API here
-        // This is a placeholder for the actual verification process
-        $payment_verified = $this->verify_payment_with_mmg($order_id, $status);
+        // Verify the payment status
+        $payment_verified = $this->verify_payment_with_mmg($order_id, $status, $payment_data);
 
         if ($payment_verified) {
             $order->payment_complete();
@@ -183,11 +245,11 @@ class MMG_Checkout_Payment {
         exit;
     }
 
-    private function verify_payment_with_mmg($order_id, $status) {
+    private function verify_payment_with_mmg($order_id, $status, $payment_data) {
         // Implement the actual verification process here
-        // This should involve making an API call to MMG to confirm the payment status
+        // This should involve checking the payment data against the order details
         // For now, we'll just check if the status is 'success'
-        return $status === 'success';
+        return $status === 'success' && $payment_data['amount'] == wc_get_order($order_id)->get_total();
     }
 }
 ?>
