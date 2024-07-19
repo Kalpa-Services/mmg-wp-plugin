@@ -48,6 +48,10 @@ class MMG_Checkout_Settings {
                         <td><input type="text" value="<?php echo esc_attr($this->get_checkout_url()); ?>" readonly /></td>
                     </tr>
                     <tr valign="top">
+                        <th scope="row">Callback URL</th>
+                        <td><input type="text" value="<?php echo esc_attr($this->get_callback_url()); ?>" readonly /></td>
+                    </tr>
+                    <tr valign="top">
                         <th scope="row">Client ID</th>
                         <td><input type="text" name="mmg_client_id" value="<?php echo esc_attr(get_option('mmg_client_id')); ?>" /></td>
                     </tr>
@@ -107,5 +111,10 @@ class MMG_Checkout_Settings {
         $live_checkout_url = 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home';
         $demo_checkout_url = 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
         return $mode === 'live' ? $live_checkout_url : $demo_checkout_url;
+    }
+
+    private function get_callback_url() {
+        $callback_key = get_option('mmg_callback_key');
+        return $callback_key ? home_url('wc-api/mmg-checkout/' . $callback_key) : 'Not generated yet';
     }
 }

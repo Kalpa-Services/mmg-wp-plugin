@@ -11,10 +11,14 @@ class MMG_Checkout_Payment {
     private $mode;
     private $live_checkout_url = 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home';
     private $demo_checkout_url = 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
+    private $callback_url;
 
     public function __construct() {
         // Initialize plugin
         $this->mode = get_option('mmg_mode', 'demo'); // Default mode set to 'demo'
+        
+        // Generate or retrieve unique callback URL
+        $this->callback_url = $this->generate_unique_callback_url();
         
         // Load settings
         require_once dirname(__FILE__) . '/class-mmg-settings.php';
@@ -27,7 +31,16 @@ class MMG_Checkout_Payment {
         add_action('plugins_loaded', array($this, 'init_gateway_class'), 11);
         add_action('wp_ajax_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
         add_action('wp_ajax_nopriv_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
+        add_action('woocommerce_api_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
+    }
 
+    private function generate_unique_callback_url() {
+        $callback_key = get_option('mmg_callback_key');
+        if (!$callback_key) {
+            $callback_key = wp_generate_password(32, false);
+            update_option('mmg_callback_key', $callback_key);
+        }
+        return home_url('wc-api/mmg-checkout/' . $callback_key);
     }
 
     public function enqueue_scripts() {
@@ -189,6 +202,13 @@ class MMG_Checkout_Payment {
     }
 
     public function handle_payment_confirmation() {
+        $callback_key = isset($_GET['key']) ? sanitize_text_field($_GET['key']) : '';
+        $stored_callback_key = get_option('mmg_callback_key');
+
+        if (empty($callback_key) || $callback_key !== $stored_callback_key) {
+            wp_die('Invalid callback URL', 'MMG Checkout Error', array('response' => 403));
+        }
+
         $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
 
         if (empty($token)) {
