@@ -43,12 +43,43 @@ class MMG_Checkout_Settings {
                     <tr valign="top">
                         <th scope="row">Mode</th>
                         <td>
-                            <select name="mmg_mode">
+                            <select name="mmg_mode" id="mmg_mode">
                                 <option value="live" <?php selected(get_option('mmg_mode'), 'live'); ?>>Live</option>
-                                <option value="demo" <?php selected(get_option('mmg_mode'), 'demo'); ?>>Demo</option>
+                                <option value="demo" <?php selected(get_option('mmg_mode'), 'demo'); ?>>Sandbox</option>
                             </select>
+                            <span id="live-mode-indicator" style="display: none; margin-left: 10px;">
+                                <span class="blinking-dot"></span> Live Mode
+                            </span>
                         </td>
                     </tr>
+                    <style>
+                        .blinking-dot {
+                            display: inline-block;
+                            width: 10px;
+                            height: 10px;
+                            background-color: #00ff00;
+                            border-radius: 50%;
+                            animation: blink 1s infinite;
+                        }
+                        @keyframes blink {
+                            0% { opacity: 0; }
+                            50% { opacity: 1; }
+                            100% { opacity: 0; }
+                        }
+                    </style>
+                    <script>
+                        jQuery(document).ready(function($) {
+                            function toggleLiveModeIndicator() {
+                                if ($('#mmg_mode').val() === 'live') {
+                                    $('#live-mode-indicator').show();
+                                } else {
+                                    $('#live-mode-indicator').hide();
+                                }
+                            }
+                            $('#mmg_mode').on('change', toggleLiveModeIndicator);
+                            toggleLiveModeIndicator(); // Initial state
+                        });
+                    </script>
                     <tr valign="top">
                         <th scope="row">Checkout URL</th>
                         <td><?php echo esc_html($this->get_checkout_url()); ?></td>
