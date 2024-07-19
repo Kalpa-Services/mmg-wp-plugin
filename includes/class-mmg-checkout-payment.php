@@ -31,7 +31,7 @@ class MMG_Checkout_Payment {
         add_action('plugins_loaded', array($this, 'init_gateway_class'), 11);
         add_action('wp_ajax_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
         add_action('wp_ajax_nopriv_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
-        add_action('woocommerce_api_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
+        add_action('woocommerce_api_mmg-checkout', array($this, 'handle_payment_confirmation'));
     }
 
     private function generate_unique_callback_url() {
@@ -202,23 +202,35 @@ class MMG_Checkout_Payment {
     }
 
     public function handle_payment_confirmation() {
+        error_log('MMG Checkout: handle_payment_confirmation method called');
+
         $callback_key = isset($_GET['key']) ? sanitize_text_field($_GET['key']) : '';
         $stored_callback_key = get_option('mmg_callback_key');
 
+        error_log('MMG Checkout: Callback key: ' . $callback_key);
+        error_log('MMG Checkout: Stored callback key: ' . $stored_callback_key);
+
         if (empty($callback_key) || $callback_key !== $stored_callback_key) {
+            error_log('MMG Checkout Error: Invalid callback URL');
             wp_die('Invalid callback URL', 'MMG Checkout Error', array('response' => 403));
         }
 
         $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
 
+        error_log('MMG Checkout: Token received: ' . $token);
+
         if (empty($token)) {
+            error_log('MMG Checkout Error: Invalid token');
             wp_die('Invalid token', 'MMG Checkout Error', array('response' => 400));
         }
 
         try {
             $decoded_token = $this->url_safe_base64_decode($token);
+            error_log('MMG Checkout: Decoded token: ' . $decoded_token);
             $payment_data = $this->decrypt($decoded_token);
+            error_log('MMG Checkout: Decrypted payment data: ' . print_r($payment_data, true));
         } catch (Exception $e) {
+            error_log('MMG Checkout Error: Error decrypting token: ' . $e->getMessage());
             wp_die('Error decrypting token: ' . $e->getMessage(), 'MMG Checkout Error', array('response' => 400));
         }
 
@@ -228,6 +240,7 @@ class MMG_Checkout_Payment {
         $order = wc_get_order($order_id);
 
         if (!$order) {
+            error_log('MMG Checkout Error: Invalid order');
             wp_die('Invalid order', 'MMG Checkout Error', array('response' => 400));
         }
 
