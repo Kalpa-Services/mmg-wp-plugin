@@ -13,8 +13,20 @@ if (!file_exists($wordpress_tests_path . '/includes/functions.php')) {
 }
 require_once $wordpress_tests_path . '/includes/functions.php';
 
+// Check if WP_PHPUNIT__DIR is set
+$wp_phpunit_dir = getenv('WP_PHPUNIT__DIR');
+if (!$wp_phpunit_dir) {
+    die('The WP_PHPUNIT__DIR environment variable is not set.');
+}
+
+// Check if the bootstrap file exists
+$bootstrap_file = $wp_phpunit_dir . '/includes/bootstrap.php';
+if (!file_exists($bootstrap_file)) {
+    die('The bootstrap file was not found at ' . $bootstrap_file);
+}
+
 // Start up the WP testing environment.
-require getenv( 'WP_PHPUNIT__DIR' ) . '/includes/bootstrap.php';
+require $bootstrap_file;
 
 // Activate WooCommerce
 activate_plugin( 'woocommerce/woocommerce.php' );
