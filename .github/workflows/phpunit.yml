@@ -53,6 +53,8 @@ jobs:
         cd /home/runner/wordpress-tests/wordpress-develop
         composer config --no-plugins allow-plugins.composer/installers true
         composer require woocommerce/woocommerce
+        cd /home/runner/work/mmg-wp-plugin/mmg-wp-plugin
+        composer require woocommerce/woocommerce
 
     - name: Run PHPUnit tests
       env:
@@ -74,4 +76,4 @@ jobs:
         # Set WP_PLUGIN_DIR environment variable
         export WP_PLUGIN_DIR=/home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins
         # Run PHPUnit tests
-        vendor/bin/phpunit --bootstrap tests/bootstrap.php
+        vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug
