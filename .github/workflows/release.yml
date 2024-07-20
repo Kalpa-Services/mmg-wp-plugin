@@ -22,8 +22,12 @@ jobs:
       run: |
         git config --local user.email "carl@kalpa.dev"
         git config --local user.name "Carl Handy"
+        git fetch --all
+        git checkout main
+        git pull origin main
         chmod +x .github/scripts/update-version.sh
-        .github/scripts/update-version.sh
+        ./.github/scripts/update-version.sh
+        git push origin main
 
   build:
     needs: update-version
@@ -32,6 +36,11 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: Fetch latest changes
+      run: |
+        git fetch --all
+        git checkout main
+        git pull origin main
 
     - name: Zip project
       run: zip -r mmg-checkout-payment.zip . -x "*.git*"
