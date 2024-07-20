@@ -54,13 +54,6 @@ jobs:
     - name: Install dependencies
       run: composer install
 
-    - name: Wait for MySQL to be ready
-      run: |
-        until mysqladmin ping -h127.0.0.1 -uroot -prootpassword; do
-          echo "Waiting for MySQL to be ready..."
-          sleep 5
-        done
-
     - name: Run PHPUnit tests
       env:
         COMPOSER_PROCESS_TIMEOUT: 0
@@ -76,4 +69,4 @@ jobs:
         mysql -h127.0.0.1 -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS wordpress_test;'
         mysql -h127.0.0.1 -uroot -prootpassword -e "GRANT ALL PRIVILEGES ON wordpress_test.* TO 'root'@'localhost';"
         mysql -h127.0.0.1 -uroot -prootpassword -e 'FLUSH PRIVILEGES;'
-        vendor/bin/phpunit --bootstrap tests/bootstrap.php
+        vendor/bin/phpunit
