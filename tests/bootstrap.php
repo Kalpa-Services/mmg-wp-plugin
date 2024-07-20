@@ -30,21 +30,18 @@ if (!file_exists($bootstrap_file)) {
     die('The bootstrap file was not found at ' . $bootstrap_file);
 }
 
+// Start up the WP testing environment.
+require $bootstrap_file;
+
 // Load WooCommerce
-$woocommerce_path = dirname(__DIR__) . '/vendor/woocommerce/woocommerce/woocommerce.php';
+$woocommerce_path = WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 if (file_exists($woocommerce_path)) {
     define('WC_TAX_ROUNDING_MODE', 'auto');
     define('WC_USE_TRANSACTIONS', false);
     require_once $woocommerce_path;
 } else {
-    echo "Current directory: " . dirname(__DIR__) . PHP_EOL;
-    echo "Listing vendor directory:" . PHP_EOL;
-    system('ls -R ' . dirname(__DIR__) . '/vendor');
-    die('WooCommerce plugin not found at ' . $woocommerce_path . '. Make sure it is installed via Composer.');
+    die('WooCommerce plugin not found at ' . $woocommerce_path . '. Make sure it is installed in the WordPress plugins directory.');
 }
-
-// Start up the WP testing environment.
-require $bootstrap_file;
 
 // Manually load and initialize WooCommerce
 if (class_exists('WooCommerce')) {

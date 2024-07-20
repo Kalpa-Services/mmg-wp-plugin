@@ -56,23 +56,25 @@ jobs:
         echo "Composer autoload files:"
         cat vendor/composer/autoload_psr4.php
 
+    - name: Install WooCommerce
+      run: |
+        mkdir -p wp-content/plugins/woocommerce
+        wget https://downloads.wordpress.org/plugin/woocommerce.5.9.1.zip
+        unzip woocommerce.5.9.1.zip -d wp-content/plugins/
+        rm woocommerce.5.9.1.zip
+
     - name: Check WooCommerce installation
       run: |
         echo "Current directory: $(pwd)"
         echo "Listing vendor directory:"
         ls -R vendor
-        if [ -d "vendor/woocommerce/woocommerce" ]; then
-          echo "WooCommerce found in vendor directory"
-          ls -l vendor/woocommerce/woocommerce
+        if [ -d "wp-content/plugins/woocommerce" ]; then
+          echo "WooCommerce found in WordPress plugins directory"
+          ls -l wp-content/plugins/woocommerce
         else
-          echo "WooCommerce not found in vendor directory"
-          echo "Searching for WooCommerce:"
-          find . -name woocommerce
+          echo "WooCommerce not found in WordPress plugins directory"
           exit 1
         fi
-
-    - name: Install dependencies
-      run: composer install --no-interaction --no-progress
 
     - name: Run PHPUnit tests
       env:
@@ -92,6 +94,6 @@ jobs:
           sleep 2
         done
         # Set WP_PLUGIN_DIR environment variable
-        export WP_PLUGIN_DIR=/home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins
+        export WP_PLUGIN_DIR=$(pwd)/wp-content/plugins
         # Run PHPUnit tests
         vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug
