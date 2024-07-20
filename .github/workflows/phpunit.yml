@@ -54,6 +54,13 @@ jobs:
     - name: Install dependencies
       run: composer install
 
+    - name: Wait for MySQL to be ready
+      run: |
+        until mysqladmin ping -h127.0.0.1 -uroot -prootpassword; do
+          echo "Waiting for MySQL to be ready..."
+          sleep 5
+        done
+
     - name: Run PHPUnit tests
       env:
         COMPOSER_PROCESS_TIMEOUT: 0
