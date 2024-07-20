@@ -52,6 +52,16 @@ jobs:
         composer update --no-interaction --no-progress
         composer require --dev woocommerce/woocommerce:^5.9.1 --no-interaction --no-progress
 
+    - name: Check WooCommerce installation
+      run: |
+        if [ -d "vendor/woocommerce/woocommerce" ]; then
+          echo "WooCommerce found in vendor directory"
+          ls -l vendor/woocommerce/woocommerce
+        else
+          echo "WooCommerce not found in vendor directory"
+          exit 1
+        fi
+
     - name: Install dependencies
       run: composer install --no-interaction --no-progress
 

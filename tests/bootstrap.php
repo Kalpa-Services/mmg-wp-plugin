@@ -29,13 +29,18 @@ if (!file_exists($bootstrap_file)) {
 // Load WooCommerce
 $woocommerce_path = dirname(__DIR__) . '/vendor/woocommerce/woocommerce/woocommerce.php';
 if (file_exists($woocommerce_path)) {
+    define('WC_TAX_ROUNDING_MODE', 'auto');
+    define('WC_USE_TRANSACTIONS', false);
     require_once $woocommerce_path;
 } else {
-    die('WooCommerce plugin not found. Make sure it is installed via Composer.');
+    die('WooCommerce plugin not found at ' . $woocommerce_path . '. Make sure it is installed via Composer.');
 }
 
 // Start up the WP testing environment.
 require $bootstrap_file;
+
+// Manually load and initialize WooCommerce
+WC()->init();
 
 // Activate WooCommerce
 activate_plugin( 'woocommerce/woocommerce.php' );
