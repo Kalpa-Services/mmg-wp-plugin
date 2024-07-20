@@ -20,6 +20,21 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
+    - name: Setup WordPress Test Suite
+      run: |
+        mkdir -p ~/wordpress-tests
+        cd ~/wordpress-tests
+        git clone --depth=1 https://github.com/WordPress/wordpress-develop.git
+        cd wordpress-develop
+        composer install
+        cp wp-tests-config-sample.php wp-tests-config.php
+        # Update wp-tests-config.php with your database details
+        sed -i "s/database_name_here/wordpress_test/g" wp-tests-config.php
+        sed -i "s/username_here/root/g" wp-tests-config.php
+        sed -i "s/password_here/rootpassword/g" wp-tests-config.php
+        # Create the test database
+        mysql -u root -prootpassword -e "CREATE DATABASE wordpress_test;"
+
     - uses: actions/checkout@v2
 
     - name: Install PHP
