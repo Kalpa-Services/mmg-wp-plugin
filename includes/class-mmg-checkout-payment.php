@@ -222,15 +222,8 @@ class MMG_Checkout_Payment {
     }
 
     public function handle_payment_confirmation() {
-        error_log('MMG Checkout: handle_payment_confirmation method called');
-        error_log('MMG Checkout: REQUEST_URI: ' . $_SERVER['REQUEST_URI']);
-        error_log('MMG Checkout: GET params: ' . print_r($_GET, true));
-
         $callback_key = isset($_GET['key']) ? sanitize_text_field($_GET['key']) : '';
         $stored_callback_key = get_option('mmg_callback_key');
-
-        error_log('MMG Checkout: Callback key: ' . $callback_key);
-        error_log('MMG Checkout: Stored callback key: ' . $stored_callback_key);
 
         if (empty($callback_key) || $callback_key !== $stored_callback_key) {
             error_log('MMG Checkout Error: Invalid callback URL');
@@ -239,8 +232,6 @@ class MMG_Checkout_Payment {
 
         $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
 
-        error_log('MMG Checkout: Token received: ' . $token);
-
         if (empty($token)) {
             error_log('MMG Checkout Error: Invalid token');
             wp_die('Invalid token', 'MMG Checkout Error', array('response' => 400));
@@ -248,9 +239,7 @@ class MMG_Checkout_Payment {
 
         try {
             $decoded_token = $this->url_safe_base64_decode($token);
-            error_log('MMG Checkout: Decoded token: ' . bin2hex($decoded_token));
             $payment_data = $this->decrypt($decoded_token);
-            error_log('MMG Checkout: Decrypted payment data: ' . print_r($payment_data, true));
 
             if (!is_array($payment_data)) {
                 throw new Exception('Decrypted data is not an array');
@@ -261,12 +250,9 @@ class MMG_Checkout_Payment {
         }
 
         $order_id = isset($payment_data['merchantTransactionId']) ? intval($payment_data['merchantTransactionId']) : 0;
-        error_log('MMG Checkout: Attempting to retrieve order with ID: ' . $order_id);
 
         $order = wc_get_order($order_id);
-        if (!$order) {
-            error_log('MMG Checkout Error: Order not found for ID: ' . $order_id);
-            
+        if (!$order) {            
             // Attempt to find the order by transaction ID in case it was stored differently
             $orders = wc_get_orders(array(
                 'meta_key' => '_mmg_transaction_id',
