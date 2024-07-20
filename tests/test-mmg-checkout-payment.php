@@ -44,18 +44,21 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
         $response = json_decode($output, true);
 
         // Assert that the response is successful
-        $this->assertTrue($response['success']);
+        $this->assertTrue($response['success'], 'URL generation failed: ' . json_encode($response));
 
         // Assert that a checkout URL is returned
-        $this->assertArrayHasKey('checkout_url', $response['data']);
+        $this->assertArrayHasKey('checkout_url', $response['data'], 'Checkout URL not found in response');
 
         // Assert that the checkout URL contains expected parameters
         $checkout_url = $response['data']['checkout_url'];
-        $this->assertStringContainsString('token=', $checkout_url);
-        $this->assertStringContainsString('merchantId=test_merchant_id', $checkout_url);
-        $this->assertStringContainsString('X-Client-ID=test_client_id', $checkout_url);
+        $this->assertStringContainsString('token=', $checkout_url, 'Token not found in checkout URL');
+        $this->assertStringContainsString('merchantId=test_merchant_id', $checkout_url, 'Merchant ID not found in checkout URL');
+        $this->assertStringContainsString('X-Client-ID=test_client_id', $checkout_url, 'Client ID not found in checkout URL');
 
         // Assert that the order meta is updated
-        $this->assertEquals($order->get_id(), $order->get_meta('_mmg_transaction_id'));
+        $this->assertEquals($order->get_id(), $order->get_meta('_mmg_transaction_id'), 'Order meta not updated correctly');
+
+        // Additional assertion to ensure the test fails if URL generation fails
+        $this->assertNotEmpty($checkout_url, 'Checkout URL is empty');
     }
 }
