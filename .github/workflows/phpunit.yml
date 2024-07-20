@@ -97,5 +97,8 @@ jobs:
         done
         # Set WP_PLUGIN_DIR environment variable
         export WP_PLUGIN_DIR=$(pwd)/wp-content/plugins
+        # Copy WooCommerce to WordPress test environment
+        mkdir -p /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins
+        cp -r wp-content/plugins/woocommerce /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/
         # Run PHPUnit tests
         vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug
