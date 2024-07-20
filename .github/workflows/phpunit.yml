@@ -101,4 +101,4 @@ jobs:
         mkdir -p /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins
         cp -r wp-content/plugins/woocommerce /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/
         # Run PHPUnit tests
-        vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug
+        vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug --verbose --configuration phpunit.xml
