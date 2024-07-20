@@ -27,11 +27,11 @@ if (!file_exists($bootstrap_file)) {
 }
 
 // Load WooCommerce
-$woocommerce_path = '/home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/woocommerce/woocommerce.php';
+$woocommerce_path = dirname(__DIR__) . '/vendor/woocommerce/woocommerce/woocommerce.php';
 if (file_exists($woocommerce_path)) {
     require_once $woocommerce_path;
 } else {
-    die('WooCommerce plugin not found. Make sure it is installed in the test environment.');
+    die('WooCommerce plugin not found. Make sure it is installed via Composer.');
 }
 
 // Start up the WP testing environment.
