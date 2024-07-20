@@ -60,7 +60,7 @@ jobs:
         COMPOSER_NO_INTERACTION: 1
         COMPOSER_NO_AUDIT: 1
         WP_TESTS_PATH: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit
-        WP_PHPUNIT__DIR: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit/includes
+        WP_PHPUNIT__DIR: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit
         DB_NAME: wordpress_test
         DB_USER: root
         DB_PASSWORD: rootpassword
