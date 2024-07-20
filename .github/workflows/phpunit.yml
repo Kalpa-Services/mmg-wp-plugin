@@ -39,6 +39,8 @@ jobs:
         sed -i "s/password_here/rootpassword/g" wp-tests-config.php
         # Create the test database
         mysql -h127.0.0.1 -uroot -prootpassword -e "CREATE DATABASE wordpress_test;"
+      env:
+        WP_TESTS_PATH: ~/wordpress-tests/wordpress-develop/tests/phpunit
 
     - uses: actions/checkout@v2
 
@@ -53,4 +55,4 @@ jobs:
       run: composer install --
 
     - name: Run PHPUnit tests
-      run: vendor/bin/phpunit
+      run: vendor/bin/phpunit --bootstrap tests/bootstrap.php
