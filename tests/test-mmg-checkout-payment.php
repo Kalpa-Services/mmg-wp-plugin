@@ -60,5 +60,6 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 
         // Additional assertion to ensure the test fails if URL generation fails
         $this->assertNotEmpty($checkout_url, 'Checkout URL is empty');
-    }
+    }    
+
 }
