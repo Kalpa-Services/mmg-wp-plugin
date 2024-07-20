@@ -9,10 +9,29 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  update-version:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.PAT }}
+    - name: Update version in main.php
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT }}
+      run: |
+        git config --local user.email "carl@kalpa.dev"
+        git config --local user.name "Carl Handy"
+        chmod +x .github/scripts/update-version.sh
+        .github/scripts/update-version.sh
+
+  build:
+    needs: update-version
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: Zip project
       run: zip -r mmg-checkout-payment.zip . -x "*.git*"
