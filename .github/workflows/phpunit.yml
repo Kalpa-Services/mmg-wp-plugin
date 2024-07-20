@@ -60,7 +60,7 @@ jobs:
       run: |
         mkdir -p wp-content/plugins
         wget https://downloads.wordpress.org/plugin/woocommerce.5.9.1.zip
-        unzip -q woocommerce.5.9.1.zip -d wp-content/plugins/
+        unzip -q -o woocommerce.5.9.1.zip -d wp-content/plugins/
         rm woocommerce.5.9.1.zip
         echo "WooCommerce installation complete. Listing wp-content/plugins directory:"
         ls -R wp-content/plugins
