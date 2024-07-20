@@ -48,15 +48,6 @@ jobs:
     - name: Install dependencies
       run: composer install
 
-    - name: Install WooCommerce
-      run: |
-        cd /home/runner/wordpress-tests/wordpress-develop
-        composer config --no-plugins allow-plugins.composer/installers true
-        composer require woocommerce/woocommerce
-        cd /home/runner/work/mmg-wp-plugin/mmg-wp-plugin
-        composer config --no-plugins allow-plugins.composer/installers true
-        composer require woocommerce/woocommerce
-
     - name: Run PHPUnit tests
       env:
         COMPOSER_PROCESS_TIMEOUT: 0
