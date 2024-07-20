@@ -3,7 +3,7 @@
 class Test_MMG_Checkout_Payment extends WP_UnitTestCase {
     private $mmg_checkout;
 
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
         $this->mmg_checkout = new MMG_Checkout_Payment();
     }
