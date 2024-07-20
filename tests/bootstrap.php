@@ -13,10 +13,11 @@ if (!file_exists($wordpress_tests_path . '/includes/functions.php')) {
 }
 require_once $wordpress_tests_path . '/includes/functions.php';
 
-// Check if WP_PHPUNIT__DIR is set
+// Check if WP_PHPUNIT__DIR is set, if not set it
 $wp_phpunit_dir = getenv('WP_PHPUNIT__DIR');
 if (!$wp_phpunit_dir) {
-    die('The WP_PHPUNIT__DIR environment variable is not set.');
+    $wp_phpunit_dir = $wordpress_tests_path;
+    putenv('WP_PHPUNIT__DIR=' . $wp_phpunit_dir);
 }
 
 // Check if the bootstrap file exists
