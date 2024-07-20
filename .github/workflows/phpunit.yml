@@ -23,7 +23,7 @@ jobs:
     - name: Setup WordPress Test Suite
       run: |
         # Wait for MySQL to be ready
-        until mysqladmin ping -h"127.0.0.1" -uroot -prootpassword; do
+        until mysqladmin ping -hmysql -uroot -prootpassword; do
           echo "Waiting for MySQL to be ready..."
           sleep 5
         done
@@ -38,7 +38,7 @@ jobs:
         sed -i "s/username_here/root/g" wp-tests-config.php
         sed -i "s/password_here/rootpassword/g" wp-tests-config.php
         # Create the test database
-        mysql -u root -prootpassword -e "CREATE DATABASE wordpress_test;"
+        mysql -hmysql -uroot -prootpassword -e "CREATE DATABASE wordpress_test;"
 
     - uses: actions/checkout@v2
 
