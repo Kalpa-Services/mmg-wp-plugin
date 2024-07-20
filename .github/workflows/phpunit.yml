@@ -66,9 +66,8 @@ jobs:
         DB_PASSWORD: rootpassword
         DB_HOST: 127.0.0.1
       run: |
-        sudo service mysql start
-        mysql -e 'CREATE DATABASE IF NOT EXISTS wordpress_test;'
-        mysql -e "CREATE USER 'root'@'localhost' IDENTIFIED BY 'rootpassword';"
-        mysql -e "GRANT ALL PRIVILEGES ON wordpress_test.* TO 'root'@'localhost';"
-        mysql -e 'FLUSH PRIVILEGES;'
+        mysql -h127.0.0.1 -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS wordpress_test;'
+        mysql -h127.0.0.1 -uroot -prootpassword -e "CREATE USER 'root'@'localhost' IDENTIFIED BY 'rootpassword';"
+        mysql -h127.0.0.1 -uroot -prootpassword -e "GRANT ALL PRIVILEGES ON wordpress_test.* TO 'root'@'localhost';"
+        mysql -h127.0.0.1 -uroot -prootpassword -e 'FLUSH PRIVILEGES;'
         vendor/bin/phpunit --bootstrap tests/bootstrap.php
