@@ -2,7 +2,7 @@
     "require": {
         "phpseclib/phpseclib": "~3.0",
         "woocommerce/woocommerce": "^5.9.1",
-        "php": "^5.6 || ~7.0 || ~7.1 || ~7.2 || ~7.3 || ~7.4"
+        "php": "^5.6 || ~7.0 || ~7.1 || ~7.2 || ~7.3 || ~7.4 || ~8.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.2"
