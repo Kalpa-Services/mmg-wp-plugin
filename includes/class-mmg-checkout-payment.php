@@ -44,11 +44,16 @@ class MMG_Checkout_Payment {
     }
 
     public function enqueue_scripts() {
-        wp_enqueue_script('mmg-checkout', plugin_dir_url(dirname(__FILE__)) . 'js/mmg-checkout.js', array('jquery'), '3.0', true);
-        wp_localize_script('mmg-checkout', 'mmg_checkout_params', array(
-            'ajax_url' => admin_url('admin-ajax.php'),
-        ));
-
+        if (is_checkout_pay_page()) {
+            wp_enqueue_script('mmg-checkout', plugin_dir_url(dirname(__FILE__)) . 'js/mmg-checkout.js', array('jquery'), '1.0', true);
+            wp_localize_script('mmg-checkout', 'mmg_checkout_params', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+            ));
+            error_log('MMG Checkout: Script enqueued on checkout pay page');
+        } else {
+            error_log('MMG Checkout: Not on checkout pay page, script not enqueued');
+        }
+    
         // For blocks support
         $gateway_settings = get_option('woocommerce_mmg_checkout_settings', array());
         wp_localize_script('wc-mmg-payments-blocks', 'mmgCheckoutData', array(
@@ -68,8 +73,11 @@ class MMG_Checkout_Payment {
             $order = wc_get_order($order_id);
 
             if (!$order) {
+                error_log('MMG Checkout Error: Invalid order in generate_checkout_url. Order ID: ' . $order_id);
                 wp_send_json_error('Invalid order');
             }
+
+            error_log('MMG Checkout: Generating checkout URL for Order ID: ' . $order->get_id());
 
             $amount = $order->get_total();
             $description = 'Order #' . $order->get_order_number();
@@ -78,11 +86,13 @@ class MMG_Checkout_Payment {
                 'secretKey' => get_option('mmg_secret_key'),
                 'amount' => $amount,
                 'merchantId' => get_option('mmg_merchant_id'),
-                'merchantTransactionId' => (string)$order->get_order_number(),
+                'merchantTransactionId' => $order->get_id(), // Use order ID instead of order number
                 'productDescription' => $description,
                 'requestInitiationTime' => (string) round(microtime(true) * 1000),
                 'merchantName' => get_option('mmg_merchant_name', get_bloginfo('name')),
             );
+
+            error_log('MMG Checkout: Token data merchantTransactionId: ' . $token_data['merchantTransactionId']);
 
             $encrypted = $this->encrypt($token_data);
             $encoded = $this->url_safe_base64_encode($encrypted);
@@ -91,6 +101,9 @@ class MMG_Checkout_Payment {
                 'merchantId' => get_option('mmg_merchant_id'),
                 'X-Client-ID' => get_option('mmg_client_id'),
             ), $this->get_checkout_url());
+
+            $order->update_meta_data('_mmg_transaction_id', $token_data['merchantTransactionId']);
+            $order->save();
 
             wp_send_json_success(array('checkout_url' => $checkout_url));
         } catch (Exception $e) {
@@ -193,7 +206,14 @@ class MMG_Checkout_Payment {
             throw new Exception('Failed to decrypt data');
         }
         
-        return $decrypted;
+        $decoded = json_decode($decrypted, true);
+
+        if (!is_array($decoded)) {
+            error_log('MMG Checkout Error: Decrypted data is not a valid JSON array');
+            throw new Exception('Decrypted data is not a valid JSON array');
+        }
+
+        return $decoded;
     }
 
     private function url_safe_base64_decode($data) {
@@ -203,6 +223,8 @@ class MMG_Checkout_Payment {
 
     public function handle_payment_confirmation() {
         error_log('MMG Checkout: handle_payment_confirmation method called');
+        error_log('MMG Checkout: REQUEST_URI: ' . $_SERVER['REQUEST_URI']);
+        error_log('MMG Checkout: GET params: ' . print_r($_GET, true));
 
         $callback_key = isset($_GET['key']) ? sanitize_text_field($_GET['key']) : '';
         $stored_callback_key = get_option('mmg_callback_key');
@@ -226,23 +248,43 @@ class MMG_Checkout_Payment {
 
         try {
             $decoded_token = $this->url_safe_base64_decode($token);
-            error_log('MMG Checkout: Decoded token: ' . $decoded_token);
+            error_log('MMG Checkout: Decoded token: ' . bin2hex($decoded_token));
             $payment_data = $this->decrypt($decoded_token);
             error_log('MMG Checkout: Decrypted payment data: ' . print_r($payment_data, true));
+
+            if (!is_array($payment_data)) {
+                throw new Exception('Decrypted data is not an array');
+            }
         } catch (Exception $e) {
-            error_log('MMG Checkout Error: Error decrypting token: ' . $e->getMessage());
-            wp_die('Error decrypting token: ' . $e->getMessage(), 'MMG Checkout Error', array('response' => 400));
+            error_log('MMG Checkout Error: Error processing token: ' . $e->getMessage());
+            wp_die('Error processing token: ' . $e->getMessage(), 'MMG Checkout Error', array('response' => 400));
         }
 
         $order_id = isset($payment_data['merchantTransactionId']) ? intval($payment_data['merchantTransactionId']) : 0;
-        $status = isset($payment_data['status']) ? sanitize_text_field($payment_data['status']) : '';
+        error_log('MMG Checkout: Attempting to retrieve order with ID: ' . $order_id);
 
         $order = wc_get_order($order_id);
-
         if (!$order) {
-            error_log('MMG Checkout Error: Invalid order');
-            wp_die('Invalid order', 'MMG Checkout Error', array('response' => 400));
+            error_log('MMG Checkout Error: Order not found for ID: ' . $order_id);
+            
+            // Attempt to find the order by transaction ID in case it was stored differently
+            $orders = wc_get_orders(array(
+                'meta_key' => '_mmg_transaction_id',
+                'meta_value' => $payment_data['transactionId'],
+                'limit' => 1,
+            ));
+
+            if (!empty($orders)) {
+                $order = $orders[0];
+                error_log('MMG Checkout: Order found by transaction ID. Order ID: ' . $order->get_id());
+            } else {
+                wp_die('Invalid order', 'MMG Checkout Error', array('response' => 400));
+            }
+        } else {
+            error_log('MMG Checkout: Order found. Status: ' . $order->get_status());
         }
+
+        $status = isset($payment_data['status']) ? sanitize_text_field($payment_data['status']) : '';
 
         // Verify the payment status
         $payment_verified = $this->verify_payment_with_mmg($order_id, $status, $payment_data);
