@@ -43,7 +43,7 @@ jobs:
         git pull origin main
 
     - name: Zip project
-      run: zip -r mmg-checkout-payment.zip . -x "*.git*"
+      run: zip -r mmg-checkout-payment.zip . -x "*.git*" -x "tests/*" -x "bin/*" -x "composer.json" -x "phpunit.xml" -x "README.md"
 
     - name: Check for existing release
       id: check_release
