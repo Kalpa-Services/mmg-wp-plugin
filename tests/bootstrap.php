@@ -26,6 +26,14 @@ if (!file_exists($bootstrap_file)) {
     die('The bootstrap file was not found at ' . $bootstrap_file);
 }
 
+// Load WooCommerce
+$woocommerce_path = '/home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/woocommerce/woocommerce.php';
+if (file_exists($woocommerce_path)) {
+    require_once $woocommerce_path;
+} else {
+    die('WooCommerce plugin not found. Make sure it is installed in the test environment.');
+}
+
 // Start up the WP testing environment.
 require $bootstrap_file;
 

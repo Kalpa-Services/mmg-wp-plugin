@@ -52,6 +52,11 @@ jobs:
         composer update --no-interaction --no-progress
         composer require woocommerce/woocommerce:^5.9.1 --no-interaction --no-progress
 
+    - name: Move WooCommerce to WordPress plugins directory
+      run: |
+        mkdir -p /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/woocommerce
+        mv vendor/woocommerce/woocommerce/* /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/woocommerce/
+
     - name: Install dependencies
       run: composer install --no-interaction --no-progress
 
