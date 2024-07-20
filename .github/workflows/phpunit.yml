@@ -55,4 +55,6 @@ jobs:
       run: composer install --
 
     - name: Run PHPUnit tests
+      env:
+        WP_TESTS_PATH: ~/wordpress-tests/wordpress-develop/tests/phpunit
       run: vendor/bin/phpunit --bootstrap tests/bootstrap.php
