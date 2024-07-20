@@ -9,6 +9,10 @@ Author: Kalpa Services Inc.
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
+
+// Define plugin version constant
+define('MMG_PLUGIN_VERSION', '1.1.8');
+
 // Load composer autoloader
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 // Include the dependency checker
@@ -37,3 +41,41 @@ function mmg_checkout_register_block_support() {
         );
     }
 }
+
+function mmg_add_rewrite_rules() {
+    add_rewrite_rule(
+        '^wc-api/mmg-checkout/([^/]+)/?$',
+        'index.php?mmg-checkout=1&callback_key=$matches[1]',
+        'top'
+    );
+}
+add_action('init', 'mmg_add_rewrite_rules');
+
+function mmg_query_vars($vars) {
+    $vars[] = 'mmg-checkout';
+    $vars[] = 'callback_key';
+    return $vars;
+}
+add_filter('query_vars', 'mmg_query_vars');
+
+// Add this to your plugin's activation hook
+function mmg_activate() {
+    mmg_add_rewrite_rules();
+    flush_rewrite_rules();
+}
+register_activation_hook(__FILE__, 'mmg_activate');
+
+// Also, add this to ensure rules are flushed on plugin update
+function mmg_plugin_updated() {
+    $version = get_option('mmg_plugin_version', '0');
+    if (version_compare(MMG_PLUGIN_VERSION, $version, '>')) {
+        flush_rewrite_rules();
+        update_option('mmg_plugin_version', MMG_PLUGIN_VERSION);
+    }
+}
+add_action('plugins_loaded', 'mmg_plugin_updated');
+
+// Initialize WooCommerce API endpoint
+add_action('init', function() {
+    add_rewrite_endpoint('mmg-checkout', EP_ALL);
+});

@@ -57,25 +57,9 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 
     public function receipt_page($order_id) {
         $order = wc_get_order($order_id);
-        echo '<div id="mmg-checkout-container">Redirecting to MMG Checkout...</div>';
-        ?>
-        <button id="mmg-checkout-button" class="mmg-checkout-button">Checkout with MMG</button>
-        <script>
-        jQuery(function($) {
-            var data = {
-                'action': 'generate_checkout_url',
-                'order_id': '<?php echo esc_js($order_id); ?>'
-            };
-
-            $.post(mmg_checkout_params.ajax_url, data, function(response) {
-                if (response.success) {
-                    window.location.href = response.data.checkout_url;
-                } else {
-                    alert('Error: ' + response.data);
-                }
-            });
-        });
-        </script>
-        <?php
+        echo '<div id="mmg-checkout-container">';
+        echo '<p>Click the button below to pay with MMG Checkout:</p>';
+        echo '<button id="mmg-checkout-button" class="button alt" data-order-id="' . esc_attr($order_id) . '">Pay with MMG</button>';
+        echo '</div>';
     }
 }
