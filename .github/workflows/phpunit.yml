@@ -15,30 +15,24 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: wordpress_test
         ports:
-          - 3306:3306  # Expose MySQL port
-        options: --health-cmd="mysqladmin ping -h 127.0.0.1" --health-interval=10s --health-timeout=5s --health-retries=3
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
     - name: Setup WordPress Test Suite
       run: |
-        # Wait for MySQL to be ready
-        until mysqladmin ping -h127.0.0.1 -uroot -prootpassword; do
-          echo "Waiting for MySQL to be ready..."
-          sleep 5
-        done
         mkdir -p /home/runner/wordpress-tests
         cd /home/runner/wordpress-tests
         git clone --depth=1 https://github.com/WordPress/wordpress-develop.git
         cd wordpress-develop
         composer install
         cp wp-tests-config-sample.php wp-tests-config.php
-        # Update wp-tests-config.php with your database details
-        sed -i "s/database_name_here/wordpress_test/g" wp-tests-config.php
-        sed -i "s/username_here/root/g" wp-tests-config.php
-        sed -i "s/password_here/rootpassword/g" wp-tests-config.php
-        # Create the test database
-        mysql -h127.0.0.1 -uroot -prootpassword -e "CREATE DATABASE wordpress_test;"
+        sed -i "s/youremptytestdbnamehere/wordpress_test/g" wp-tests-config.php
+        sed -i "s/yourusernamehere/root/g" wp-tests-config.php
+        sed -i "s/yourpasswordhere/rootpassword/g" wp-tests-config.php
+        sed -i "s/localhost/127.0.0.1/g" wp-tests-config.php
       env:
         WP_TESTS_PATH: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit
 
@@ -66,7 +60,9 @@ jobs:
         DB_PASSWORD: rootpassword
         DB_HOST: 127.0.0.1
       run: |
-        mysql -h127.0.0.1 -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS wordpress_test;'
-        mysql -h127.0.0.1 -uroot -prootpassword -e "GRANT ALL PRIVILEGES ON wordpress_test.* TO 'root'@'localhost';"
-        mysql -h127.0.0.1 -uroot -prootpassword -e 'FLUSH PRIVILEGES;'
+        # Wait for MySQL to be ready
+        while ! mysqladmin ping -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASSWORD" --silent; do
+          echo "Waiting for MySQL to be ready..."
+          sleep 2
+        done
         vendor/bin/phpunit
