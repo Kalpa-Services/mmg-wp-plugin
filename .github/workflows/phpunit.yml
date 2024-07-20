@@ -17,13 +17,13 @@ jobs:
           MYSQL_ROOT_PASSWORD: rootpassword
         ports:
           - 3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mysqladmin ping -h localhost" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
     - name: Setup WordPress Test Suite and MySQL
       run: |
         # Wait for MySQL to be ready
-        until mysqladmin ping -hmysql -uroot -prootpassword; do
+        until mysqladmin ping -hlocalhost -uroot -prootpassword; do
           echo "Waiting for MySQL to be ready..."
           sleep 5
         done
@@ -38,7 +38,7 @@ jobs:
         sed -i "s/username_here/root/g" wp-tests-config.php
         sed -i "s/password_here/rootpassword/g" wp-tests-config.php
         # Create the test database
-        mysql -hmysql -uroot -prootpassword -e "CREATE DATABASE wordpress_test;"
+        mysql -hlocalhost -uroot -prootpassword -e "CREATE DATABASE wordpress_test;"
 
     - uses: actions/checkout@v2
 
