@@ -22,6 +22,11 @@ jobs:
     steps:
     - name: Setup WordPress Test Suite
       run: |
+        # Wait for MySQL to be ready
+        until mysqladmin ping -h"127.0.0.1" -uroot -prootpassword; do
+          echo "Waiting for MySQL to be ready..."
+          sleep 5
+        done
         mkdir -p ~/wordpress-tests
         cd ~/wordpress-tests
         git clone --depth=1 https://github.com/WordPress/wordpress-develop.git
