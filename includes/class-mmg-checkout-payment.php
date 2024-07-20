@@ -239,7 +239,7 @@ class MMG_Checkout_Payment {
             : '';
 
         $stored_callback_key = get_option('mmg_callback_key');
-
+        
         if (empty($callback_key)) {
             wp_die('Missing callback key', 'MMG Checkout Error', array('response' => 400));
         }
@@ -251,9 +251,38 @@ class MMG_Checkout_Payment {
         $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
 
         if (empty($token)) {
-            wp_die('Missing token', 'MMG Checkout Error', array('response' => 400));
+            wp_die('Invalid token', 'MMG Checkout Error', array('response' => 400));
         }
 
+        try {
+            $decoded_token = $this->url_safe_base64_decode($token);
+            $payment_data = $this->decrypt($decoded_token);
+            error_log('MMG Checkout: Decoded token: ' . print_r($payment_data, true));
+        } catch (Exception $e) {
+            wp_die('Error decrypting token: ' . $e->getMessage(), 'MMG Checkout Error', array('response' => 400));
+        }
+
+        $order_id = isset($payment_data['merchantTransactionId']) ? intval($payment_data['merchantTransactionId']) : 0;
+        $result_code = isset($payment_data['resultCode']) ? intval($payment_data['resultCode']) : null;
+        $result_message = isset($payment_data['resultMessage']) ? sanitize_text_field($payment_data['resultMessage']) : '';
+
+        $order = wc_get_order($order_id);
+
+        if (!$order) {
+            wp_die('Invalid order', 'MMG Checkout Error', array('response' => 400));
+        }
+
+        $payment_verified = ($result_code === 0); // 0 indicates a successful transaction
+
+        if ($payment_verified) {
+            $order->payment_complete();
+            $order->add_order_note("Payment completed via MMG Checkout. Transaction ID: {$payment_data['transactionId']}");
+            wp_redirect($order->get_checkout_order_received_url());
+        } else {
+            $order->update_status('failed', "Payment failed. Result Code: {$result_code}, Message: {$result_message}");
+            wp_redirect($order->get_checkout_payment_url());
+        }
+        exit;
     }
 }
 ?>
