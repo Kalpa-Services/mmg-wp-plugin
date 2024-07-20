@@ -48,7 +48,7 @@ jobs:
     - name: Update Composer dependencies
       run: |
         composer update --no-interaction --no-progress
-        composer require woocommerce/woocommerce:^8.0 --no-interaction --no-progress
+        composer require woocommerce/woocommerce:^7.0 --no-interaction --no-progress
 
     - name: Install dependencies
       run: composer install --no-interaction --no-progress
