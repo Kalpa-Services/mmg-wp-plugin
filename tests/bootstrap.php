@@ -7,9 +7,9 @@
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
 // Load the WordPress test environment
-$wordpress_tests_path = getenv('WP_TESTS_PATH');
-if (!$wordpress_tests_path) {
-    die('WP_TESTS_PATH environment variable is not set.');
+$wordpress_tests_path = '/home/runner/wordpress-tests/wordpress-develop/tests/phpunit';
+if (!file_exists($wordpress_tests_path . '/includes/functions.php')) {
+    die('WordPress test environment not found at ' . $wordpress_tests_path);
 }
 require_once $wordpress_tests_path . '/includes/functions.php';
 

@@ -27,8 +27,8 @@ jobs:
           echo "Waiting for MySQL to be ready..."
           sleep 5
         done
-        mkdir -p ~/wordpress-tests
-        cd ~/wordpress-tests
+        mkdir -p /home/runner/wordpress-tests
+        cd /home/runner/wordpress-tests
         git clone --depth=1 https://github.com/WordPress/wordpress-develop.git
         cd wordpress-develop
         composer install
@@ -40,7 +40,7 @@ jobs:
         # Create the test database
         mysql -h127.0.0.1 -uroot -prootpassword -e "CREATE DATABASE wordpress_test;"
       env:
-        WP_TESTS_PATH: ~/wordpress-tests/wordpress-develop/tests/phpunit
+        WP_TESTS_PATH: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit
 
     - uses: actions/checkout@v2
 
@@ -56,5 +56,5 @@ jobs:
 
     - name: Run PHPUnit tests
       env:
-        WP_TESTS_PATH: ~/wordpress-tests/wordpress-develop/tests/phpunit
+        WP_TESTS_PATH: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit
       run: vendor/bin/phpunit --bootstrap tests/bootstrap.php
