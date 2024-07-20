@@ -29,9 +29,7 @@ class MMG_Checkout_Payment {
         add_action('wp_ajax_nopriv_generate_checkout_url', array($this, 'generate_checkout_url'));
         add_filter('woocommerce_payment_gateways', array($this, 'add_gateway_class'));
         add_action('plugins_loaded', array($this, 'init_gateway_class'), 11);
-        add_action('wp_ajax_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
-        add_action('wp_ajax_nopriv_mmg_payment_confirmation', array($this, 'handle_payment_confirmation'));
-        add_action('woocommerce_api_mmg-checkout', array($this, 'handle_payment_confirmation'));
+        add_action('parse_request', array($this, 'parse_api_request'));
     }
 
     private function generate_unique_callback_url() {
@@ -221,82 +219,41 @@ class MMG_Checkout_Payment {
         return base64_decode($base64);
     }
 
-    public function handle_payment_confirmation() {
-        error_log('MMG Checkout: Received payment confirmation request');
-        
-        // Log all request parameters
-        error_log('MMG Checkout: GET parameters: ' . print_r($_GET, true));
-        error_log('MMG Checkout: POST parameters: ' . print_r($_POST, true));
+    public function parse_api_request() {
+        global $wp;
+        if (isset($wp->query_vars['mmg-checkout'])) {
+            $this->handle_payment_confirmation();
+            exit;
+        }
+    }
 
-        $callback_key = get_query_var('callback-key');
+    public function handle_payment_confirmation() {
+        // Get the callback key from the URL
+        $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $uri_parts = explode('/', trim($request_uri, '/'));
+        
+        // Find the index of 'mmg-checkout' and get the next part as the callback key
+        $mmg_checkout_index = array_search('mmg-checkout', $uri_parts);
+        $callback_key = ($mmg_checkout_index !== false && isset($uri_parts[$mmg_checkout_index + 1])) 
+            ? $uri_parts[$mmg_checkout_index + 1] 
+            : '';
+
         $stored_callback_key = get_option('mmg_callback_key');
 
-        if (empty($callback_key) || $callback_key !== $stored_callback_key) {
-            error_log('MMG Checkout Error: Invalid callback key');
+        if (empty($callback_key)) {
+            wp_die('Missing callback key', 'MMG Checkout Error', array('response' => 400));
+        }
+
+        if ($callback_key !== $stored_callback_key) {
             wp_die('Invalid callback key', 'MMG Checkout Error', array('response' => 403));
         }
 
-        $token = get_query_var('token');
+        $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
 
         if (empty($token)) {
-            error_log('MMG Checkout Error: Invalid token');
-            wp_die('Invalid token', 'MMG Checkout Error', array('response' => 400));
+            wp_die('Missing token', 'MMG Checkout Error', array('response' => 400));
         }
 
-        try {
-            $decoded_token = $this->url_safe_base64_decode($token);
-            $payment_data = $this->decrypt($decoded_token);
-
-            if (!is_array($payment_data)) {
-                throw new Exception('Decrypted data is not an array');
-            }
-        } catch (Exception $e) {
-            error_log('MMG Checkout Error: Error processing token: ' . $e->getMessage());
-            wp_die('Error processing token: ' . $e->getMessage(), 'MMG Checkout Error', array('response' => 400));
-        }
-
-        $order_id = isset($payment_data['merchantTransactionId']) ? intval($payment_data['merchantTransactionId']) : 0;
-
-        $order = wc_get_order($order_id);
-        if (!$order) {            
-            // Attempt to find the order by transaction ID in case it was stored differently
-            $orders = wc_get_orders(array(
-                'meta_key' => '_mmg_transaction_id',
-                'meta_value' => $payment_data['transactionId'],
-                'limit' => 1,
-            ));
-
-            if (!empty($orders)) {
-                $order = $orders[0];
-                error_log('MMG Checkout: Order found by transaction ID. Order ID: ' . $order->get_id());
-            } else {
-                wp_die('Invalid order', 'MMG Checkout Error', array('response' => 400));
-            }
-        } else {
-            error_log('MMG Checkout: Order found. Status: ' . $order->get_status());
-        }
-
-        $status = isset($payment_data['status']) ? sanitize_text_field($payment_data['status']) : '';
-
-        // Verify the payment status
-        $payment_verified = $this->verify_payment_with_mmg($order_id, $status, $payment_data);
-
-        if ($payment_verified) {
-            $order->payment_complete();
-            $order->add_order_note('Payment completed via MMG Checkout.');
-            wp_redirect($order->get_checkout_order_received_url());
-        } else {
-            $order->update_status('failed', 'Payment failed or was cancelled.');
-            wp_redirect($order->get_checkout_payment_url());
-        }
-        exit;
-    }
-
-    private function verify_payment_with_mmg($order_id, $status, $payment_data) {
-        // Implement the actual verification process here
-        // This should involve checking the payment data against the order details
-        // For now, we'll just check if the status is 'success'
-        return $status === 'success' && $payment_data['amount'] == wc_get_order($order_id)->get_total();
     }
 }
 ?>
