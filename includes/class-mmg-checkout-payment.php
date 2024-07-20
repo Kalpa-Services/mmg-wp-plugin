@@ -40,7 +40,7 @@ class MMG_Checkout_Payment {
             $callback_key = wp_generate_password(32, false);
             update_option('mmg_callback_key', $callback_key);
         }
-        return home_url('wc-api/mmg-checkout/' . $callback_key);
+        return home_url("wc-api/mmg-checkout/{$callback_key}");
     }
 
     public function enqueue_scripts() {
@@ -222,15 +222,21 @@ class MMG_Checkout_Payment {
     }
 
     public function handle_payment_confirmation() {
-        $callback_key = isset($_GET['key']) ? sanitize_text_field($_GET['key']) : '';
+        error_log('MMG Checkout: Received payment confirmation request');
+        
+        // Log all request parameters
+        error_log('MMG Checkout: GET parameters: ' . print_r($_GET, true));
+        error_log('MMG Checkout: POST parameters: ' . print_r($_POST, true));
+
+        $callback_key = get_query_var('callback-key');
         $stored_callback_key = get_option('mmg_callback_key');
 
         if (empty($callback_key) || $callback_key !== $stored_callback_key) {
-            error_log('MMG Checkout Error: Invalid callback URL');
-            wp_die('Invalid callback URL', 'MMG Checkout Error', array('response' => 403));
+            error_log('MMG Checkout Error: Invalid callback key');
+            wp_die('Invalid callback key', 'MMG Checkout Error', array('response' => 403));
         }
 
-        $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
+        $token = get_query_var('token');
 
         if (empty($token)) {
             error_log('MMG Checkout Error: Invalid token');
