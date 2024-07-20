@@ -1,4 +1,4 @@
-# [WIP] MMG Checkout Payment Plugin
+# MMG Checkout Payment Plugin
 
 ## Description
 
