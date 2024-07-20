@@ -15,14 +15,19 @@ class Test_MMG_Checkout_Payment extends WP_UnitTestCase {
         update_option('mmg_merchant_id', 'test_merchant_id');
         update_option('mmg_client_id', 'test_client_id');
         update_option('mmg_rsa_public_key', '-----BEGIN PUBLIC KEY-----
-    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy8Dbv8prpJ/0kKhlGeJY
-    ozo2t60EG8L0561g13R29LvMR5hyvGZlGJpmn65+A4xHXInJYiPuKzrKUnApeLZ+
-    vw1HocOAZtWK0z3r26uA8kQYOKX9Qt/DbCdvsF9wF8gRK0ptx9M6R13NvBxvVQAp
-    fc9jB9nTzphOgM4JiEYvlV8FLhg9yZovMYd6Wwf3aoXK891VQxTr/kQYoq1Yp+68
-    i6T4nNq7NWC+UNVjQHxNQMQMzU6lWCX8zyg3yH88OAQkUXIXKfQ+NkvYQ1cxaMoV
-    PpY72+eVthKzpMeyHkBn7ciumk5qgLTEJAfWZpe4f4eFZj/Rc8Y8Jj2IS5kVPjUy
-    wQIDAQAB
-    -----END PUBLIC KEY-----');
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2gCt71gxSnxl2CJFVgoM
+faRs2BMdTtenp+L+OGlq6kYYyu7FWtVUxZB/1sO6nmc+CrWR6hurOai4n/ncmSjT
+5rDLEJWYJ3nVW5WTnLWKEBFc0/iMj0bkXdZGki8zasPyLU8FEf2LaROCAYewJoMw
+EFAQW/ADmkj5KUSEG3yw1/mG9p6FpeM4XGUutKVd6iDyRbiw8f13Oi+cuEX633Gy
+1t0ekjccA3KKTsjN/yAW9/AAlaE1V9TncxPMYjlFLAhiM6x1/0EVRxc/klrpb4hB
+hTjjXstTjC1+DHUMOLvyVk16SBlRSseH7nl4vxnk3vXKK7fS8uaP0UYWFJmdQ72V
+7IlFY9eBVnQ3/Cdt0hppn+kuLwdSajaVVMWrfpw2Udu+/21xtjov1X18/gCeRCl5
+V87qSOrXFPpsRISp4R+bSHOAphtgzH51weulKc2S/+xxTkCwI/rpCaWCUf0261eS
+WwbpO706Pg4yTm9b6H5vJaRkpKuFRz1ZIl8dMLFB6Gsk7w9GfTjDcXpOOliOVe/z
+zlgdXkUZ5UFs2cHntRnhF9TY845t9eEYQQYtqjuPhWbAECnbPWVbMSsMrKYWncm8
+U773Uj8gK3ThyDdsjSX05PWuT6+7clzBYIfoal78UazPN8PMKd7YqiW7sims6xyo
+LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
+-----END PUBLIC KEY-----');
         // Create a test order
         $order = wc_create_order();
         $order->set_total(100);
