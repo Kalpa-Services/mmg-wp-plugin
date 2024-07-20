@@ -65,4 +65,4 @@ jobs:
           echo "Waiting for MySQL to be ready..."
           sleep 2
         done
-        vendor/bin/phpunit
+        vendor/bin/phpunit --bootstrap tests/bootstrap.php
