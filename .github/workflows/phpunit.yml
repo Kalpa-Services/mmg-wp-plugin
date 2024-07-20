@@ -51,14 +51,23 @@ jobs:
         composer config --no-plugins allow-plugins.automattic/jetpack-autoloader true
         composer update --no-interaction --no-progress
         composer require --dev woocommerce/woocommerce:^5.9.1 --no-interaction --no-progress
+        echo "Composer installation complete. Listing vendor directory:"
+        ls -R vendor
+        echo "Composer autoload files:"
+        cat vendor/composer/autoload_psr4.php
 
     - name: Check WooCommerce installation
       run: |
+        echo "Current directory: $(pwd)"
+        echo "Listing vendor directory:"
+        ls -R vendor
         if [ -d "vendor/woocommerce/woocommerce" ]; then
           echo "WooCommerce found in vendor directory"
           ls -l vendor/woocommerce/woocommerce
         else
           echo "WooCommerce not found in vendor directory"
+          echo "Searching for WooCommerce:"
+          find . -name woocommerce
           exit 1
         fi
 

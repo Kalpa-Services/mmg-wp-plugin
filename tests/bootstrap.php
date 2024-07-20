@@ -4,7 +4,11 @@
  */
 
 // Composer autoloader must be loaded before WP_PHPUNIT__DIR will be available
-require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+$autoloader = dirname( __DIR__ ) . '/vendor/autoload.php';
+if (!file_exists($autoloader)) {
+    die('Composer autoloader not found at ' . $autoloader);
+}
+require_once $autoloader;
 
 // Load the WordPress test environment
 $wordpress_tests_path = '/home/runner/wordpress-tests/wordpress-develop/tests/phpunit';
@@ -33,6 +37,9 @@ if (file_exists($woocommerce_path)) {
     define('WC_USE_TRANSACTIONS', false);
     require_once $woocommerce_path;
 } else {
+    echo "Current directory: " . dirname(__DIR__) . PHP_EOL;
+    echo "Listing vendor directory:" . PHP_EOL;
+    system('ls -R ' . dirname(__DIR__) . '/vendor');
     die('WooCommerce plugin not found at ' . $woocommerce_path . '. Make sure it is installed via Composer.');
 }
 
@@ -40,7 +47,11 @@ if (file_exists($woocommerce_path)) {
 require $bootstrap_file;
 
 // Manually load and initialize WooCommerce
-WC()->init();
+if (class_exists('WooCommerce')) {
+    WC()->init();
+} else {
+    die('WooCommerce class not found. Make sure WooCommerce is properly loaded.');
+}
 
 // Activate WooCommerce
 activate_plugin( 'woocommerce/woocommerce.php' );
