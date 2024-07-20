@@ -279,7 +279,22 @@ class MMG_Checkout_Payment {
             $order->add_order_note("Payment completed via MMG Checkout. Transaction ID: {$payment_data['transactionId']}");
             wp_redirect($order->get_checkout_order_received_url());
         } else {
-            $order->update_status('failed', "Payment failed. Result Code: {$result_code}, Message: {$result_message}");
+            $status_messages = array(
+                1 => array('status' => 'failed', 'message' => 'Agent Not Registered.'),
+                2 => array('status' => 'failed', 'message' => 'Payment Failed.'),
+                3 => array('status' => 'failed', 'message' => 'Invalid Secret Key.'),
+                4 => array('status' => 'failed', 'message' => 'Merchant ID Mismatch.'),
+                5 => array('status' => 'failed', 'message' => 'Token Decryption Failed.'),
+                6 => array('status' => 'cancelled', 'message' => 'Payment cancelled by user.'),
+                7 => array('status' => 'failed', 'message' => 'Request Timed Out.'),
+            );
+
+            if (isset($status_messages[$result_code])) {
+                $order->update_status($status_messages[$result_code]['status'], "Payment failed. Reason: {$status_messages[$result_code]['message']}");
+            } else {
+                $order->update_status('failed', "Payment failed. Result Code: {$result_code}, Message: {$result_message}");
+            }
+
             wp_redirect($order->get_checkout_payment_url());
         }
         exit;
