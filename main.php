@@ -2,7 +2,7 @@
 /*
 Plugin Name: MMG Checkout Payment
 Description: Enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
-Version: 1.1.13
+Version: 1.1.14
 Author: Kalpa Services Inc.
 */
 
