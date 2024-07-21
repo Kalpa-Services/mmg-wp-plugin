@@ -14,9 +14,10 @@ MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flo
 
 ## Installation
 
-1. Upload the `mmg-checkout-payment` folder to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Configure the plugin settings in the WordPress admin area under 'Settings' > 'MMG Checkout'
+1. Download the latest release of the plugin from the [GitHub Releases page](https://github.com/Kalpa-Services/mmg-wp-plugin/releases).
+2. Upload the `mmg-checkout-payment` folder to the `/wp-content/plugins/` directory on your WordPress site.
+3. Activate the plugin through the 'Plugins' menu in WordPress.
+4. Configure the plugin settings in the WordPress admin area under 'Settings' > 'MMG Checkout'.
 
 ## Configuration
 
