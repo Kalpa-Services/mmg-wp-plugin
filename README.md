@@ -4,6 +4,16 @@
 
 MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers. This plugin integrates seamlessly with WooCommerce to provide a secure and efficient payment gateway for your online store.
 
+
+## Prerequisites
+
+- WordPress 5.6 or later
+- WooCommerce 7.0 or later
+- PHP 7.4 or later
+- mbstring extension enabled
+- MMG Checkout API credentials (obtain from merchantservices@mmg.gy)
+- RSA keys for encryption and decryption
+
 ## Features
 
 - Easy integration with WooCommerce
@@ -14,9 +24,10 @@ MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flo
 
 ## Installation
 
-1. Upload the `mmg-checkout-payment` folder to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Configure the plugin settings in the WordPress admin area under 'Settings' > 'MMG Checkout'
+1. Download the latest release of the plugin from the [GitHub Releases page](https://github.com/Kalpa-Services/mmg-wp-plugin/releases).
+2. Upload the `mmg-checkout-payment` folder to the `/wp-content/plugins/` directory on your WordPress site.
+3. Activate the plugin through the 'Plugins' menu in WordPress.
+4. Configure the plugin settings in the WordPress admin area under 'Settings' > 'MMG Checkout'.
 
 ## Configuration
 
