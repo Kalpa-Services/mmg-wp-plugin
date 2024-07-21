@@ -18,7 +18,6 @@ MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flo
 
 - Easy integration with WooCommerce
 - Secure payment processing
-- Customizable checkout button
 - Admin settings page for easy configuration
 - Automatic generation of callback url
 
