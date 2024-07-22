@@ -75,6 +75,12 @@ function mmg_plugin_updated() {
 }
 add_action('plugins_loaded', 'mmg_plugin_updated');
 
+function mmg_remove_gateway($gateways) {
+    unset($gateways['mmg_checkout']);
+    return $gateways;
+}
+add_filter('woocommerce_payment_gateways', 'mmg_remove_gateway', 20);
+
 // Initialize WooCommerce API endpoint
 add_action('init', function() {
     add_rewrite_endpoint('mmg-checkout', EP_ALL);
