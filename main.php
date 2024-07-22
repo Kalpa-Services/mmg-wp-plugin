@@ -1,10 +1,27 @@
 <?php
-/*
-Plugin Name: MMG Checkout Payment
-Description: Enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
-Version: 1.1.15
-Author: Kalpa Services Inc.
-*/
+/**
+ * Plugin Name: MMG Checkout Payment
+ *
+ * @package           MMG Checkout Payment
+ * @author            Kalpa Services Inc.
+ * @copyright         2024 Kalpa Services Inc.
+ * @license           GPL-2.0-or-later
+ *
+ * @wordpress-plugin
+ * Plugin Name:       MMG Checkout Payment
+ * Plugin URI:        https://github.com/Kalpa-Services/mmg-wp-plugin
+ * Description:       Enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
+ * Version:           1.1.13
+ * Requires at least: 5.6
+ * Requires PHP:      7.4
+ * Author:            Kalpa Services Inc.
+ * Author URI:        https://kalpa.dev
+ * Text Domain:       mmg-checkout-payment
+ * License:           GPL v2 or later
+ * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * Update URI:        https://github.com/Kalpa-Services/mmg-wp-plugin
+ * Requires Plugins:  woocommerce
+ */
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
