@@ -215,8 +215,22 @@ class MMG_Checkout_Payment {
     }
 
     private function url_safe_base64_decode($data) {
+        // Validate input
+        if (!is_string($data)) {
+            throw new InvalidArgumentException('Input must be a string');
+        }
+        // Replace URL-safe characters
         $base64 = strtr($data, '-_', '+/');
-        return base64_decode($base64);
+        // Add padding if necessary
+        $base64 = str_pad($base64, strlen($base64) % 4, '=', STR_PAD_RIGHT);
+        // Decode with strict mode
+        $decoded = base64_decode($base64, true);
+
+        if ($decoded === false) {
+            throw new InvalidArgumentException('Invalid base64 encoding');
+        }
+
+        return $decoded;
     }
 
     public function parse_api_request() {
