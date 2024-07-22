@@ -215,8 +215,25 @@ class MMG_Checkout_Payment {
     }
 
     private function url_safe_base64_decode($data) {
+        // Validate input
+        if (!is_string($data)) {
+            throw new InvalidArgumentException('Input must be a string');
+        }
+
+        // Replace URL-safe characters
         $base64 = strtr($data, '-_', '+/');
-        return base64_decode($base64);
+
+        // Add padding if necessary
+        $base64 = str_pad($base64, strlen($base64) % 4, '=', STR_PAD_RIGHT);
+
+        // Decode with strict mode
+        $decoded = base64_decode($base64, true);
+
+        if ($decoded === false) {
+            throw new InvalidArgumentException('Invalid base64 encoding');
+        }
+
+        return $decoded;
     }
 
     public function parse_api_request() {
@@ -231,12 +248,23 @@ class MMG_Checkout_Payment {
         // Get the callback key from the URL
         $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $uri_parts = explode('/', trim($request_uri, '/'));
-        
+
         // Find the index of 'mmg-checkout' and get the next part as the callback key
         $mmg_checkout_index = array_search('mmg-checkout', $uri_parts);
-        $callback_key = ($mmg_checkout_index !== false && isset($uri_parts[$mmg_checkout_index + 1])) 
-            ? $uri_parts[$mmg_checkout_index + 1] 
-            : '';
+        $callback_key = '';
+
+        if ($mmg_checkout_index !== false && isset($uri_parts[$mmg_checkout_index + 1])) {
+            // Sanitize the callback key
+            $raw_callback_key = $uri_parts[$mmg_checkout_index + 1];
+            
+            // Only allow alphanumeric characters and dashes
+            $callback_key = preg_replace('/[^a-zA-Z0-9-]/', '', $raw_callback_key);
+            
+            // Ensure the callback key is not empty and has a reasonable length
+            if (empty($callback_key) || strlen($callback_key) > 64) {
+                wp_die('Invalid callback key', 'MMG Checkout Error', array('response' => 400));
+            }
+        }
 
         $stored_callback_key = get_option('mmg_callback_key');
         
