@@ -16,7 +16,7 @@ registerPaymentMethod({
     label: createElement(MMGCheckoutLabel, { title: mmgCheckoutData.title }),
     content: createElement(MMGCheckoutContent, { description: mmgCheckoutData.description }),
     edit: createElement(MMGCheckoutContent, { description: mmgCheckoutData.description }),
-    canMakePayment: () => mmgCheckoutData.enabled === 'yes',
+    canMakePayment: () => mmgCheckoutData.isEnabled === 'yes',
     ariaLabel: decodeEntities(mmgCheckoutData.title),
     supports: {
         features: mmgCheckoutData.supports,
