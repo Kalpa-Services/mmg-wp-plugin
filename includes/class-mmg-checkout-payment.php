@@ -46,7 +46,6 @@ class MMG_Checkout_Payment {
             wp_enqueue_script('mmg-checkout', plugin_dir_url(dirname(__FILE__)) . 'js/mmg-checkout.js', array('jquery'), '1.0', true);
             wp_localize_script('mmg-checkout', 'mmg_checkout_params', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
-                'security' => wp_create_nonce('mmg_generate_checkout_url'),
             ));
             error_log('MMG Checkout: Script enqueued on checkout pay page');
         } else {
@@ -63,15 +62,12 @@ class MMG_Checkout_Payment {
     }
 
     public function generate_checkout_url() {
-        // Add nonce verification
-        check_ajax_referer('mmg_generate_checkout_url', 'security');
-
         try {
             if (!$this->validate_public_key()) {
                 throw new Exception('Invalid RSA public key');
             }
 
-            $order_id = isset($_POST['order_id']) ? absint($_POST['order_id']) : 0;
+            $order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
             $order = wc_get_order($order_id);
 
             if (!$order) {
@@ -124,7 +120,12 @@ class MMG_Checkout_Payment {
         error_log("Checkout Object:\n $json_object\n");
 
         // message to bytes
-        $json_bytes = mb_convert_encoding($json_object, 'UTF-8');
+        if (function_exists('mb_convert_encoding')) {
+            $json_bytes = mb_convert_encoding($json_object, 'ISO-8859-1', 'UTF-8');
+        } else {
+            // Fallback method
+            $json_bytes = utf8_decode($json_object);
+        }
         
         // Load the public key
         try {
@@ -277,7 +278,7 @@ class MMG_Checkout_Payment {
 
         $token = isset($_GET['token']) ? sanitize_text_field($_GET['token']) : '';
 
-        if (empty($token) || !is_string($token) || strlen($token) > 1024) {
+        if (empty($token)) {
             wp_die('Invalid token', 'MMG Checkout Error', array('response' => 400));
         }
 
@@ -289,8 +290,8 @@ class MMG_Checkout_Payment {
             wp_die('Error decrypting token: ' . $e->getMessage(), 'MMG Checkout Error', array('response' => 400));
         }
 
-        $order_id = isset($payment_data['merchantTransactionId']) ? absint($payment_data['merchantTransactionId']) : 0;
-        $result_code = isset($payment_data['resultCode']) ? absint($payment_data['resultCode']) : null;
+        $order_id = isset($payment_data['merchantTransactionId']) ? intval($payment_data['merchantTransactionId']) : 0;
+        $result_code = isset($payment_data['resultCode']) ? intval($payment_data['resultCode']) : null;
         $result_message = isset($payment_data['resultMessage']) ? sanitize_text_field($payment_data['resultMessage']) : '';
 
         $order = wc_get_order($order_id);
