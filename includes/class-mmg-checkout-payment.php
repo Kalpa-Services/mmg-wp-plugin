@@ -58,6 +58,7 @@ class MMG_Checkout_Payment {
             'title' => isset($gateway_settings['title']) ? $gateway_settings['title'] : 'MMG Checkout',
             'description' => isset($gateway_settings['description']) ? $gateway_settings['description'] : 'Pay with MMG Checkout',
             'supports' => array('products', 'refunds'),
+            'isEnabled' => isset($gateway_settings['enabled']) ? $gateway_settings['enabled'] : 'no',
         ));
     }
 
