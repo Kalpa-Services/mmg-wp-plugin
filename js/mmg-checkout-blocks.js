@@ -1,13 +1,14 @@
 const { registerPaymentMethod } = window.wc.wcBlocksRegistry;
 const { createElement } = window.wp.element;
 const { decodeEntities } = window.wp.htmlEntities;
+const { escapeHTML } = window.wp.escapeHtml;
 
 const MMGCheckoutLabel = ({ title }) => {
-    return createElement('span', {}, decodeEntities(title));
+    return createElement('span', {}, decodeEntities(escapeHTML(title)));
 };
 
 const MMGCheckoutContent = ({ description }) => {
-    return createElement('p', {}, decodeEntities(description));
+    return createElement('p', {}, decodeEntities(escapeHTML(description)));
 };
 
 registerPaymentMethod({
@@ -15,7 +16,7 @@ registerPaymentMethod({
     label: createElement(MMGCheckoutLabel, { title: mmgCheckoutData.title }),
     content: createElement(MMGCheckoutContent, { description: mmgCheckoutData.description }),
     edit: createElement(MMGCheckoutContent, { description: mmgCheckoutData.description }),
-    canMakePayment: () => true,
+    canMakePayment: () => mmgCheckoutData.enabled === 'yes',
     ariaLabel: decodeEntities(mmgCheckoutData.title),
     supports: {
         features: mmgCheckoutData.supports,

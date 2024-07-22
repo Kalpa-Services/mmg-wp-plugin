@@ -15,13 +15,13 @@ class MMG_Checkout_Settings {
     }
 
     public function register_settings() {
-        register_setting('mmg_checkout_settings', 'mmg_mode');
-        register_setting('mmg_checkout_settings', 'mmg_client_id');
-        register_setting('mmg_checkout_settings', 'mmg_merchant_id');
-        register_setting('mmg_checkout_settings', 'mmg_secret_key');
-        register_setting('mmg_checkout_settings', 'mmg_rsa_public_key');
-        register_setting('mmg_checkout_settings', 'mmg_rsa_private_key');
-        register_setting('mmg_checkout_settings', 'mmg_merchant_name');
+        register_setting('mmg_checkout_settings', 'mmg_mode', array('sanitize_callback' => array($this, 'sanitize_mode')));
+        register_setting('mmg_checkout_settings', 'mmg_client_id', array('sanitize_callback' => 'sanitize_text_field'));
+        register_setting('mmg_checkout_settings', 'mmg_merchant_id', array('sanitize_callback' => 'sanitize_text_field'));
+        register_setting('mmg_checkout_settings', 'mmg_secret_key', array('sanitize_callback' => 'sanitize_text_field'));
+        register_setting('mmg_checkout_settings', 'mmg_rsa_public_key', array('sanitize_callback' => array($this, 'sanitize_multiline_field')));
+        register_setting('mmg_checkout_settings', 'mmg_rsa_private_key', array('sanitize_callback' => array($this, 'sanitize_multiline_field')));
+        register_setting('mmg_checkout_settings', 'mmg_merchant_name', array('sanitize_callback' => 'sanitize_text_field'));
     }
 
     public function settings_page() {
@@ -175,5 +175,14 @@ class MMG_Checkout_Settings {
         $callback_key = get_option('mmg_callback_key');
         $callback_url = $callback_key ? home_url('wc-api/mmg-checkout/' . $callback_key) : 'Not generated yet';
         return $callback_url;
+    }
+
+    public function sanitize_mode($input) {
+        $valid_modes = array('live', 'demo');
+        return in_array($input, $valid_modes) ? $input : 'demo';
+    }
+
+    public function sanitize_multiline_field($input) {
+        return implode("\n", array_map('sanitize_text_field', explode("\n", $input)));
     }
 }
