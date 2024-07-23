@@ -87,9 +87,9 @@ class MMG_Checkout_Settings {
                     <tr valign="top">
                         <th scope="row">Callback URL</th>
                         <td>
-                            <?php $callback_url = esc_html($this->get_callback_url()); ?>
-                            <?php echo $callback_url; ?>
-                            <button type="button" class="button" onclick="copyToClipboard('<?php echo $callback_url; ?>')">Copy</button>
+                            <?php $callback_url = esc_url($this->get_callback_url()); ?>
+                            <?php echo esc_html($callback_url); ?>
+                            <button type="button" class="button" onclick="copyToClipboard('<?php echo esc_js($callback_url); ?>')">Copy</button>
                             <span id="copy-success" style="color: green; display: none; margin-left: 10px;">Copied!</span>
                         </td>
                         <script>
