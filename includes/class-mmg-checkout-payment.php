@@ -117,7 +117,7 @@ class MMG_Checkout_Payment {
     }
 
     private function encrypt($checkout_object) {
-        $json_object = json_encode($checkout_object, JSON_PRETTY_PRINT);
+        $json_object = wp_json_encode($checkout_object, JSON_PRETTY_PRINT);
         error_log("Checkout Object:\n $json_object\n");
 
         // message to bytes
