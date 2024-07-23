@@ -65,10 +65,6 @@ class MMG_Checkout_Payment {
 
     public function generate_checkout_url() {
         try {
-            // Verify nonce
-            if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'mmg_checkout_nonce')) {
-                throw new Exception('Invalid security token');
-            }
             if (!$this->validate_public_key()) {
                 throw new Exception('Invalid RSA public key');
             }
