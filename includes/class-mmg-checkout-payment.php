@@ -46,6 +46,7 @@ class MMG_Checkout_Payment {
             wp_enqueue_script('mmg-checkout', plugin_dir_url(dirname(__FILE__)) . 'js/mmg-checkout.js', array('jquery'), '1.0', true);
             wp_localize_script('mmg-checkout', 'mmg_checkout_params', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('mmg_checkout_nonce'),
             ));
             error_log('MMG Checkout: Script enqueued on checkout pay page');
         } else {
@@ -64,6 +65,10 @@ class MMG_Checkout_Payment {
 
     public function generate_checkout_url() {
         try {
+            // Verify nonce
+            if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'mmg_checkout_nonce')) {
+                throw new Exception('Invalid security token');
+            }
             if (!$this->validate_public_key()) {
                 throw new Exception('Invalid RSA public key');
             }

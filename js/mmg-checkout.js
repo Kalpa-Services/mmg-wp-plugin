@@ -11,7 +11,8 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 action: 'generate_checkout_url',
-                order_id: orderId
+                order_id: orderId,
+                nonce: mmg_checkout_params.nonce
             },
             success: function(response) {
                 if (response.success && response.data.checkout_url) {
