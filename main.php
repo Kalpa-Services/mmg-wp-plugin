@@ -19,7 +19,6 @@
  * Text Domain:       mmg-checkout-payment
  * License:           GPL v2 or later
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Update URI:        https://github.com/Kalpa-Services/mmg-wp-plugin
  * Requires Plugins:  woocommerce
  */
 

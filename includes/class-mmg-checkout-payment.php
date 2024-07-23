@@ -46,6 +46,7 @@ class MMG_Checkout_Payment {
             wp_enqueue_script('mmg-checkout', plugin_dir_url(dirname(__FILE__)) . 'js/mmg-checkout.js', array('jquery'), '1.0', true);
             wp_localize_script('mmg-checkout', 'mmg_checkout_params', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('mmg_checkout_nonce'),
             ));
             error_log('MMG Checkout: Script enqueued on checkout pay page');
         } else {
@@ -106,9 +107,7 @@ class MMG_Checkout_Payment {
 
             wp_send_json_success(array('checkout_url' => $checkout_url));
         } catch (Exception $e) {
-            error_log('MMG Checkout Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
-            error_log('MMG Checkout Error Trace: ' . $e->getTraceAsString());
-            wp_send_json_error('Error generating checkout URL: ' . $e->getMessage());
+            wp_send_json_error('Error generating checkout URL: ' . esc_html($e->getMessage()));
         }
     }
 
@@ -117,7 +116,7 @@ class MMG_Checkout_Payment {
     }
 
     private function encrypt($checkout_object) {
-        $json_object = json_encode($checkout_object, JSON_PRETTY_PRINT);
+        $json_object = wp_json_encode($checkout_object, JSON_PRETTY_PRINT);
         error_log("Checkout Object:\n $json_object\n");
 
         // message to bytes
@@ -247,8 +246,9 @@ class MMG_Checkout_Payment {
 
     public function handle_payment_confirmation() {
         // Get the callback key from the URL
-        $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $uri_parts = explode('/', trim($request_uri, '/'));
+        $parsed_url = wp_parse_url($_SERVER['REQUEST_URI']);
+        $path = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+        $uri_parts = explode('/', trim($path, '/'));
 
         // Find the index of 'mmg-checkout' and get the next part as the callback key
         $mmg_checkout_index = array_search('mmg-checkout', $uri_parts);
@@ -288,7 +288,7 @@ class MMG_Checkout_Payment {
             $payment_data = $this->decrypt($decoded_token);
             error_log('MMG Checkout: Decoded token: ' . print_r($payment_data, true));
         } catch (Exception $e) {
-            wp_die('Error decrypting token: ' . $e->getMessage(), 'MMG Checkout Error', array('response' => 400));
+            wp_die('Error decrypting token: ' . esc_html($e->getMessage()), 'MMG Checkout Error', array('response' => 400));
         }
 
         $order_id = isset($payment_data['merchantTransactionId']) ? intval($payment_data['merchantTransactionId']) : 0;
