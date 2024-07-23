@@ -25,10 +25,12 @@ Key Features:
 
 == Installation ==
 
-1. Download the latest release of the plugin from the [GitHub Releases page](https://github.com/Kalpa-Services/mmg-wp-plugin/releases).
-2. Upload the `mmg-checkout-payment` folder to the `/wp-content/plugins/` directory on your WordPress site.
-3. Activate the plugin through the 'Plugins' menu in WordPress.
-4. Configure the plugin settings in the WordPress admin area under 'WooCommerce' -> 'Settings' -> 'Payments'.
+1. Log in to your WordPress admin panel.
+2. Navigate to 'Plugins' -> 'Add New'.
+3. In the search box, type "MMG Checkout Payment for WooCommerce".
+4. Look for the plugin in the search results and click "Install Now".
+5. After installation, click "Activate" to enable the plugin.
+6. Configure the plugin settings in the WordPress admin area under 'Settings' > 'MMG Checkout'.
 
 == Configuration ==
 
