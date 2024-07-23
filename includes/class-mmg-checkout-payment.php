@@ -113,7 +113,7 @@ class MMG_Checkout_Payment {
         } catch (Exception $e) {
             error_log('MMG Checkout Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
             error_log('MMG Checkout Error Trace: ' . $e->getTraceAsString());
-            wp_send_json_error('Error generating checkout URL: ' . $e->getMessage());
+            wp_send_json_error('Error generating checkout URL: ' . esc_html($e->getMessage()));
         }
     }
 
