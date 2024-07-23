@@ -247,8 +247,9 @@ class MMG_Checkout_Payment {
 
     public function handle_payment_confirmation() {
         // Get the callback key from the URL
-        $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $uri_parts = explode('/', trim($request_uri, '/'));
+        $parsed_url = wp_parse_url($_SERVER['REQUEST_URI']);
+        $path = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+        $uri_parts = explode('/', trim($path, '/'));
 
         // Find the index of 'mmg-checkout' and get the next part as the callback key
         $mmg_checkout_index = array_search('mmg-checkout', $uri_parts);
