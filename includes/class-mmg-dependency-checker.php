@@ -27,7 +27,7 @@ class MMG_Dependency_Checker {
     public static function woocommerce_missing_notice() {
         ?>
         <div class="error">
-            <p><?php _e('MMG Checkout requires WooCommerce to be installed and active. Please install and activate WooCommerce to use this plugin.', 'mmg-checkout'); ?></p>
+            <p><?php esc_html_e('MMG Checkout requires WooCommerce to be installed and active. Please install and activate WooCommerce to use this plugin.', 'mmg-checkout'); ?></p>
         </div>
         <?php
     }
@@ -35,7 +35,7 @@ class MMG_Dependency_Checker {
     public static function mbstring_missing_notice() {
         ?>
         <div class="error">
-            <p><?php _e('MMG Checkout requires the mbstring PHP extension to be installed and active on the server. Please install and activate mbstring to use this plugin.', 'mmg-checkout'); ?></p>
+            <p><?php esc_html_e('MMG Checkout requires the mbstring PHP extension to be installed and active on the server. Please install and activate mbstring to use this plugin.', 'mmg-checkout'); ?></p>
         </div>
         <?php
     }
