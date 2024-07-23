@@ -34,6 +34,8 @@ define('MMG_PLUGIN_VERSION', '1.1.8');
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 // Include the dependency checker
 require_once plugin_dir_path(__FILE__) . 'includes/class-mmg-dependency-checker.php';
+// Include the activator class
+require_once plugin_dir_path(__FILE__) . 'includes/class-mmg-checkout-payment-activator.php';
 
 // Check dependencies before initializing the plugin
 if (MMG_Dependency_Checker::check_dependencies()) {
@@ -75,13 +77,6 @@ function mmg_query_vars($vars) {
 }
 add_filter('query_vars', 'mmg_query_vars');
 
-// Add this to your plugin's activation hook
-function mmg_activate() {
-    mmg_add_rewrite_rules();
-    flush_rewrite_rules();
-}
-register_activation_hook(__FILE__, 'mmg_activate');
-
 // Also, add this to ensure rules are flushed on plugin update
 function mmg_plugin_updated() {
     $version = get_option('mmg_plugin_version', '0');
@@ -102,3 +97,6 @@ add_filter('woocommerce_payment_gateways', 'mmg_remove_gateway', 20);
 add_action('init', function() {
     add_rewrite_endpoint('mmg-checkout', EP_ALL);
 });
+
+// Move this line to the end of the file
+register_activation_hook(__FILE__, array('MMG_Checkout_Payment_Activator', 'activate'));
