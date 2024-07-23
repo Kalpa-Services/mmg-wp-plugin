@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin version constant
-define('MMG_PLUGIN_VERSION', '1.1.8');
+define('MMG_PLUGIN_VERSION', '1.1.15');
 
 // Load composer autoloader
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
