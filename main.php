@@ -78,7 +78,6 @@ function mmg_query_vars($vars) {
 }
 add_filter('query_vars', 'mmg_query_vars');
 
-// Also, add this to ensure rules are flushed on plugin update
 function mmg_plugin_updated() {
     $version = get_option('mmg_plugin_version', '0');
     if (version_compare(MMG_PLUGIN_VERSION, $version, '>')) {
@@ -99,6 +98,5 @@ add_action('init', function() {
     add_rewrite_endpoint('mmg-checkout', EP_ALL);
 });
 
-// Move this line to the end of the file
 register_activation_hook(__FILE__, array('MMG_Checkout_Payment_Activator', 'activate'));
 register_deactivation_hook(__FILE__, array('MMG_Checkout_Payment_Deactivator', 'deactivate'));
