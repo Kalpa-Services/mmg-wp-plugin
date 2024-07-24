@@ -62,4 +62,4 @@ Kalpa Services Inc.
 
 # Roadmap
 
-- Shortcode support for flexible placement of the checkout button
+- All for processing of refunds
