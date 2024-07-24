@@ -6,13 +6,16 @@ jQuery(document).ready(function($) {
 
         $button.prop('disabled', true).text('Processing...');
 
+        var postData = {
+            action: 'generate_checkout_url',
+            nonce: mmg_checkout_params.nonce,
+            order_id: orderId,
+        };
+
         $.ajax({
             url: mmg_checkout_params.ajax_url,
             type: 'POST',
-            data: {
-                action: 'generate_checkout_url',
-                order_id: orderId,
-            },
+            data: postData,
             success: function(response) {
                 if (response.success && response.data.checkout_url) {
                     window.location.href = response.data.checkout_url;
@@ -21,9 +24,8 @@ jQuery(document).ready(function($) {
                     $button.prop('disabled', false).text('Pay with MMG');
                 }
             },
-            error: function(xhr, status, error) {
-                console.error('AJAX error:', status, error);
-                alert('Error communicating with the server. Please try again.');
+            error: function(error) {
+                alert('Error communicating with the server. Please try again.', error);
                 $button.prop('disabled', false).text('Pay with MMG');
             }
         });
