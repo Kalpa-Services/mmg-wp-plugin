@@ -45,24 +45,11 @@ jobs:
     - name: Zip project
       run: zip -r mmg-checkout-payment.zip . -x "*.git*" -x "tests/*" -x "bin/*" -x "composer.json" -x "phpunit.xml" -x "README.md" -x "*.DS_Store" -x "build-phar.sh"
 
-    - name: Get Release
-      id: get_release
-      run: |
-        release_id=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" \
-          | jq -r '.id')
-        upload_url=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/releases/$release_id" \
-          | jq -r '.upload_url')
-        echo "release_id=$release_id" >> $GITHUB_OUTPUT
-        echo "upload_url=$upload_url" >> $GITHUB_OUTPUT
+    - name: Setup GitHub CLI
+      uses: cli/setup-gh@v1
 
     - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }}
-        asset_path: ./mmg-checkout-payment.zip
-        asset_name: mmg-checkout-payment.zip
-        asset_content_type: application/zip
+      run: |
+        gh release upload ${{ github.ref_name }} ./mmg-checkout-payment.zip --clobber
