@@ -1,4 +1,13 @@
 <?php
+/**
+ * MMG Checkout Payment Deactivator
+ *
+ * This file contains the MMG_Checkout_Payment_Deactivator class and deactivation function.
+ *
+ * @package MMG_Checkout_Payment
+ * @since 1.0.0
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -10,13 +19,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @package    MMG Checkout Payment
  * @author     Kalpa Services Inc. <info@kalpa.dev>
  */
-
 class MMG_Checkout_Payment_Deactivator {
 
 	/**
-	 * Short Description. (use period)
+	 * Deactivate the plugin.
 	 *
-	 * Long Description.
+	 * Flushes rewrite rules upon plugin deactivation.
 	 *
 	 * @since    1.0.0
 	 */
