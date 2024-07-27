@@ -1,6 +1,15 @@
 <?php
+/**
+ * MMG Checkout Payment Activator
+ *
+ * This file contains the MMG_Checkout_Payment_Activator class and activation function.
+ *
+ * @package MMG_Checkout_Payment
+ * @since 1.0.0
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
 /**
@@ -8,21 +17,29 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * This class defines all code necessary to run during the plugin's activation.
  *
- * @since      1.0.0
- * @package    MMG Checkout Payment
- * @author     Kalpa Services Inc. <info@kalpa.dev>
+ * @since 1.0.0
+ * @package MMG_Checkout_Payment
+ * @author Kalpa Services Inc. <info@kalpa.dev>
  */
 class MMG_Checkout_Payment_Activator {
 
 	/**
-	 * @since    1.0.0
+	 * Activate the plugin.
+	 *
+	 * @since 1.0.0
+	 * @return void
 	 */
 	public static function activate() {
-		mmg_activate();
+		self::mmg_activate();
 	}
-}
 
-function mmg_activate() {
-	mmg_add_rewrite_rules();
-	flush_rewrite_rules();
+	/**
+	 * Perform activation tasks.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	private static function mmg_activate() {
+		flush_rewrite_rules();
+	}
 }
