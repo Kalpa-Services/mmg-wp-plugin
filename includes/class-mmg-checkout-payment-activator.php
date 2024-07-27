@@ -44,18 +44,18 @@ class MMG_Checkout_Payment_Activator {
 		flush_rewrite_rules();
 	}
 
-/**
- * Add rewrite rules for MMG Checkout Payment callbacks.
- *
- * This function adds a rewrite rule to handle MMG Checkout Payment callbacks
- * through a custom endpoint.
- */
-private static function add_rewrite_rules() {
-	add_rewrite_rule(
-		'^wc-api/mmg-checkout/([^/]+)/?$',
-		'index.php?mmg-checkout=1&callback_key=$matches[1]',
-		'top'
+	/**
+	 * Add rewrite rules for MMG Checkout Payment callbacks.
+	 *
+	 * This function adds a rewrite rule to handle MMG Checkout Payment callbacks
+	 * through a custom endpoint.
+	 */
+	private static function add_rewrite_rules() {
+		add_rewrite_rule(
+			'^wc-api/mmg-checkout/([^/]+)/?$',
+			'index.php?mmg-checkout=1&callback_key=$matches[1]',
+			'top'
 		);
-		add_rewrite_tag('%mmg-checkout%', '([^&]+)');
+		add_rewrite_tag( '%mmg-checkout%', '([^&]+)' );
 	}
 }
