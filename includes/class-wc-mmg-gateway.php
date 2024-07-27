@@ -1,5 +1,20 @@
 <?php
+/**
+ * MMG Gateway for WooCommerce
+ *
+ * This class defines the MMG payment gateway for WooCommerce.
+ *
+ * @package WooCommerce
+ */
+
+/**
+ * WC_MMG_Gateway class.
+ */
 class WC_MMG_Gateway extends WC_Payment_Gateway {
+
+	/**
+	 * Constructor for the gateway.
+	 */
 	public function __construct() {
 		$this->id                 = 'mmg_checkout';
 		$this->icon               = '';
@@ -23,6 +38,9 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'receipt_page' ) );
 	}
 
+	/**
+	 * Initialize gateway form fields.
+	 */
 	public function init_form_fields() {
 		$this->form_fields = array(
 			'enabled'     => array(
@@ -47,6 +65,12 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		);
 	}
 
+	/**
+	 * Process the payment and return the result.
+	 *
+	 * @param int $order_id Order ID.
+	 * @return array
+	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 		return array(
@@ -55,6 +79,11 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		);
 	}
 
+	/**
+	 * Output for the order received page.
+	 *
+	 * @param int $order_id Order ID.
+	 */
 	public function receipt_page( $order_id ) {
 		$order = wc_get_order( $order_id );
 		echo '<div id="mmg-checkout-container" style="width: 100%;">';
