@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="WordPress-Project">
+    <description>WordPress Coding Standards</description>
+    <rule ref="WordPress" />
+    <file>./includes</file>
+    <file>./tests</file>
+    <file>main.php</file>
+    <file>uninstall.php</file>
+</ruleset>

@@ -6,4 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Automattic\\WooCommerce\\Vendor\\' => array($baseDir . '/wp-content/plugins/woocommerce/lib/packages'),
 );

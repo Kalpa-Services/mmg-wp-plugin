@@ -9,11 +9,6 @@
  */
 namespace SebastianBergmann\Complexity;
 
-use function assert;
-use function file_exists;
-use function file_get_contents;
-use function is_readable;
-use function is_string;
 use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
@@ -24,20 +19,11 @@ use PhpParser\ParserFactory;
 final class Calculator
 {
     /**
-     * @param non-empty-string $sourceFile
-     *
      * @throws RuntimeException
      */
     public function calculateForSourceFile(string $sourceFile): ComplexityCollection
     {
-        assert(file_exists($sourceFile));
-        assert(is_readable($sourceFile));
-
-        $source = file_get_contents($sourceFile);
-
-        assert(is_string($source));
-
-        return $this->calculateForSourceString($source);
+        return $this->calculateForSourceString(file_get_contents($sourceFile));
     }
 
     /**
@@ -56,8 +42,8 @@ final class Calculator
         } catch (Error $error) {
             throw new RuntimeException(
                 $error->getMessage(),
-                $error->getCode(),
-                $error,
+                (int) $error->getCode(),
+                $error
             );
         }
         // @codeCoverageIgnoreEnd
@@ -84,8 +70,8 @@ final class Calculator
         } catch (Error $error) {
             throw new RuntimeException(
                 $error->getMessage(),
-                $error->getCode(),
-                $error,
+                (int) $error->getCode(),
+                $error
             );
         }
         // @codeCoverageIgnoreEnd

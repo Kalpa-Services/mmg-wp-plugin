@@ -14,34 +14,38 @@ use function count;
 use Countable;
 use IteratorAggregate;
 
-/**
- * @template-implements IteratorAggregate<int, CodeUnit>
- *
- * @immutable
- */
-final readonly class CodeUnitCollection implements Countable, IteratorAggregate
+final class CodeUnitCollection implements Countable, IteratorAggregate
 {
     /**
-     * @var list<CodeUnit>
+     * @psalm-var list<CodeUnit>
      */
-    private array $codeUnits;
+    private $codeUnits = [];
 
-    public static function fromList(CodeUnit ...$codeUnits): self
+    /**
+     * @psalm-param list<CodeUnit> $items
+     */
+    public static function fromArray(array $items): self
     {
-        // @phpstan-ignore argument.type
-        return new self($codeUnits);
+        $collection = new self;
+
+        foreach ($items as $item) {
+            $collection->add($item);
+        }
+
+        return $collection;
+    }
+
+    public static function fromList(CodeUnit ...$items): self
+    {
+        return self::fromArray($items);
+    }
+
+    private function __construct()
+    {
     }
 
     /**
-     * @param list<CodeUnit> $codeUnits
-     */
-    private function __construct(array $codeUnits)
-    {
-        $this->codeUnits = $codeUnits;
-    }
-
-    /**
-     * @return list<CodeUnit>
+     * @psalm-return list<CodeUnit>
      */
     public function asArray(): array
     {
@@ -65,11 +69,16 @@ final readonly class CodeUnitCollection implements Countable, IteratorAggregate
 
     public function mergeWith(self $other): self
     {
-        return new self(
+        return self::fromArray(
             array_merge(
                 $this->asArray(),
-                $other->asArray(),
-            ),
+                $other->asArray()
+            )
         );
+    }
+
+    private function add(CodeUnit $item): void
+    {
+        $this->codeUnits[] = $item;
     }
 }

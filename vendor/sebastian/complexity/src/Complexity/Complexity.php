@@ -9,56 +9,34 @@
  */
 namespace SebastianBergmann\Complexity;
 
-use function str_contains;
-
 /**
- * @immutable
+ * @psalm-immutable
  */
-final readonly class Complexity
+final class Complexity
 {
     /**
-     * @var non-empty-string
+     * @var string
      */
-    private string $name;
+    private $name;
 
     /**
-     * @var positive-int
+     * @var int
      */
-    private int $cyclomaticComplexity;
+    private $cyclomaticComplexity;
 
-    /**
-     * @param non-empty-string $name
-     * @param positive-int     $cyclomaticComplexity
-     */
     public function __construct(string $name, int $cyclomaticComplexity)
     {
         $this->name                 = $name;
         $this->cyclomaticComplexity = $cyclomaticComplexity;
     }
 
-    /**
-     * @return non-empty-string
-     */
     public function name(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return positive-int
-     */
     public function cyclomaticComplexity(): int
     {
         return $this->cyclomaticComplexity;
-    }
-
-    public function isFunction(): bool
-    {
-        return !$this->isMethod();
-    }
-
-    public function isMethod(): bool
-    {
-        return str_contains($this->name, '::');
     }
 }
