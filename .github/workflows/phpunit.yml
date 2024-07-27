@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -100,5 +104,22 @@ jobs:
         # Copy WooCommerce to WordPress test environment
         mkdir -p /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins
         cp -r wp-content/plugins/woocommerce /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/
-        # Run PHPUnit tests
-        vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug --verbose --configuration phpunit.xml
+        # Run PHPUnit tests and save output
+        vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
+
+    - name: Post PHPUnit results as PR comment
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const fs = require('fs');
+          const phpunitOutput = fs.readFileSync('phpunit-results.txt', 'utf8');
+          const summary = phpunitOutput.split('\n').slice(0, 10).join('\n'); // Get first 10 lines for summary
+          const fullReport = '## PHPUnit Test Results\n\n<details><summary>Click to expand full report</summary>\n\n```\n' + phpunitOutput + '\n```\n</details>';
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '## PHPUnit Test Summary\n\n```\n' + summary + '\n```\n\n' + fullReport
+          });
