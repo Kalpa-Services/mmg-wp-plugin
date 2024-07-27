@@ -4,7 +4,7 @@
  *
  * This class defines the MMG payment gateway for WooCommerce.
  *
- * @package WooCommerce
+ * @package MMG_Checkout
  */
 
 /**
