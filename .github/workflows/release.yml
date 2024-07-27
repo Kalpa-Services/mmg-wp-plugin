@@ -43,7 +43,7 @@ jobs:
         git pull origin main
 
     - name: Zip project
-      run: zip -r mmg-checkout-payment.zip . -x "*.git*" -x "tests/*" -x "bin/*" -x "composer.json" -x "composer.lock" -x "phpunit.xml" -x "README.md" -x "*.DS_Store" -x "SECURITY.md"
+      run: zip -r mmg-checkout-payment.zip . -x "*.git*" -x "tests/*" -x "bin/*" -x "composer.json" -x "composer.lock" -x "phpunit.xml" -x "README.md" -x "*.DS_Store" -x "SECURITY.md" -x "wp-content/*"
 
     - name: Setup GitHub CLI
       uses: actions/setup-go@v4
