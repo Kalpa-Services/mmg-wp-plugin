@@ -1,15 +1,35 @@
 <?php
+/**
+ * Tests for MMG Checkout Payment functionality.
+ *
+ * @package MMG_Checkout_Payment
+ */
 
+/**
+ * Test case for MMG_Checkout_Payment class.
+ */
 class Test_MMG_Checkout_Payment extends WP_UnitTestCase {
+
+	/**
+	 * The MMG_Checkout_Payment instance.
+	 *
+	 * @var MMG_Checkout_Payment
+	 */
 	private $mmg_checkout;
 
+	/**
+	 * Set up the test environment.
+	 */
 	public function setUp(): void {
 		parent::setUp();
 		$this->mmg_checkout = new MMG_Checkout_Payment();
 	}
 
+	/**
+	 * Test the generate_checkout_url method.
+	 */
 	public function test_generate_checkout_url() {
-		// Mock the necessary options
+		// Mock the necessary options.
 		update_option( 'mmg_mode', 'demo' );
 		update_option( 'mmg_secret_key', 'test_secret_key' );
 		update_option( 'mmg_merchant_id', 'test_merchant_id' );
@@ -31,37 +51,37 @@ U773Uj8gK3ThyDdsjSX05PWuT6+7clzBYIfoal78UazPN8PMKd7YqiW7sims6xyo
 LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 -----END PUBLIC KEY-----'
 		);
-		// Create a test order
+		// Create a test order.
 		$order = wc_create_order();
 		$order->set_total( 100 );
 
-		// Set up the POST request
+		// Set up the POST request.
 		$_POST['order_id'] = $order->get_id();
 
-		// Capture the output
+		// Capture the output.
 		ob_start();
 		$this->mmg_checkout->generate_checkout_url();
 		$output = ob_get_clean();
 
-		// Decode the JSON response
-		$response = json_decode( $output, true );
+		// Decode the JSON response.
+		$response = wp_json_encode( $output, true );
 
-		// Assert that the response is successful
-		$this->assertTrue( $response['success'], 'URL generation failed: ' . json_encode( $response ) );
+		// Assert that the response is successful.
+		$this->assertTrue( $response['success'], 'URL generation failed: ' . wp_json_encode( $response ) );
 
-		// Assert that a checkout URL is returned
-		$this->assertArrayHasKey( 'checkout_url', $response['data'], 'Checkout URL not found in response' );
+		// Assert that a checkout URL is returned.
+		$this->assertArrayHasKey( 'checkout_url', $response['data'], 'Checkout URL not found in response.' );
 
-		// Assert that the checkout URL contains expected parameters
+		// Assert that the checkout URL contains expected parameters.
 		$checkout_url = $response['data']['checkout_url'];
-		$this->assertStringContainsString( 'token=', $checkout_url, 'Token not found in checkout URL' );
-		$this->assertStringContainsString( 'merchantId=test_merchant_id', $checkout_url, 'Merchant ID not found in checkout URL' );
-		$this->assertStringContainsString( 'X-Client-ID=test_client_id', $checkout_url, 'Client ID not found in checkout URL' );
+		$this->assertStringContainsString( 'token=', $checkout_url, 'Token not found in checkout URL.' );
+		$this->assertStringContainsString( 'merchantId=test_merchant_id', $checkout_url, 'Merchant ID not found in checkout URL.' );
+		$this->assertStringContainsString( 'X-Client-ID=test_client_id', $checkout_url, 'Client ID not found in checkout URL.' );
 
-		// Assert that the order meta is updated
-		$this->assertEquals( $order->get_id(), $order->get_meta( '_mmg_transaction_id' ), 'Order meta not updated correctly' );
+		// Assert that the order meta is updated.
+		$this->assertEquals( $order->get_id(), $order->get_meta( '_mmg_transaction_id' ), 'Order meta not updated correctly.' );
 
-		// Additional assertion to ensure the test fails if URL generation fails
-		$this->assertNotEmpty( $checkout_url, 'Checkout URL is empty' );
+		// Additional assertion to ensure the test fails if URL generation fails.
+		$this->assertNotEmpty( $checkout_url, 'Checkout URL is empty.' );
 	}
 }

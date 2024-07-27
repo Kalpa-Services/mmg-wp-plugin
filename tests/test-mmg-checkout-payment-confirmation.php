@@ -1,15 +1,35 @@
 <?php
+/**
+ * Tests for MMG Checkout Payment Confirmation functionality.
+ *
+ * @package MMG_Checkout_Payment
+ */
 
+/**
+ * Test case for MMG Checkout Payment Confirmation.
+ */
 class Test_MMG_Checkout_Payment_Confirmation extends WP_UnitTestCase {
+
+	/**
+	 * The MMG_Checkout_Payment instance.
+	 *
+	 * @var MMG_Checkout_Payment
+	 */
 	private $mmg_checkout;
 
+	/**
+	 * Set up the test environment.
+	 */
 	public function setUp(): void {
 		parent::setUp();
 		$this->mmg_checkout = new MMG_Checkout_Payment();
 	}
 
+	/**
+	 * Test the handle_payment_confirmation method.
+	 */
 	public function test_handle_payment_confirmation() {
-		// Mock the necessary options
+		// Mock the necessary options.
 		update_option( 'mmg_mode', 'demo' );
 		update_option( 'mmg_secret_key', 'test_secret_key' );
 		update_option( 'mmg_merchant_id', 'test_merchant_id' );
@@ -33,16 +53,16 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 		);
 		update_option( 'mmg_callback_key', 'test_callback_key' );
 
-		// Create a test order
+		// Create a test order.
 		$order = wc_create_order();
 		$order->set_total( 100 );
 		$order->save();
 
-		// Set up the GET request
+		// Set up the GET request.
 		$_SERVER['REQUEST_URI'] = '/wc-api/mmg-checkout/test_callback_key';
 		$_GET['token']          = 'test_token';
 
-		// Mock the decrypt method to return expected payment data
+		// Mock the decrypt method to return expected payment data.
 		$this->mmg_checkout = $this->getMockBuilder( MMG_Checkout_Payment::class )
 			->setMethods( array( 'decrypt' ) )
 			->getMock();
@@ -56,18 +76,18 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 			)
 		);
 
-		// Capture the output
+		// Capture the output.
 		ob_start();
 		$this->mmg_checkout->handle_payment_confirmation();
 		$output = ob_get_clean();
 
-		// Assert that the order status is updated to completed
+		// Assert that the order status is updated to completed.
 		$order = wc_get_order( $order->get_id() );
-		$this->assertEquals( 'completed', $order->get_status(), 'Order status not updated correctly' );
+		$this->assertEquals( 'completed', $order->get_status(), 'Order status not updated correctly.' );
 
-		// Assert that the order note is added
+		// Assert that the order note is added.
 		$notes = $order->get_customer_order_notes();
-		$this->assertNotEmpty( $notes, 'Order note not added' );
-		$this->assertStringContainsString( 'Payment completed via MMG Checkout. Transaction ID: test_transaction_id', $notes[0]->comment_content, 'Order note content incorrect' );
+		$this->assertNotEmpty( $notes, 'Order note not added.' );
+		$this->assertStringContainsString( 'Payment completed via MMG Checkout. Transaction ID: test_transaction_id', $notes[0]->comment_content, 'Order note content incorrect.' );
 	}
 }
