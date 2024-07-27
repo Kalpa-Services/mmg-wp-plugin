@@ -83,6 +83,7 @@ jobs:
         fi
 
     - name: Run PHPUnit tests
+      id: run-tests
       env:
         COMPOSER_PROCESS_TIMEOUT: 0
         COMPOSER_NO_INTERACTION: 1
@@ -106,6 +107,12 @@ jobs:
         cp -r wp-content/plugins/woocommerce /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/
         # Run PHPUnit tests and save output
         vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
+        # Check if any tests failed and set output
+        if grep -q "FAILURES!" phpunit-results.txt; then
+          echo "tests_failed=true" >> $GITHUB_OUTPUT
+        else
+          echo "tests_failed=false" >> $GITHUB_OUTPUT
+        fi
 
     - name: Post PHPUnit results as PR comment
       if: github.event_name == 'pull_request'
@@ -123,3 +130,7 @@ jobs:
             repo: context.repo.repo,
             body: '## PHPUnit Test Summary\n\n```\n' + summary + '\n```\n\n' + fullReport
           });
+
+    - name: Check test results
+      if: steps.run-tests.outputs.tests_failed == 'true'
+      run: exit 1
