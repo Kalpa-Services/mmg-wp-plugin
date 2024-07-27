@@ -58,7 +58,7 @@ activate_plugin( 'woocommerce/woocommerce.php' );
 // Load MMG Checkout Payment plugin dependencies.
 require_once dirname( __DIR__ ) . '/includes/class-mmg-dependency-checker.php';
 require_once dirname( __DIR__ ) . '/includes/class-mmg-checkout-payment.php';
-require_once dirname( __DIR__ ) . '/includes/class-mmg-settings.php';
+require_once dirname( __DIR__ ) . '/includes/class-mmg-checkout-settings.php';
 require_once dirname( __DIR__ ) . '/includes/class-wc-mmg-gateway.php';
 require_once dirname( __DIR__ ) . '/includes/class-wc-mmg-payments-blocks.php';
 

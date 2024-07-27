@@ -1,19 +1,40 @@
 <?php
+/**
+ * MMG Checkout Settings
+ *
+ * This class handles the settings page for the MMG Checkout plugin.
+ *
+ * @package MMG_Checkout_Payment
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class MMG_Checkout_Settings
+ */
 class MMG_Checkout_Settings {
+
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 	}
 
+	/**
+	 * Add admin menu.
+	 */
 	public function add_admin_menu() {
 		add_options_page( 'MMG Checkout Settings', 'MMG Checkout', 'manage_options', 'mmg-checkout-settings', array( $this, 'settings_page' ) );
 	}
 
+	/**
+	 * Register settings.
+	 */
 	public function register_settings() {
 		register_setting( 'mmg_checkout_settings', 'mmg_mode', array( 'sanitize_callback' => array( $this, 'sanitize_mode' ) ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
@@ -24,6 +45,9 @@ class MMG_Checkout_Settings {
 		register_setting( 'mmg_checkout_settings', 'mmg_merchant_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 	}
 
+	/**
+	 * Render settings page.
+	 */
 	public function settings_page() {
 		?>
 		<div class="wrap">
@@ -157,31 +181,58 @@ class MMG_Checkout_Settings {
 		<?php
 	}
 
+	/**
+	 * Enqueue admin scripts.
+	 *
+	 * @param string $hook The current admin page.
+	 */
 	public function enqueue_admin_scripts( $hook ) {
-		if ( $hook != 'settings_page_mmg-checkout-settings' ) {
+		if ( 'settings_page_mmg-checkout-settings' !== $hook ) {
 			return;
 		}
 		wp_enqueue_script( 'jquery' );
 	}
 
+	/**
+	 * Get checkout URL.
+	 *
+	 * @return string
+	 */
 	private function get_checkout_url() {
 		$mode              = get_option( 'mmg_mode', 'demo' );
 		$live_checkout_url = 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home';
 		$demo_checkout_url = 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
-		return $mode === 'live' ? $live_checkout_url : $demo_checkout_url;
+		return 'live' === $mode ? $live_checkout_url : $demo_checkout_url;
 	}
 
+	/**
+	 * Get callback URL.
+	 *
+	 * @return string
+	 */
 	private function get_callback_url() {
 		$callback_key = get_option( 'mmg_callback_key' );
 		$callback_url = $callback_key ? home_url( 'wc-api/mmg-checkout/' . $callback_key ) : 'Not generated yet';
 		return $callback_url;
 	}
 
+	/**
+	 * Sanitize mode.
+	 *
+	 * @param string $input The input to sanitize.
+	 * @return string
+	 */
 	public function sanitize_mode( $input ) {
 		$valid_modes = array( 'live', 'demo' );
-		return in_array( $input, $valid_modes ) ? $input : 'demo';
+		return in_array( $input, $valid_modes, true ) ? $input : 'demo';
 	}
 
+	/**
+	 * Sanitize multiline field.
+	 *
+	 * @param string $input The input to sanitize.
+	 * @return string
+	 */
 	public function sanitize_multiline_field( $input ) {
 		return implode( "\n", array_map( 'sanitize_text_field', explode( "\n", $input ) ) );
 	}
