@@ -4,6 +4,6 @@ repos:
       - id: phpcs
         name: PHP CodeSniffer
         entry: vendor/bin/phpcs
-        args: ['-p', '--standard=phpcs.xml', '--ignore=*/vendor/*']
+        args: ['-p', '--standard=phpcs.xml']
         language: system
         types: [php]
