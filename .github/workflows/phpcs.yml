@@ -26,4 +26,20 @@ jobs:
         run: composer install
 
       - name: Run PHP CodeSniffer
-        run: vendor/bin/phpcs -p --standard=phpcs.xml --runtime-set ignore_warnings_on_exit 1
+        run: |
+          vendor/bin/phpcs -p --standard=phpcs.xml --report=checkstyle --runtime-set ignore_warnings_on_exit 1 | cs2pr
+
+      - name: Post PHPCS results as PR comment
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+            const phpcsOutput = fs.readFileSync('phpcs-results.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## PHP CodeSniffer Results\n\n```\n' + phpcsOutput + '\n```'
+            });
