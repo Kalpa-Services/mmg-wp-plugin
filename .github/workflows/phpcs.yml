@@ -1,0 +1,50 @@
+name: PHP CodeSniffer
+
+on:
+  pull_request:
+    paths:
+      - '**.php'
+  push:
+    paths:
+      - '**.php'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  phpcs:
+    name: PHP CodeSniffer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: Run PHP CodeSniffer
+        run: vendor/bin/phpcs -p --standard=phpcs.xml --report=full --runtime-set ignore_warnings_on_exit 1 > phpcs-results.txt
+
+      - name: Post PHPCS results as PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+            const phpcsOutput = fs.readFileSync('phpcs-results.txt', 'utf8');
+            const summary = phpcsOutput.split('\n').slice(0, 10).join('\n'); // Get first 10 lines for summary
+            const fullReport = '## PHP CodeSniffer Results\n\n<details><summary>Click to expand full report</summary>\n\n```\n' + phpcsOutput + '\n```\n</details>';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## PHP CodeSniffer Summary\n\n```\n' + summary + '\n```\n\n' + fullReport
+            });

@@ -26,28 +26,33 @@ use PhpParser\NodeVisitorAbstract;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @phpstan-import-type LinesType from \SebastianBergmann\CodeCoverage\StaticAnalysis\FileAnalyser
  */
 final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
 {
-    private int $nextBranch = 0;
-    private readonly string $source;
+    /**
+     * @var int
+     */
+    private $nextBranch = 0;
 
     /**
-     * @var LinesType
+     * @var string
      */
-    private array $executableLinesGroupedByBranch = [];
+    private $source;
+
+    /**
+     * @var array<int, int>
+     */
+    private $executableLinesGroupedByBranch = [];
 
     /**
      * @var array<int, bool>
      */
-    private array $unsets = [];
+    private $unsets = [];
 
     /**
      * @var array<int, string>
      */
-    private array $commentsToCheckForUnset = [];
+    private $commentsToCheckForUnset = [];
 
     public function __construct(string $source)
     {
@@ -105,6 +110,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             $node instanceof Node\Stmt\Use_ ||
             $node instanceof Node\Stmt\UseUse ||
             $node instanceof Node\Expr\ConstFetch ||
+            $node instanceof Node\Expr\Match_ ||
             $node instanceof Node\Expr\Variable ||
             $node instanceof Node\Expr\Throw_ ||
             $node instanceof Node\ComplexType ||
@@ -116,18 +122,21 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             return;
         }
 
-        if ($node instanceof Node\Expr\Match_) {
-            foreach ($node->arms as $arm) {
-                $this->setLineBranch(
-                    $arm->body->getStartLine(),
-                    $arm->body->getEndLine(),
-                    ++$this->nextBranch,
-                );
-            }
+        /*
+         * nikic/php-parser ^4.18 represents <code>throw</code> statements
+         * as <code>Stmt\Throw_</code> objects
+         */
+        if ($node instanceof Node\Stmt\Throw_) {
+            $this->setLineBranch($node->expr->getEndLine(), $node->expr->getEndLine(), ++$this->nextBranch);
 
             return;
         }
 
+        /*
+         * nikic/php-parser ^5 represents <code>throw</code> statements
+         * as <code>Stmt\Expression</code> objects that contain an
+         * <code>Expr\Throw_</code> object
+         */
         if ($node instanceof Node\Stmt\Expression && $node->expr instanceof Node\Expr\Throw_) {
             $this->setLineBranch($node->expr->expr->getEndLine(), $node->expr->expr->getEndLine(), ++$this->nextBranch);
 
@@ -140,20 +149,6 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             $node instanceof Node\Stmt\ClassMethod ||
             $node instanceof Node\Expr\Closure ||
             $node instanceof Node\Stmt\Trait_) {
-            if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
-                $unsets = [];
-
-                foreach ($node->getParams() as $param) {
-                    foreach (range($param->getStartLine(), $param->getEndLine()) as $line) {
-                        $unsets[$line] = true;
-                    }
-                }
-
-                unset($unsets[$node->getEndLine()]);
-
-                $this->unsets += $unsets;
-            }
-
             $isConcreteClassLike = $node instanceof Node\Stmt\Enum_ || $node instanceof Node\Stmt\Class_ || $node instanceof Node\Stmt\Trait_;
 
             if (null !== $node->stmts) {
@@ -187,7 +182,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
                 );
 
             if ($hasEmptyBody) {
-                if ($node->getEndLine() === $node->getStartLine() && isset($this->executableLinesGroupedByBranch[$node->getStartLine()])) {
+                if ($node->getEndLine() === $node->getStartLine()) {
                     return;
                 }
 
@@ -202,7 +197,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
         if ($node instanceof Node\Expr\ArrowFunction) {
             $startLine = max(
                 $node->getStartLine() + 1,
-                $node->expr->getStartLine(),
+                $node->expr->getStartLine()
             );
 
             $endLine = $node->expr->getEndLine();
@@ -247,7 +242,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             $this->setLineBranch(
                 $node->cond->getStartLine(),
                 $node->cond->getStartLine(),
-                ++$this->nextBranch,
+                ++$this->nextBranch
             );
 
             return;
@@ -298,7 +293,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             $this->setLineBranch(
                 $startLine,
                 $endLine,
-                ++$this->nextBranch,
+                ++$this->nextBranch
             );
 
             return;
@@ -308,7 +303,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             $this->setLineBranch(
                 $node->expr->getStartLine(),
                 $node->valueVar->getEndLine(),
-                ++$this->nextBranch,
+                ++$this->nextBranch
             );
 
             return;
@@ -319,7 +314,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             $this->setLineBranch(
                 $node->cond->getStartLine(),
                 $node->cond->getEndLine(),
-                ++$this->nextBranch,
+                ++$this->nextBranch
             );
 
             return;
@@ -334,7 +329,7 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
             $this->setLineBranch(
                 $startLine,
                 $endLine,
-                ++$this->nextBranch,
+                ++$this->nextBranch
             );
 
             return;
@@ -377,13 +372,10 @@ final class ExecutableLinesFindingVisitor extends NodeVisitorAbstract
 
         $this->executableLinesGroupedByBranch = array_diff_key(
             $this->executableLinesGroupedByBranch,
-            $this->unsets,
+            $this->unsets
         );
     }
 
-    /**
-     * @return LinesType
-     */
     public function executableLinesGroupedByBranch(): array
     {
         return $this->executableLinesGroupedByBranch;

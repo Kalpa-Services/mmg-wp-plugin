@@ -10,92 +10,73 @@
 namespace SebastianBergmann\GlobalState;
 
 use function in_array;
-use function str_starts_with;
+use function strpos;
 use ReflectionClass;
 
 final class ExcludeList
 {
     /**
-     * @var array<non-empty-string, true>
+     * @var array
      */
-    private array $globalVariables = [];
+    private $globalVariables = [];
 
     /**
-     * @var list<non-empty-string>
+     * @var string[]
      */
-    private array $classes = [];
+    private $classes = [];
 
     /**
-     * @var list<non-empty-string>
+     * @var string[]
      */
-    private array $classNamePrefixes = [];
+    private $classNamePrefixes = [];
 
     /**
-     * @var list<non-empty-string>
+     * @var string[]
      */
-    private array $parentClasses = [];
+    private $parentClasses = [];
 
     /**
-     * @var list<non-empty-string>
+     * @var string[]
      */
-    private array $interfaces = [];
+    private $interfaces = [];
 
     /**
-     * @var array<string, array<non-empty-string, true>>
+     * @var array
      */
-    private array $staticProperties = [];
+    private $staticAttributes = [];
 
-    /**
-     * @param non-empty-string $variableName
-     */
     public function addGlobalVariable(string $variableName): void
     {
         $this->globalVariables[$variableName] = true;
     }
 
-    /**
-     * @param non-empty-string $className
-     */
     public function addClass(string $className): void
     {
         $this->classes[] = $className;
     }
 
-    /**
-     * @param non-empty-string $className
-     */
     public function addSubclassesOf(string $className): void
     {
         $this->parentClasses[] = $className;
     }
 
-    /**
-     * @param non-empty-string $interfaceName
-     */
     public function addImplementorsOf(string $interfaceName): void
     {
         $this->interfaces[] = $interfaceName;
     }
 
-    /**
-     * @param non-empty-string $classNamePrefix
-     */
     public function addClassNamePrefix(string $classNamePrefix): void
     {
         $this->classNamePrefixes[] = $classNamePrefix;
     }
 
-    /**
-     * @param non-empty-string $className
-     * @param non-empty-string $propertyName
-     */
-    public function addStaticProperty(string $className, string $propertyName): void
+    public function addStaticAttribute(string $className, string $attributeName): void
     {
-        if (!isset($this->staticProperties[$className])) {
-            $this->staticProperties[$className] = [];
+        if (!isset($this->staticAttributes[$className])) {
+            $this->staticAttributes[$className] = [];
         }
 
-        $this->staticProperties[$className][$propertyName] = true;
+        $this->staticAttributes[$className][$attributeName] = true;
     }
 
     public function isGlobalVariableExcluded(string $variableName): bool
@@ -103,18 +84,14 @@ final class ExcludeList
         return isset($this->globalVariables[$variableName]);
     }
 
-    /**
-     * @param class-string     $className
-     * @param non-empty-string $propertyName
-     */
-    public function isStaticPropertyExcluded(string $className, string $propertyName): bool
+    public function isStaticAttributeExcluded(string $className, string $attributeName): bool
     {
         if (in_array($className, $this->classes, true)) {
             return true;
         }
 
         foreach ($this->classNamePrefixes as $prefix) {
-            if (str_starts_with($className, $prefix)) {
+            if (strpos($className, $prefix) === 0) {
                 return true;
             }
         }
@@ -133,6 +110,10 @@ final class ExcludeList
             }
         }
 
-        return isset($this->staticProperties[$className][$propertyName]);
+        if (isset($this->staticAttributes[$className][$attributeName])) {
+            return true;
+        }
+
+        return false;
     }
 }

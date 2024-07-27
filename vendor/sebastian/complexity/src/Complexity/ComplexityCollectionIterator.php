@@ -11,16 +11,17 @@ namespace SebastianBergmann\Complexity;
 
 use Iterator;
 
-/**
- * @template-implements Iterator<int, Complexity>
- */
 final class ComplexityCollectionIterator implements Iterator
 {
     /**
-     * @var list<Complexity>
+     * @psalm-var list<Complexity>
      */
-    private readonly array $items;
-    private int $position = 0;
+    private $items;
+
+    /**
+     * @var int
+     */
+    private $position = 0;
 
     public function __construct(ComplexityCollection $items)
     {

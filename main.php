@@ -22,81 +22,97 @@
  * Requires Plugins:  woocommerce
  */
 
-if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-// Define plugin version constant
-define('MMG_PLUGIN_VERSION', '1.1.18');
+define( 'MMG_PLUGIN_VERSION', '1.1.18' );
+require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-activator.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
 
-// Load composer autoloader
-require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
-// Include the dependency checker
-require_once plugin_dir_path(__FILE__) . 'includes/class-mmg-dependency-checker.php';
-// Include the activator class
-require_once plugin_dir_path(__FILE__) . 'includes/class-mmg-checkout-payment-activator.php';
-// Include the deactivator class
-require_once plugin_dir_path(__FILE__) . 'includes/class-mmg-checkout-payment-deactivator.php';
-
-// Check dependencies before initializing the plugin
-if (MMG_Dependency_Checker::check_dependencies()) {
-    // Initialize the plugin
-    function mmg_checkout_init() {
-        require_once plugin_dir_path(__FILE__) . 'includes/class-mmg-checkout-payment.php';
-        new MMG_Checkout_Payment();
-    }
-    add_action('plugins_loaded', 'mmg_checkout_init');
+if ( MMG_Dependency_Checker::check_dependencies() ) {
+	/**
+	 * Initialize the MMG Checkout Payment functionality.
+	 *
+	 * This function is called when all plugins are loaded and dependencies are met.
+	 * It includes the main plugin class and instantiates it.
+	 */
+	function mmg_checkout_init() {
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment.php';
+		new MMG_Checkout_Payment();
+	}
+	add_action( 'plugins_loaded', 'mmg_checkout_init' );
 }
 
-add_action('woocommerce_blocks_loaded', 'mmg_checkout_register_block_support');
+add_action( 'woocommerce_blocks_loaded', 'mmg_checkout_register_block_support' );
 
+/**
+ * Register MMG Checkout Payment support for WooCommerce Blocks.
+ *
+ * This function checks if the WooCommerce Blocks abstract payment method class exists,
+ * and if so, registers the MMG Payments Block support.
+ */
 function mmg_checkout_register_block_support() {
-    if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
-        require_once plugin_dir_path(__FILE__) . 'includes/class-wc-mmg-payments-blocks.php';
-        add_action(
-            'woocommerce_blocks_payment_method_type_registration',
-            function(Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
-                $payment_method_registry->register(new WC_MMG_Payments_Blocks());
-            }
-        );
-    }
+	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-wc-mmg-payments-blocks.php';
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			function ( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+				$payment_method_registry->register( new WC_MMG_Payments_Blocks() );
+			}
+		);
+	}
 }
-
-function mmg_add_rewrite_rules() {
-    add_rewrite_rule(
-        '^wc-api/mmg-checkout/([^/]+)/?$',
-        'index.php?mmg-checkout=1&callback_key=$matches[1]',
-        'top'
-    );
+/**
+ * Add custom query variables for MMG Checkout Payment.
+ *
+ * @param array $vars The array of existing query variables.
+ * @return array The updated array of query variables.
+ */
+function mmg_query_vars( $vars ) {
+	$vars[] = 'mmg-checkout';
+	$vars[] = 'callback_key';
+	return $vars;
 }
-add_action('init', 'mmg_add_rewrite_rules');
+add_filter( 'query_vars', 'mmg_query_vars' );
 
-function mmg_query_vars($vars) {
-    $vars[] = 'mmg-checkout';
-    $vars[] = 'callback_key';
-    return $vars;
-}
-add_filter('query_vars', 'mmg_query_vars');
-
+/**
+ * Handle plugin updates.
+ *
+ * This function checks if the plugin version has changed and performs
+ * necessary actions like flushing rewrite rules and updating the version option.
+ */
 function mmg_plugin_updated() {
-    $version = get_option('mmg_plugin_version', '0');
-    if (version_compare(MMG_PLUGIN_VERSION, $version, '>')) {
-        flush_rewrite_rules();
-        update_option('mmg_plugin_version', MMG_PLUGIN_VERSION);
-    }
+	$version = get_option( 'mmg_plugin_version', '0' );
+	if ( version_compare( MMG_PLUGIN_VERSION, $version, '>' ) ) {
+		flush_rewrite_rules();
+		update_option( 'mmg_plugin_version', MMG_PLUGIN_VERSION );
+	}
 }
-add_action('plugins_loaded', 'mmg_plugin_updated');
+add_action( 'plugins_loaded', 'mmg_plugin_updated' );
 
-function mmg_remove_gateway($gateways) {
-    unset($gateways['mmg_checkout']);
-    return $gateways;
+/**
+ * Remove the MMG Checkout Payment gateway from the list of available gateways.
+ *
+ * @param array $gateways The array of registered payment gateways.
+ * @return array The updated array of payment gateways.
+ */
+function mmg_remove_gateway( $gateways ) {
+	unset( $gateways['mmg_checkout'] );
+	return $gateways;
 }
-add_filter('woocommerce_payment_gateways', 'mmg_remove_gateway', 20);
+add_filter( 'woocommerce_payment_gateways', 'mmg_remove_gateway', 20 );
 
-// Initialize WooCommerce API endpoint
-add_action('init', function() {
-    add_rewrite_endpoint('mmg-checkout', EP_ALL);
-});
+add_action(
+	'init',
+	function () {
+		add_rewrite_endpoint( 'mmg-checkout', EP_ALL );
+	}
+);
 
-register_activation_hook(__FILE__, array('MMG_Checkout_Payment_Activator', 'activate'));
-register_deactivation_hook(__FILE__, array('MMG_Checkout_Payment_Deactivator', 'deactivate'));
+register_activation_hook( __FILE__, array( 'MMG_Checkout_Payment_Activator', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'MMG_Checkout_Payment_Deactivator', 'deactivate' ) );

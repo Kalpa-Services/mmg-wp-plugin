@@ -16,9 +16,6 @@ final class NeverType extends Type
         return $other instanceof self;
     }
 
-    /**
-     * @return 'never'
-     */
     public function name(): string
     {
         return 'never';
@@ -29,6 +26,9 @@ final class NeverType extends Type
         return false;
     }
 
+    /**
+     * @psalm-assert-if-true NeverType $this
+     */
     public function isNever(): bool
     {
         return true;
