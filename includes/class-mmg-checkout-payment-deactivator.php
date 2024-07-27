@@ -1,5 +1,5 @@
 <?php
-if ( ! defined( 'ABSPATH')){
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -21,7 +21,6 @@ class MMG_Checkout_Payment_Deactivator {
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
-        flush_rewrite_rules();
+		flush_rewrite_rules();
 	}
-
 }

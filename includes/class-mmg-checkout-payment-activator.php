@@ -1,6 +1,6 @@
 <?php
-if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly
 }
 
 /**
@@ -14,15 +14,15 @@ if (!defined('ABSPATH')) {
  */
 class MMG_Checkout_Payment_Activator {
 
-    /**
-     * @since    1.0.0
-     */
-    public static function activate() {
-        mmg_activate();
-    }
+	/**
+	 * @since    1.0.0
+	 */
+	public static function activate() {
+		mmg_activate();
+	}
 }
 
 function mmg_activate() {
-    mmg_add_rewrite_rules();
-    flush_rewrite_rules();
+	mmg_add_rewrite_rules();
+	flush_rewrite_rules();
 }
