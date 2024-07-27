@@ -11,7 +11,7 @@
  * Plugin Name:       MMG Checkout Payment
  * Plugin URI:        https://github.com/Kalpa-Services/mmg-wp-plugin
  * Description:       Enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
- * Version:           1.1.20
+ * Version:           1.1.21
  * Requires at least: 5.6
  * Requires PHP:      7.4
  * Author:            Kalpa Services Inc.
