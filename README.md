@@ -1,5 +1,7 @@
 # MMG Checkout Payment Plugin
 
+### Notice: This readme will soon be "developer focused" and will only detail information about code contributions and code practices. The documentation is being migrated [here](https://github.com/Kalpa-Services/mmg-wp-plugin-docs).
+
 ## Description
 
 MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers. This plugin integrates seamlessly with WooCommerce to provide a secure and efficient payment gateway for your online store.
