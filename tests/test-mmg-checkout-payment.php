@@ -64,7 +64,7 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 		$output = ob_get_clean();
 
 		// Decode the JSON response.
-		$response = wp_json_encode( $output, true );
+		$response = json_decode( $output, true );
 
 		// Assert that the response is successful.
 		$this->assertTrue( $response['success'], 'URL generation failed: ' . wp_json_encode( $response ) );
@@ -81,7 +81,7 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 		// Assert that the order meta is updated.
 		$this->assertEquals( $order->get_id(), $order->get_meta( '_mmg_transaction_id' ), 'Order meta not updated correctly.' );
 
-		// Additional assertion to ensure the test fails if URL generation fails.
-		$this->assertNotEmpty( $checkout_url, 'Checkout URL is empty.' );
+		// Fail the test if the checkout URL is empty.
+		$this->assertNotEmpty( $checkout_url, 'Checkout URL generation failed. URL is empty.' );
 	}
 }
