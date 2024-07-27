@@ -102,3 +102,8 @@ jobs:
         cp -r wp-content/plugins/woocommerce /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/
         # Run PHPUnit tests
         vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug --verbose --configuration phpunit.xml
+        # Check if any tests failed
+        if [ $? -ne 0 ]; then
+          echo "PHPUnit tests failed. Exiting with error."
+          exit 1
+        fi
