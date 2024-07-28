@@ -361,9 +361,49 @@ class MMG_Checkout_Payment {
 	public function parse_api_request() {
 		global $wp;
 		if ( isset( $wp->query_vars['mmg-checkout'] ) ) {
-			$this->handle_payment_confirmation();
+			$path_info = isset( $_SERVER['PATH_INFO'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PATH_INFO'] ) ) : '';
+			if ( strpos( $path_info, '/errorpayment' ) !== false ) {
+				$this->handle_error_payment();
+			} else {
+				$this->handle_payment_confirmation();
+			}
 			exit;
 		}
+	}
+
+	/**
+	 * Handle error payment.
+	 */
+	public function handle_error_payment() {
+		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
+
+		if ( empty( $token ) ) {
+			wp_die( 'Invalid token', 'MMG Checkout Error', array( 'response' => 400 ) );
+		}
+
+		try {
+			$decoded_token = $this->url_safe_base64_decode( $token );
+			$error_data    = $this->decrypt( $decoded_token );
+		} catch ( Exception $e ) {
+			wp_die( 'Error decrypting token: ' . esc_html( $e->getMessage() ), 'MMG Checkout Error', array( 'response' => 400 ) );
+		}
+
+		$order_id      = isset( $error_data['merchantTransactionId'] ) ? intval( $error_data['merchantTransactionId'] ) : 0;
+		$error_code    = isset( $error_data['errorCode'] ) ? intval( $error_data['errorCode'] ) : null;
+		$error_message = isset( $error_data['errorMessage'] ) ? sanitize_text_field( $error_data['errorMessage'] ) : '';
+
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			wp_die( 'Invalid order', 'MMG Checkout Error', array( 'response' => 400 ) );
+		}
+
+		$order->update_status( 'failed', "Payment failed. Error Code: {$error_code}, Message: {$error_message}" );
+
+		// Redirect to the order page with an error message.
+		wc_add_notice( __( 'Payment failed. Please try again or contact support.', 'mmg-checkout' ), 'error' );
+		wp_safe_redirect( $order->get_checkout_payment_url() );
+		exit;
 	}
 
 	/**

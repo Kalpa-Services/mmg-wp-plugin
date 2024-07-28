@@ -56,6 +56,11 @@ class MMG_Checkout_Payment_Activator {
 			'index.php?mmg-checkout=1&callback_key=$matches[1]',
 			'top'
 		);
+		add_rewrite_rule(
+			'^wc-api/mmg-checkout/([^/]+)/errorpayment/?$',
+			'index.php?mmg-checkout=errorpayment&callback_key=$matches[1]',
+			'top'
+		);
 		add_rewrite_tag( '%mmg-checkout%', '([^&]+)' );
 	}
 }
