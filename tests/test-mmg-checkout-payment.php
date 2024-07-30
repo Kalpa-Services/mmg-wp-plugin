@@ -1,16 +1,19 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
-use Mockery;
+use PHPUnit_Framework_TestCase;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Brain\Monkey;
 
-class Test_MMG_Checkout_Payment extends TestCase {
+class Test_MMG_Checkout_Payment extends PHPUnit_Framework_TestCase {
+
+	use MockeryPHPUnitIntegration;
+
 
     protected $mmg_checkout_payment;
 
-    protected function setUp(): void {
+	protected function setUp(): void {
         parent::setUp();
-        Brain\Monkey\setUp();
+        Monkey\setUp(); // Corrected setup call
         
         // Mock WordPress functions
         Brain\Monkey\Functions\stubs([
@@ -37,11 +40,12 @@ class Test_MMG_Checkout_Payment extends TestCase {
         $this->mmg_checkout_payment = Mockery::mock('MMG\CheckoutPayment\MMG_Checkout_Payment')->makePartial();
     }
 
-    protected function tearDown(): void {
-        Mockery::close();
-        Brain\Monkey\tearDown();
+
+    protected function tearDown() {
+        Monkey\tearDown();
         parent::tearDown();
     }
+
 
     public function test_generate_unique_callback_url() {
         $callback_key = 'test_key';
