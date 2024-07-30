@@ -80,9 +80,10 @@ jobs:
           exit 1
         fi
 
-    - name: Copy phpunit.xml
+    - name: Copy phpunit.xml and tests directory
       run: |
         cp $GITHUB_WORKSPACE/phpunit.xml /home/runner/wordpress-tests/wordpress-develop
+        cp -r $GITHUB_WORKSPACE/tests /home/runner/wordpress-tests/wordpress-develop
 
     - name: Display phpunit.xml contents
       run: cat /home/runner/wordpress-tests/wordpress-develop/phpunit.xml
