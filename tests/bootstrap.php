@@ -55,6 +55,14 @@ if ( class_exists( 'WooCommerce' ) ) {
 // Activate WooCommerce.
 activate_plugin( 'woocommerce/woocommerce.php' );
 
+// Ensure WooCommerce tables are created.
+WC_Install::install();
+
+// Flush rewrite rules.
+global $wp_rewrite;
+$wp_rewrite->init();
+flush_rewrite_rules();
+
 // Load MMG Checkout Payment plugin dependencies.
 require_once dirname( __DIR__ ) . '/includes/class-mmg-dependency-checker.php';
 require_once dirname( __DIR__ ) . '/includes/class-mmg-checkout-payment.php';
