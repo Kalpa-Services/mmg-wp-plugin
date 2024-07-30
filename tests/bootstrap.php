@@ -45,19 +45,18 @@ if ( file_exists( $woocommerce_path ) ) {
 	die( esc_html( 'WooCommerce plugin not found at ' . $woocommerce_path . '. Make sure it is installed in the WordPress plugins directory.' ) );
 }
 
-// Include WooCommerce main file
-require_once dirname( dirname( __FILE__ ) ) . '/wp-content/plugins/woocommerce/woocommerce.php';
-
-// Ensure WooCommerce tables are created
+/**
+ * Ensure WooCommerce tables are created.
+ */
 function install_woocommerce() {
-    // Load WooCommerce functions
-    WC_Install::install();
-    // Trigger WooCommerce activation hook
-    do_action('woocommerce_flush_rewrite_rules');
+	// Load WooCommerce functions.
+	WC_Install::install();
+	// Trigger WooCommerce activation hook.
+	do_action( 'woocommerce_flush_rewrite_rules' );
 }
 
-// Hook into the 'setup_theme' action to ensure WooCommerce is installed
-tests_add_filter('setup_theme', 'install_woocommerce');
+// Hook into the 'setup_theme' action to ensure WooCommerce is installed.
+tests_add_filter( 'setup_theme', 'install_woocommerce' );
 
 // Manually load and initialize WooCommerce.
 if ( class_exists( 'WooCommerce' ) ) {

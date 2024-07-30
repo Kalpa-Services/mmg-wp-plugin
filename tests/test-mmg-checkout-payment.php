@@ -261,12 +261,12 @@ class Test_MMG_Checkout_Payment extends WP_UnitTestCase {
 	 */
 	public function tearDown(): void {
 		parent::tearDown();
-		
-		// Clean up WooCommerce tables
+
+		// Clean up WooCommerce tables.
 		global $wpdb;
 		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}wc_webhooks" );
-		
-		// Clear cache and reset globals
+
+		// Clear cache and reset globals.
 		$wpdb->flush();
 		foreach ( array( 'wc_webhooks' ) as $table ) {
 			$wpdb->$table = "{$wpdb->prefix}{$table}";
