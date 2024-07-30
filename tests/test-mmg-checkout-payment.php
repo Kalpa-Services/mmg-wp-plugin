@@ -140,15 +140,19 @@ class Test_MMG_Checkout_Payment extends \WP_UnitTestCase {
 		$mock_payment = $this->createMock( MMG_Checkout_Payment::class );
 
 		// Test case 1: Successful payment confirmation.
-		$mock_payment = $this->getMockBuilder('MMG_Checkout_Payment')
-		                     ->setMethods(['verify_callback_key', 'decrypt'])
-		                     ->getMock();
-		$mock_payment->method('verify_callback_key')->willReturn(true);
-		$mock_payment->method('decrypt')->willReturn(wp_json_encode([
-			'transaction_id' => '123456',
-			'result_code'    => '0',
-			'result_message' => 'Success',
-		]));
+		$mock_payment = $this->getMockBuilder( 'MMG_Checkout_Payment' )
+							->setMethods( array( 'verify_callback_key', 'decrypt' ) )
+							->getMock();
+		$mock_payment->method( 'verify_callback_key' )->willReturn( true );
+		$mock_payment->method( 'decrypt' )->willReturn(
+			wp_json_encode(
+				array(
+					'transaction_id' => '123456',
+					'result_code'    => '0',
+					'result_message' => 'Success',
+				)
+			)
+		);
 		$_GET['token'] = 'valid_token';
 		$order         = wc_create_order();
 		$order->update_meta_data( '_mmg_transaction_id', '123456' );
@@ -162,10 +166,10 @@ class Test_MMG_Checkout_Payment extends \WP_UnitTestCase {
 		$this->assertEquals( 'completed', $order->get_status() );
 
 		// Test case 2: Invalid callback key.
-		$mock_payment = $this->getMockBuilder('MMG_Checkout_Payment')
-		                     ->setMethods(['verify_callback_key', 'decrypt'])
-		                     ->getMock();
-		$mock_payment->method('verify_callback_key')->willReturn(false);
+		$mock_payment = $this->getMockBuilder( 'MMG_Checkout_Payment' )
+							->setMethods( array( 'verify_callback_key', 'decrypt' ) )
+							->getMock();
+		$mock_payment->method( 'verify_callback_key' )->willReturn( false );
 
 		ob_start();
 		$mock_payment->handle_payment_confirmation();
