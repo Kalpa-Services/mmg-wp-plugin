@@ -75,14 +75,12 @@ flush_rewrite_rules();
 
 // Load MMG Checkout Payment plugin dependencies and ensure the autoloader includes the classes.
 spl_autoload_register(function ($class) {
-    $includes_dir = dirname(__DIR__) . '/includes/';
-    $file = $includes_dir . str_replace(['MMG\\CheckoutPayment\\', '\\'], ['', '/'], $class) . '.php';
-    if (file_exists($file)) {
-        require_once $file;
-    } else {
-        // Attempt to load any PHP file in the includes directory
-        foreach (glob($includes_dir . '*.php') as $filename) {
-            require_once $filename;
+    if (strpos($class, 'MMG\\CheckoutPayment\\') === 0) {
+        $file = dirname(__DIR__) . '/includes/class-' . strtolower(str_replace(['MMG\\CheckoutPayment\\', '\\'], ['', '-'], $class)) . '.php';
+        if (file_exists($file)) {
+            require_once $file;
+        } else {
+            die(esc_html('Class file not found for ' . $class . ' at ' . $file));
         }
     }
 });
