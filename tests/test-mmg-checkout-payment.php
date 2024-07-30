@@ -7,6 +7,9 @@ use Brain\Monkey;
 // Include Patchwork before any WordPress functions are defined
 require_once __DIR__ . '/../vendor/antecedent/patchwork/Patchwork.php';
 
+// Include WordPress functions after Patchwork
+require_once __DIR__ . '/../vendor/wp-functions.php';
+
 class Test_MMG_Checkout_Payment extends TestCase {
 
 	use MockeryPHPUnitIntegration;
@@ -49,13 +52,17 @@ class Test_MMG_Checkout_Payment extends TestCase {
 
     public function test_generate_unique_callback_url() {
         $callback_key = 'test_key';
-        Brain\Monkey\Functions\expect('get_option')
-            ->with('mmg_callback_key')
-            ->andReturn($callback_key);
+        Patchwork\redefine('get_option', function($option) use ($callback_key) {
+            if ($option === 'mmg_callback_key') {
+                return $callback_key;
+            }
+        });
 
-        Brain\Monkey\Functions\expect('home_url')
-            ->with("wc-api/mmg-checkout/{$callback_key}")
-            ->andReturn("http://example.com/wc-api/mmg-checkout/{$callback_key}");
+        Patchwork\redefine('home_url', function($path) use ($callback_key) {
+            if ($path === "wc-api/mmg-checkout/{$callback_key}") {
+                return "http://example.com/wc-api/mmg-checkout/{$callback_key}";
+            }
+        });
 
         $result = $this->invokeMethod($this->mmg_checkout_payment, 'generate_unique_callback_url');
 
