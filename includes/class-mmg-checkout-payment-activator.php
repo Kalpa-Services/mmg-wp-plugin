@@ -7,6 +7,7 @@
  * @package MMG_Checkout_Payment
  * @since 1.0.0
  */
+namespace MMG_Checkout;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
