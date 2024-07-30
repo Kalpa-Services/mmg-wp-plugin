@@ -97,24 +97,8 @@ jobs:
         # Copy WooCommerce to WordPress test environment
         mkdir -p /tmp/wordpress-tests/wordpress-develop/src/wp-content/plugins
         cp -r wp-content/plugins/woocommerce /tmp/wordpress-tests/wordpress-develop/src/wp-content/plugins/
-        # Modify bootstrap.php to load, initialize WooCommerce, and include plugin
-        cat << EOF >> /tmp/wordpress-tests/wordpress-develop/tests/phpunit/includes/bootstrap.php
-        // Load WooCommerce
-        require_once '/tmp/wordpress-tests/wordpress-develop/src/wp-content/plugins/woocommerce/woocommerce.php';
-        // Initialize WooCommerce
-        \$GLOBALS['woocommerce'] = WC();
-        // Ensure WooCommerce is fully loaded
-        do_action('woocommerce_loaded');
-        // Run WooCommerce installation
-        WC_Install::install();
-        // Flush rewrite rules
-        \$GLOBALS['wp_rewrite']->init();
-        flush_rewrite_rules();
-        // Include the plugin files
-        require_once getenv('GITHUB_WORKSPACE') . '/main.php';
-        EOF
         # Run PHPUnit tests and save output
-        vendor/bin/phpunit --bootstrap /tmp/wordpress-tests/wordpress-develop/tests/phpunit/includes/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
+        vendor/bin/phpunit --bootstrap bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
         cat phpunit-results.txt
         # Check if any tests failed and set output
         if grep -q "FAILURES!" phpunit-results.txt; then
