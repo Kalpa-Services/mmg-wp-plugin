@@ -22,6 +22,20 @@ class Test_MMG_Checkout_Payment extends WP_UnitTestCase {
 	 */
 	public function setUp(): void {
 		parent::setUp();
+
+		// Ensure WooCommerce is installed and activated.
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			$this->markTestSkipped( 'WooCommerce is not active.' );
+		}
+
+		// Install WooCommerce tables.
+		global $wpdb;
+		WC_Install::install();
+
+		// Clear the cache.
+		$wpdb->flush();
+
+		// Initialize the test object.
 		$this->mmg_checkout = new MMG_Checkout_Payment();
 	}
 
