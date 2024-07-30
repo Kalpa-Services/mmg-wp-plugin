@@ -7,9 +7,6 @@ use Brain\Monkey;
 // Include Patchwork before any WordPress functions are defined
 require_once __DIR__ . '/../vendor/antecedent/patchwork/Patchwork.php';
 
-// Include WordPress functions after Patchwork
-require_once __DIR__ . '/../vendor/wp-functions.php';
-
 class Test_MMG_Checkout_Payment extends TestCase {
 
 	use MockeryPHPUnitIntegration;
