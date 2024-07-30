@@ -25,7 +25,7 @@ class Test_MMG_Checkout_Payment extends \WP_UnitTestCase {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->mmg_checkout = new MMG_Checkout_Payment();
+		$this->mmg_checkout = $this->createMock(MMG_Checkout_Payment::class);
 	}
 
 	/**
@@ -141,7 +141,7 @@ class Test_MMG_Checkout_Payment extends \WP_UnitTestCase {
 
 		// Test case 1: Successful payment confirmation.
 		$mock_payment = $this->getMockBuilder( 'MMG_Checkout_Payment' )
-							->setMethods( array( 'verify_callback_key', 'decrypt' ) )
+							->setMethods( array( 'verify_callback_key', 'decrypt', 'handle_payment_confirmation' ) )
 							->getMock();
 		$mock_payment->method( 'verify_callback_key' )->willReturn( true );
 		$mock_payment->method( 'decrypt' )->willReturn(
@@ -167,7 +167,7 @@ class Test_MMG_Checkout_Payment extends \WP_UnitTestCase {
 
 		// Test case 2: Invalid callback key.
 		$mock_payment = $this->getMockBuilder( 'MMG_Checkout_Payment' )
-							->setMethods( array( 'verify_callback_key', 'decrypt' ) )
+							->setMethods( array( 'verify_callback_key', 'decrypt', 'handle_payment_confirmation' ) )
 							->getMock();
 		$mock_payment->method( 'verify_callback_key' )->willReturn( false );
 
