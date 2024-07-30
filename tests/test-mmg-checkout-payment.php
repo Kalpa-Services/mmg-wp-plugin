@@ -4,16 +4,18 @@ use PHPUnit\Framework\TestCase;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Brain\Monkey;
 
+// Include Patchwork before any WordPress functions are defined
+require_once __DIR__ . '/../vendor/antecedent/patchwork/Patchwork.php';
+
 class Test_MMG_Checkout_Payment extends TestCase {
 
 	use MockeryPHPUnitIntegration;
-
 
     protected $mmg_checkout_payment;
 
 	protected function setUp(): void {
         parent::setUp();
-        Monkey\setUp(); // Corrected setup call
+        Monkey\setUp();
         
         // Mock WordPress functions
         Brain\Monkey\Functions\stubs([
@@ -40,12 +42,10 @@ class Test_MMG_Checkout_Payment extends TestCase {
         $this->mmg_checkout_payment = Mockery::mock('MMG\CheckoutPayment\MMG_Checkout_Payment')->makePartial();
     }
 
-
     protected function tearDown(): void {
         Monkey\tearDown();
         parent::tearDown();
     }
-
 
     public function test_generate_unique_callback_url() {
         $callback_key = 'test_key';
