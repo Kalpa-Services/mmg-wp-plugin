@@ -23,7 +23,7 @@ require_once $wordpress_tests_path . '/includes/functions.php';
 $wp_phpunit_dir = getenv( 'WP_PHPUNIT__DIR' );
 if ( ! $wp_phpunit_dir ) {
 	$wp_phpunit_dir = $wordpress_tests_path;
-	putenv( 'WP_PHPUNIT__DIR=' . $wp_phpunit_dir );
+	define( 'WP_PHPUNIT__DIR', $wp_phpunit_dir );
 }
 
 // Check if the bootstrap file exists.
@@ -45,6 +45,19 @@ if ( file_exists( $woocommerce_path ) ) {
 	die( esc_html( 'WooCommerce plugin not found at ' . $woocommerce_path . '. Make sure it is installed in the WordPress plugins directory.' ) );
 }
 
+/**
+ * Ensure WooCommerce tables are created.
+ */
+function install_woocommerce() {
+	// Load WooCommerce functions.
+	WC_Install::install();
+	// Trigger WooCommerce activation hook.
+	do_action( 'woocommerce_flush_rewrite_rules' );
+}
+
+// Hook into the 'setup_theme' action to ensure WooCommerce is installed.
+tests_add_filter( 'setup_theme', 'install_woocommerce' );
+
 // Manually load and initialize WooCommerce.
 if ( class_exists( 'WooCommerce' ) ) {
 	WC()->init();
@@ -54,6 +67,11 @@ if ( class_exists( 'WooCommerce' ) ) {
 
 // Activate WooCommerce.
 activate_plugin( 'woocommerce/woocommerce.php' );
+
+// Flush rewrite rules.
+global $wp_rewrite;
+$wp_rewrite->init();
+flush_rewrite_rules();
 
 // Load MMG Checkout Payment plugin dependencies.
 require_once dirname( __DIR__ ) . '/includes/class-mmg-dependency-checker.php';
