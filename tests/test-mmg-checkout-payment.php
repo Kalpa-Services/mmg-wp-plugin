@@ -1,19 +1,19 @@
 <?php
 
+// Include Patchwork before any WordPress functions are defined
+require_once __DIR__ . '/../vendor/antecedent/patchwork/Patchwork.php';
+
 use PHPUnit\Framework\TestCase;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Brain\Monkey;
 
-// Include Patchwork before any WordPress functions are defined
-require_once __DIR__ . '/../vendor/antecedent/patchwork/Patchwork.php';
-
 class Test_MMG_Checkout_Payment extends TestCase {
 
-	use MockeryPHPUnitIntegration;
+    use MockeryPHPUnitIntegration;
 
     protected $mmg_checkout_payment;
 
-	protected function setUp(): void {
+    protected function setUp(): void {
         parent::setUp();
         Monkey\setUp();
         
