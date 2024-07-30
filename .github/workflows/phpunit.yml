@@ -80,6 +80,14 @@ jobs:
           exit 1
         fi
 
+    - name: Configure PHPUnit
+      run: |
+        cd /home/runner/wordpress-tests/wordpress-develop
+        if [ ! -f phpunit.xml ]; then
+          wget https://raw.githubusercontent.com/WordPress/wordpress-develop/master/phpunit.xml.dist -O phpunit.xml
+        fi
+        echo "PHPUnit configuration setup completed"
+    
     - name: Run PHPUnit tests
       id: run-tests
       env:
