@@ -1,4 +1,5 @@
 <?php
+use MMG\CheckoutPayment\MMG_Checkout_Payment;
 /**
  * Tests for MMG Checkout Payment functionality.
  *
