@@ -84,4 +84,51 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 		// Fail the test if the checkout URL is empty.
 		$this->assertNotEmpty( $checkout_url, 'Checkout URL generation failed. URL is empty.' );
 	}
+
+	/**
+	 * Mock the verify_callback_key method of the payment object.
+	 *
+	 * @param MMG_Checkout_Payment $mock_payment The mocked payment object.
+	 * @param bool                 $return_value The value to return from the mocked method.
+	 */
+	protected function mock_verify_callback_key( $mock_payment, $return_value = true ) {
+		$mock_payment->method( 'verify_callback_key' )
+					->willReturn( $return_value );
+	}
+
+	/**
+	 * Mock the wp_verify_nonce function.
+	 *
+	 * @param bool $return_value The value to return from the mocked function.
+	 */
+	protected function mock_wp_verify_nonce( $return_value = true ) {
+		global $wp_filter;
+		$wp_filter['wp_verify_nonce'] = new WP_Hook();
+		$wp_filter['wp_verify_nonce']->add_filter(
+			'wp_verify_nonce',
+			function () use ( $return_value ) {
+				return $return_value;
+			}
+		);
+	}
+
+	/**
+	 * Test the handle_payment_confirmation method.
+	 */
+	public function test_handle_payment_confirmation() {
+		$mock_payment = $this->getMockBuilder( MMG_Checkout_Payment::class )
+							->setMethods( array( 'decrypt', 'url_safe_base64_decode', 'verify_callback_key' ) )
+							->getMock();
+
+		$this->mock_verify_callback_key( $mock_payment );
+	}
+
+	/**
+	 * Clean up after each test.
+	 */
+	public function tearDown(): void {
+		parent::tearDown();
+		global $wp_filter;
+		unset( $wp_filter['wp_verify_nonce'] );
+	}
 }
