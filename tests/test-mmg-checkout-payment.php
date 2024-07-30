@@ -1,10 +1,10 @@
 <?php
 
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Brain\Monkey;
 
-class Test_MMG_Checkout_Payment extends PHPUnit_Framework_TestCase {
+class Test_MMG_Checkout_Payment extends TestCase {
 
 	use MockeryPHPUnitIntegration;
 
@@ -41,7 +41,7 @@ class Test_MMG_Checkout_Payment extends PHPUnit_Framework_TestCase {
     }
 
 
-    protected function tearDown() {
+    protected function tearDown(): void {
         Monkey\tearDown();
         parent::tearDown();
     }
