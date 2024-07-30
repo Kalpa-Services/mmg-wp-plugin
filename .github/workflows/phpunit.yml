@@ -24,12 +24,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        extensions: mbstring, intl, mysqli, zip
+        tools: composer:v2
+
+    - name: Install Composer dependencies
+      run: composer install
+
     - name: Setup WordPress Test Suite
       run: |
-        mkdir -p /home/runner/wordpress-tests
-        cd /home/runner/wordpress-tests
-        git clone --depth=1 https://github.com/WordPress/wordpress-develop.git
-        cd wordpress-develop
+        mkdir -p /tmp/wordpress-tests
+        git clone --depth=1 https://github.com/WordPress/wordpress-develop.git /tmp/wordpress-tests/wordpress-develop
+        cd /tmp/wordpress-tests/wordpress-develop
         composer install
         cp wp-tests-config-sample.php wp-tests-config.php
         sed -i "s/youremptytestdbnamehere/wordpress_test/g" wp-tests-config.php
@@ -38,25 +47,7 @@ jobs:
         sed -i "s/localhost/127.0.0.1/g" wp-tests-config.php
         echo "WordPress Test Suite setup completed"
       env:
-        WP_TESTS_PATH: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit
-
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '7.4'
-        extensions: mbstring, intl, mysqli, zip
-        tools: composer:v2
-
-    - name: Update Composer dependencies
-      run: |
-        composer config --no-plugins allow-plugins.composer/installers true
-        composer config --no-plugins allow-plugins.automattic/jetpack-autoloader true
-        composer update --no-interaction --no-progress
-        composer require --dev woocommerce/woocommerce:^5.9.1 --no-interaction --no-progress
-        echo "Composer installation complete. Listing vendor directory:"
-        ls -R vendor
-        echo "Composer autoload files:"
-        cat vendor/composer/autoload_psr4.php
+        WP_TESTS_PATH: /tmp/wordpress-tests/wordpress-develop/tests/phpunit
 
     - name: Install WooCommerce
       run: |
@@ -80,13 +71,8 @@ jobs:
           exit 1
         fi
 
-    - name: Copy phpunit.xml and tests directory
-      run: |
-        cp $GITHUB_WORKSPACE/phpunit.xml /home/runner/wordpress-tests/wordpress-develop
-        cp -r $GITHUB_WORKSPACE/tests /home/runner/wordpress-tests/wordpress-develop
-
     - name: Display phpunit.xml contents
-      run: cat /home/runner/wordpress-tests/wordpress-develop/phpunit.xml
+      run: cat phpunit.xml
 
     - name: Run PHPUnit tests
       id: run-tests
@@ -94,8 +80,8 @@ jobs:
         COMPOSER_PROCESS_TIMEOUT: 0
         COMPOSER_NO_INTERACTION: 1
         COMPOSER_NO_AUDIT: 1
-        WP_TESTS_PATH: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit
-        WP_PHPUNIT__DIR: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit
+        WP_TESTS_PATH: /tmp/wordpress-tests/wordpress-develop/tests/phpunit
+        WP_PHPUNIT__DIR: /tmp/wordpress-tests/wordpress-develop/tests/phpunit
         DB_NAME: wordpress_test
         DB_USER: root
         DB_PASSWORD: rootpassword
@@ -109,12 +95,12 @@ jobs:
         # Set WP_PLUGIN_DIR environment variable
         export WP_PLUGIN_DIR=$(pwd)/wp-content/plugins
         # Copy WooCommerce to WordPress test environment
-        mkdir -p /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins
-        cp -r wp-content/plugins/woocommerce /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/
+        mkdir -p /tmp/wordpress-tests/wordpress-develop/src/wp-content/plugins
+        cp -r wp-content/plugins/woocommerce /tmp/wordpress-tests/wordpress-develop/src/wp-content/plugins/
         # Modify bootstrap.php to load, initialize WooCommerce, and create tables
-        cat << EOF >> /home/runner/wordpress-tests/wordpress-develop/tests/phpunit/includes/bootstrap.php
+        cat << EOF >> /tmp/wordpress-tests/wordpress-develop/tests/phpunit/includes/bootstrap.php
         // Load WooCommerce
-        require_once '/home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/woocommerce/woocommerce.php';
+        require_once '/tmp/wordpress-tests/wordpress-develop/src/wp-content/plugins/woocommerce/woocommerce.php';
         // Initialize WooCommerce
         \$GLOBALS['woocommerce'] = WC();
         // Ensure WooCommerce is fully loaded
@@ -126,25 +112,24 @@ jobs:
         flush_rewrite_rules();
         EOF
         # Run PHPUnit tests and save output
-        cd /home/runner/wordpress-tests/wordpress-develop
-        vendor/bin/phpunit --bootstrap tests/phpunit/includes/bootstrap.php --debug --verbose --configuration phpunit.xml > /home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt
-        cat /home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt
+        vendor/bin/phpunit --bootstrap /tmp/wordpress-tests/wordpress-develop/tests/phpunit/includes/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
+        cat phpunit-results.txt
         # Check if any tests failed and set output
-        if grep -q "FAILURES!" /home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt; then
+        if grep -q "FAILURES!" phpunit-results.txt; then
           echo "tests_failed=true" >> $GITHUB_OUTPUT
         else
           echo "tests_failed=false" >> $GITHUB_OUTPUT
         fi
 
     - name: List files in current directory
-      run: ls -al /home/runner/wordpress-tests/wordpress-develop
+      run: ls -al
 
     - name: Upload PHPUnit results
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: phpunit-results
-        path: /home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt
+        path: phpunit-results.txt
 
     - name: Post PHPUnit results as PR comment
       if: github.event_name == 'pull_request'
@@ -153,7 +138,7 @@ jobs:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
           const fs = require('fs');
-          const phpunitOutput = fs.readFileSync('/home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt', 'utf8');
+          const phpunitOutput = fs.readFileSync('phpunit-results.txt', 'utf8');
           const summary = phpunitOutput.split('\n').slice(0, 10).join('\n'); // Get first 10 lines for summary
           const fullReport = '## PHPUnit Test Results\n\n<details><summary>Click to expand full report</summary>\n\n```\n' + phpunitOutput + '\n```\n</details>';
           github.rest.issues.createComment({
