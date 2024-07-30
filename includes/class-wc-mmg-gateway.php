@@ -7,8 +7,6 @@
  * @package MMG_Checkout
  */
 
-namespace MMG_Checkout;
-
 /**
  * WC_MMG_Gateway class.
  */
