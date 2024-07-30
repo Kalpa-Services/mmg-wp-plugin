@@ -98,7 +98,7 @@ jobs:
         mkdir -p /tmp/wordpress-tests/wordpress-develop/src/wp-content/plugins
         cp -r wp-content/plugins/woocommerce /tmp/wordpress-tests/wordpress-develop/src/wp-content/plugins/
         # Run PHPUnit tests and save output
-        vendor/bin/phpunit --bootstrap bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
+         vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
         cat phpunit-results.txt
         # Check if any tests failed and set output
         if grep -q "FAILURES!" phpunit-results.txt; then
