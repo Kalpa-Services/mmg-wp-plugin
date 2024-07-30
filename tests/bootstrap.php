@@ -76,7 +76,7 @@ flush_rewrite_rules();
 // Load MMG Checkout Payment plugin dependencies and ensure the autoloader includes the classes.
 spl_autoload_register(function ($class) {
     if (strpos($class, 'MMG\\CheckoutPayment\\') === 0) {
-        $file = dirname(__DIR__) . '/includes/' . str_replace('\\', '/', $class) . '.php';
+        $file = dirname(__DIR__) . '/includes/' . str_replace(['MMG\\CheckoutPayment\\', '\\'], ['', '/'], $class) . '.php';
         if (file_exists($file)) {
             require_once $file;
         } else {
