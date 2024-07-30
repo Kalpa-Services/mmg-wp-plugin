@@ -375,6 +375,11 @@ class MMG_Checkout_Payment {
 	 * Handle error payment.
 	 */
 	public function handle_error_payment() {
+		// Verify the callback key first.
+		if ( ! $this->verify_callback_key() ) {
+			wp_die( 'Invalid callback', 'MMG Checkout Error', array( 'response' => 403 ) );
+		}
+
 		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 
 		if ( empty( $token ) ) {
@@ -410,36 +415,9 @@ class MMG_Checkout_Payment {
 	 * Handle payment confirmation.
 	 */
 	public function handle_payment_confirmation() {
-		// Get the callback key from the URL.
-		$parsed_url = isset( $_SERVER['REQUEST_URI'] ) ? wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) : array();
-		$path       = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '';
-		$uri_parts  = explode( '/', trim( $path, '/' ) );
-
-		// Find the index of 'mmg-checkout' and get the next part as the callback key.
-		$mmg_checkout_index = array_search( 'mmg-checkout', $uri_parts, true );
-		$callback_key       = '';
-
-		if ( false !== $mmg_checkout_index && isset( $uri_parts[ $mmg_checkout_index + 1 ] ) ) {
-			// Sanitize the callback key.
-			$raw_callback_key = $uri_parts[ $mmg_checkout_index + 1 ];
-
-			// Only allow alphanumeric characters and dashes.
-			$callback_key = preg_replace( '/[^a-zA-Z0-9-]/', '', $raw_callback_key );
-
-			// Ensure the callback key is not empty and has a reasonable length.
-			if ( empty( $callback_key ) || strlen( $callback_key ) > 64 ) {
-				wp_die( 'Invalid callback key', 'MMG Checkout Error', array( 'response' => 400 ) );
-			}
-		}
-
-		$stored_callback_key = get_option( 'mmg_callback_key' );
-
-		if ( empty( $callback_key ) ) {
-			wp_die( 'Missing callback key', 'MMG Checkout Error', array( 'response' => 400 ) );
-		}
-
-		if ( $callback_key !== $stored_callback_key ) {
-			wp_die( 'Invalid callback key', 'MMG Checkout Error', array( 'response' => 403 ) );
+		// Verify the callback key first.
+		if ( ! $this->verify_callback_key() ) {
+			wp_die( 'Invalid callback', 'MMG Checkout Error', array( 'response' => 403 ) );
 		}
 
 		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
@@ -512,5 +490,32 @@ class MMG_Checkout_Payment {
 			wp_safe_redirect( $order->get_checkout_payment_url() );
 		}
 		exit;
+	}
+
+	/**
+	 * Verify the callback key from the URL.
+	 *
+	 * @return bool
+	 */
+	private function verify_callback_key() {
+		$parsed_url = isset( $_SERVER['REQUEST_URI'] ) ? wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) : array();
+		$path       = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '';
+		$uri_parts  = explode( '/', trim( $path, '/' ) );
+
+		$mmg_checkout_index = array_search( 'mmg-checkout', $uri_parts, true );
+		$callback_key       = '';
+
+		if ( false !== $mmg_checkout_index && isset( $uri_parts[ $mmg_checkout_index + 1 ] ) ) {
+			$raw_callback_key = $uri_parts[ $mmg_checkout_index + 1 ];
+			$callback_key     = preg_replace( '/[^a-zA-Z0-9-]/', '', $raw_callback_key );
+
+			if ( empty( $callback_key ) || strlen( $callback_key ) > 64 ) {
+				return false;
+			}
+		}
+
+		$stored_callback_key = get_option( 'mmg_callback_key' );
+
+		return ! empty( $callback_key ) && $callback_key === $stored_callback_key;
 	}
 }
