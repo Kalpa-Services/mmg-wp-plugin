@@ -128,6 +128,13 @@ jobs:
           echo "tests_failed=false" >> $GITHUB_OUTPUT
         fi
 
+    - name: Upload PHPUnit results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: phpunit-results
+        path: phpunit-results.txt
+
     - name: Post PHPUnit results as PR comment
       if: github.event_name == 'pull_request'
       uses: actions/github-script@v6
