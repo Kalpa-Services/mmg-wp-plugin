@@ -73,19 +73,14 @@ global $wp_rewrite;
 $wp_rewrite->init();
 flush_rewrite_rules();
 
-// Load MMG Checkout Payment plugin dependencies.
-require_once dirname(__DIR__) . '/includes/class-mmg-dependency-checker.php';
-require_once dirname(__DIR__) . '/includes/class-mmg-checkout-payment.php';
-require_once dirname(__DIR__) . '/includes/class-mmg-checkout-settings.php';
-require_once dirname(__DIR__) . '/includes/class-wc-mmg-gateway.php';
-require_once dirname(__DIR__) . '/includes/class-wc-mmg-payments-blocks.php';
-
-// Ensure the autoloader includes the MMG Checkout Payment classes
+// Load MMG Checkout Payment plugin dependencies and ensure the autoloader includes the classes.
 spl_autoload_register(function ($class) {
     if (strpos($class, 'MMG\\CheckoutPayment\\') === 0) {
         $file = dirname(__DIR__) . '/includes/' . str_replace('\\', '/', $class) . '.php';
         if (file_exists($file)) {
             require_once $file;
+        } else {
+            die(esc_html('Class file not found for ' . $class . ' at ' . $file));
         }
     }
 });
