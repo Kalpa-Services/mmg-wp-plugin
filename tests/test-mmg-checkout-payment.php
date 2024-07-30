@@ -55,8 +55,27 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 		$order = wc_create_order();
 		$order->set_total( 100 );
 
-		// Set up the POST request.
+		// Mock the wp_create_nonce function.
+		add_filter(
+			'wp_create_nonce',
+			function () {
+				return 'test_nonce';
+			}
+		);
+
+		// Set up the POST request with the mocked nonce.
 		$_POST['order_id'] = $order->get_id();
+		$_REQUEST['nonce'] = 'test_nonce';
+
+		// Mock the wp_verify_nonce function.
+		add_filter(
+			'wp_verify_nonce',
+			function ( $verify, $nonce, $action ) {
+				return ( 'test_nonce' === $nonce && 'mmg_checkout_nonce' === $action );
+			},
+			10,
+			3
+		);
 
 		// Capture the output.
 		ob_start();
@@ -83,6 +102,10 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 
 		// Fail the test if the checkout URL is empty.
 		$this->assertNotEmpty( $checkout_url, 'Checkout URL generation failed. URL is empty.' );
+
+		// Remove the mocked functions.
+		remove_all_filters( 'wp_create_nonce' );
+		remove_all_filters( 'wp_verify_nonce' );
 	}
 
 	/**
