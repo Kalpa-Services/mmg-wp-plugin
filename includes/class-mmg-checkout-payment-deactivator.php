@@ -8,6 +8,8 @@
  * @since 1.0.0
  */
 
+namespace MMG_Checkout;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

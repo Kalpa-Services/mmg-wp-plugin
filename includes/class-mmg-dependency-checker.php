@@ -7,6 +7,8 @@
  * @package MMG_Checkout
  */
 
+namespace MMG_Checkout;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
