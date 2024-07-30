@@ -80,6 +80,13 @@ jobs:
           exit 1
         fi
 
+    - name: Copy phpunit.xml
+      run: |
+        cp $GITHUB_WORKSPACE/phpunit.xml /home/runner/wordpress-tests/wordpress-develop
+
+    - name: Display phpunit.xml contents
+      run: cat /home/runner/wordpress-tests/wordpress-develop/phpunit.xml
+
     - name: Run PHPUnit tests
       id: run-tests
       env:
@@ -117,8 +124,6 @@ jobs:
         \$GLOBALS['wp_rewrite']->init();
         flush_rewrite_rules();
         EOF
-        # Copy phpunit.xml from the repository root to the test environment
-        cp $GITHUB_WORKSPACE/phpunit.xml /home/runner/wordpress-tests/wordpress-develop
         # Run PHPUnit tests and save output
         cd /home/runner/wordpress-tests/wordpress-develop
         vendor/bin/phpunit --bootstrap tests/phpunit/includes/bootstrap.php --debug --verbose --configuration phpunit.xml > /home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt
