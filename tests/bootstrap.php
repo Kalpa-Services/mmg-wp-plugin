@@ -23,7 +23,7 @@ require_once $wordpress_tests_path . '/includes/functions.php';
 $wp_phpunit_dir = getenv( 'WP_PHPUNIT__DIR' );
 if ( ! $wp_phpunit_dir ) {
 	$wp_phpunit_dir = $wordpress_tests_path;
-	putenv( 'WP_PHPUNIT__DIR=' . $wp_phpunit_dir );
+	define( 'WP_PHPUNIT__DIR', $wp_phpunit_dir );
 }
 
 // Check if the bootstrap file exists.
