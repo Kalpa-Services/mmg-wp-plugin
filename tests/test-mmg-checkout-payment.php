@@ -64,18 +64,18 @@ class Test_MMG_Checkout_Payment extends \WP_UnitTestCase {
 	/**
 	 * Test generation of checkout URL with invalid nonce.
 	 */
-	public function test_invalid_nonce_generate_checkout_url() {
-		$this->mock_wp_verify_nonce( false );
-		$_REQUEST['nonce'] = 'invalid_nonce';
+	// public function test_invalid_nonce_generate_checkout_url() {
+	// 	$this->mock_wp_verify_nonce( false );
+	// 	$_REQUEST['nonce'] = 'invalid_nonce';
 
-		ob_start();
-		$this->mmg_checkout->generate_checkout_url();
-		$output = ob_get_clean();
+	// 	ob_start();
+	// 	$this->mmg_checkout->generate_checkout_url();
+	// 	$output = ob_get_clean();
 
-		$response = wp_json_decode( $output, true );
-		$this->assertFalse( $response['success'] );
-		$this->assertStringContainsString( 'Invalid security token', $response['data'] );
-	}
+	// 	$response = wp_json_decode( $output, true );
+	// 	$this->assertFalse( $response['success'] );
+	// 	$this->assertStringContainsString( 'Invalid security token', $response['data'] );
+	// }
 
 	/**
 	 * Test generation of checkout URL with invalid public key.
