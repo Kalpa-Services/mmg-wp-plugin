@@ -7,8 +7,6 @@
  * @package MMG_Checkout
  */
 
-namespace MMG_Checkout;
-
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
 /**
