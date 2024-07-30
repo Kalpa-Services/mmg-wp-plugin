@@ -111,7 +111,7 @@ jobs:
         \$GLOBALS['wp_rewrite']->init();
         flush_rewrite_rules();
         // Include the plugin files
-        # require_once getenv('GITHUB_WORKSPACE') . '/path/to/plugin-main-file.php';
+        require_once getenv('GITHUB_WORKSPACE') . '/main.php';
         EOF
         # Run PHPUnit tests and save output
         vendor/bin/phpunit --bootstrap /tmp/wordpress-tests/wordpress-develop/tests/phpunit/includes/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
