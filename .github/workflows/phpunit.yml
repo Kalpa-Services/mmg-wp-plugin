@@ -94,7 +94,7 @@ jobs:
         DB_HOST: 127.0.0.1
       run: |
         # Wait for MySQL to be ready
-        while ! mysqladmin ping -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASSWORD" --silent; do
+        while ! mysqladmin ping -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASSWORD" --silent 2>/dev/null; do
           echo "Waiting for MySQL to be ready..."
           sleep 2
         done
