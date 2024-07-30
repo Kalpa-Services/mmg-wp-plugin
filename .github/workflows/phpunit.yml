@@ -36,6 +36,7 @@ jobs:
         sed -i "s/yourusernamehere/root/g" wp-tests-config.php
         sed -i "s/yourpasswordhere/rootpassword/g" wp-tests-config.php
         sed -i "s/localhost/127.0.0.1/g" wp-tests-config.php
+        echo "WordPress Test Suite setup completed"
       env:
         WP_TESTS_PATH: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit
 
@@ -119,6 +120,7 @@ jobs:
         # Run PHPUnit tests and save output
         cd /home/runner/wordpress-tests/wordpress-develop
         vendor/bin/phpunit --bootstrap tests/phpunit/includes/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
+        cat phpunit-results.txt # Add this line to display the results in the log
         # Check if any tests failed and set output
         if grep -q "FAILURES!" phpunit-results.txt; then
           echo "tests_failed=true" >> $GITHUB_OUTPUT
