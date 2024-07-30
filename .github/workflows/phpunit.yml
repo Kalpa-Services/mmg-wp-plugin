@@ -119,24 +119,24 @@ jobs:
         EOF
         # Run PHPUnit tests and save output
         cd /home/runner/wordpress-tests/wordpress-develop
-        vendor/bin/phpunit --bootstrap tests/phpunit/includes/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
-        cat phpunit-results.txt # Add this line to display the results in the log
+        vendor/bin/phpunit --bootstrap tests/phpunit/includes/bootstrap.php --debug --verbose --configuration phpunit.xml > /home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt
+        cat /home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt # Add this line to display the results in the log
         # Check if any tests failed and set output
-        if grep -q "FAILURES!" phpunit-results.txt; then
+        if grep -q "FAILURES!" /home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt; then
           echo "tests_failed=true" >> $GITHUB_OUTPUT
         else
           echo "tests_failed=false" >> $GITHUB_OUTPUT
         fi
 
     - name: List files in current directory
-      run: ls -al
+      run: ls -al /home/runner/wordpress-tests/wordpress-develop
 
     - name: Upload PHPUnit results
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: phpunit-results
-        path: phpunit-results.txt
+        path: /home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt
 
     - name: Post PHPUnit results as PR comment
       if: github.event_name == 'pull_request'
@@ -145,7 +145,7 @@ jobs:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
           const fs = require('fs');
-          const phpunitOutput = fs.readFileSync('phpunit-results.txt', 'utf8');
+          const phpunitOutput = fs.readFileSync('/home/runner/wordpress-tests/wordpress-develop/phpunit-results.txt', 'utf8');
           const summary = phpunitOutput.split('\n').slice(0, 10).join('\n'); // Get first 10 lines for summary
           const fullReport = '## PHPUnit Test Results\n\n<details><summary>Click to expand full report</summary>\n\n```\n' + phpunitOutput + '\n```\n</details>';
           github.rest.issues.createComment({
