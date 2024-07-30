@@ -100,19 +100,18 @@ jobs:
           echo "Waiting for MySQL to be ready..."
           sleep 2
         done
-        # Install WP-CLI
-        curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-        chmod +x wp-cli.phar
-        sudo mv wp-cli.phar /usr/local/bin/wp
         # Set WP_PLUGIN_DIR environment variable
         export WP_PLUGIN_DIR=$(pwd)/wp-content/plugins
         # Copy WooCommerce to WordPress test environment
         mkdir -p /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins
         cp -r wp-content/plugins/woocommerce /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/
-        # Activate WooCommerce and run its database setup
-        wp plugin activate woocommerce --path=/home/runner/wordpress-tests/wordpress-develop/src
-        wp wc tool run install_pages --path=/home/runner/wordpress-tests/wordpress-develop/src
-        wp wc update --path=/home/runner/wordpress-tests/wordpress-develop/src
+        # Modify bootstrap.php to load and initialize WooCommerce
+        echo "
+        // Load WooCommerce
+        require_once '/home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/woocommerce/woocommerce.php';
+        // Initialize WooCommerce
+        \$GLOBALS['woocommerce'] = WC();
+        " >> tests/bootstrap.php
         # Run PHPUnit tests and save output
         vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
         # Check if any tests failed and set output
