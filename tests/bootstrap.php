@@ -31,42 +31,7 @@ $bootstrap_file = $wp_phpunit_dir . '/includes/bootstrap.php';
 if (!file_exists($bootstrap_file)) {
     die(esc_html('The bootstrap file was not found at ' . $bootstrap_file));
 }
-
-// Start up the WP testing environment.
-require $bootstrap_file;
-
-// Load WooCommerce.
-$woocommerce_path = WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
-if (file_exists($woocommerce_path)) {
-    define('WC_TAX_ROUNDING_MODE', 'auto');
-    define('WC_USE_TRANSACTIONS', false);
-    require_once $woocommerce_path;
-} else {
-    die(esc_html('WooCommerce plugin not found at ' . $woocommerce_path . '. Make sure it is installed in the WordPress plugins directory.'));
-}
-
-/**
- * Ensure WooCommerce tables are created.
- */
-function install_woocommerce() {
-    // Load WooCommerce functions.
-    WC_Install::install();
-    // Trigger WooCommerce activation hook.
-    do_action('woocommerce_flush_rewrite_rules');
-}
-
-// Hook into the 'setup_theme' action to ensure WooCommerce is installed.
-tests_add_filter('setup_theme', 'install_woocommerce');
-
-// Manually load and initialize WooCommerce.
-if (class_exists('WooCommerce')) {
-    WC()->init();
-} else {
-    die('WooCommerce class not found. Make sure WooCommerce is properly loaded.');
-}
-
-// Activate WooCommerce.
-activate_plugin('woocommerce/woocommerce.php');
+require_once $bootstrap_file;
 
 // Flush rewrite rules.
 global $wp_rewrite;
