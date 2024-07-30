@@ -120,7 +120,7 @@ class Test_MMG_Checkout_Payment extends \WP_UnitTestCase {
 		$this->mock_method( $this->mmg_checkout, 'validate_public_key', true );
 		$this->mock_method( $this->mmg_checkout, 'encrypt', null, new \Exception( 'Encryption failed' ) );
 
-		$order             = wc_ßcreate_order();
+		$order             = wc_create_order();
 		$_POST['order_id'] = $order->get_id();
 		$_REQUEST['nonce'] = 'valid_nonce';
 
