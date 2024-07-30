@@ -6,6 +6,7 @@
  *
  * @package MMG_Checkout
  */
+
 namespace MMG_Checkout;
 
 if ( ! defined( 'ABSPATH' ) ) {

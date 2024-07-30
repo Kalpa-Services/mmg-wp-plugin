@@ -8,6 +8,7 @@
  */
 
 namespace MMG_Checkout;
+
 /**
  * WC_MMG_Gateway class.
  */

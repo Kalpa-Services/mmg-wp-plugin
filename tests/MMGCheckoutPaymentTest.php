@@ -28,7 +28,7 @@ class MMGCheckoutPaymentTest extends TestCase {
     }
 
     /**
-     * @covers \MMG_Checkout\MMG_Checkout_Payment::generate_checkout_url
+     * @covers MMG_Checkout\MMG_Checkout_Payment::generate_checkout_url
      */
     public function test_generate_checkout_url() {
         $_POST['order_id'] = 123;
