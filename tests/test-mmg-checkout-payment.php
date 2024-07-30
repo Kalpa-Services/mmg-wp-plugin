@@ -118,9 +118,9 @@ class Test_MMG_Checkout_Payment extends \WP_UnitTestCase {
 	public function test_encryption_failure_generate_checkout_url() {
 		$this->mock_wp_verify_nonce( true );
 		$this->mock_method( $this->mmg_checkout, 'validate_public_key', true );
-		$this->mock_method( $this->mmg_checkout, 'encrypt', null, new Exception( 'Encryption failed' ) );
+		$this->mock_method( $this->mmg_checkout, 'encrypt', null, new \Exception( 'Encryption failed' ) );
 
-		$order             = wc_create_order();
+		$order             = wc_ßcreate_order();
 		$_POST['order_id'] = $order->get_id();
 		$_REQUEST['nonce'] = 'valid_nonce';
 
@@ -207,7 +207,7 @@ class Test_MMG_Checkout_Payment extends \WP_UnitTestCase {
 	private function mock_method( $instance, $method, $return_value, $exception = null ) {
 		$instance->expects( $this->any() )
 				->method( $method )
-				->will( $exception ? $this->throwException( $exception ) : $this->returnValue( $return_value ) );
+				->will( $exception ? $this->throwException( new \Exception( 'Mocked exception' ) ) : $this->returnValue( $return_value ) );
 	}
 
 	/**
