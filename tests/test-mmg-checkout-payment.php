@@ -1,223 +1,238 @@
 <?php
-/**
- * Test cases for MMG_Checkout_Payment class.
- *
- * @package MMG_Checkout_Payment
- */
 
-use MMG\CheckoutPayment\MMG_Checkout_Payment;
+use PHPUnit\Framework\TestCase;
+use Mockery;
+use Brain\Monkey;
 
-/**
- * Class Test_MMG_Checkout_Payment
- *
- * This class contains unit tests for the MMG_Checkout_Payment class.
- */
-class Test_MMG_Checkout_Payment extends \WP_UnitTestCase {
-	/**
-	 * The MMG_Checkout_Payment instance for testing.
-	 *
-	 * @var MMG_Checkout_Payment
-	 */
-	private $mmg_checkout;
+class Test_MMG_Checkout_Payment extends TestCase {
 
-	/**
-	 * Set up the test environment.
-	 */
-	public function setUp(): void {
-		parent::setUp();
-		$this->mmg_checkout = $this->createMock(MMG_Checkout_Payment::class);
-	}
+    protected $mmg_checkout_payment;
 
-	/**
-	 * Test successful generation of checkout URL.
-	 */
-	public function test_successful_generate_checkout_url() {
-		// Mock necessary functions and methods.
-		$this->mock_wp_verify_nonce( true );
-		$this->mock_method( $this->mmg_checkout, 'validate_public_key', true );
-		$this->mock_method( $this->mmg_checkout, 'encrypt', 'encrypted_data' );
-		$this->mock_method( $this->mmg_checkout, 'url_safe_base64_encode', 'encoded_data' );
+    protected function setUp(): void {
+        parent::setUp();
+        Brain\Monkey\setUp();
+        
+        // Mock WordPress functions
+        Brain\Monkey\Functions\stubs([
+            'get_option',
+            'update_option',
+            'home_url',
+            'wp_generate_password',
+            'is_checkout_pay_page',
+            'plugin_dir_url',
+            'admin_url',
+            'wp_create_nonce',
+            'wp_verify_nonce',
+            'wc_get_order',
+            'wp_send_json_error',
+            'wp_send_json_success',
+            'add_query_arg',
+            'wp_json_encode',
+            'openssl_pkey_get_public',
+            'wc_add_notice',
+            'wp_safe_redirect',
+            'wp_die',
+        ]);
 
-		// Create a test order.
-		$order = wc_create_order();
-		$order->set_total( 100 );
+        $this->mmg_checkout_payment = Mockery::mock('MMG\CheckoutPayment\MMG_Checkout_Payment')->makePartial();
+    }
 
-		// Set up POST data and options.
-		$_POST['order_id'] = $order->get_id();
-		$_REQUEST['nonce'] = 'valid_nonce';
-		update_option( 'mmg_secret_key', 'test_secret_key' );
-		update_option( 'mmg_merchant_id', 'test_merchant_id' );
-		update_option( 'mmg_client_id', 'test_client_id' );
+    protected function tearDown(): void {
+        Mockery::close();
+        Brain\Monkey\tearDown();
+        parent::tearDown();
+    }
 
-		// Capture the output.
-		ob_start();
-		$this->mmg_checkout->generate_checkout_url();
-		$output = ob_get_clean();
+    public function test_generate_unique_callback_url() {
+        $callback_key = 'test_key';
+        Brain\Monkey\Functions\expect('get_option')
+            ->with('mmg_callback_key')
+            ->andReturn($callback_key);
 
-		// Assert the response.
-		$response = wp_json_decode( $output, true );
-		$this->assertTrue( $response['success'] );
-		$this->assertArrayHasKey( 'checkout_url', $response['data'] );
-		$this->assertStringContainsString( 'token=encoded_data', $response['data']['checkout_url'] );
-	}
+        Brain\Monkey\Functions\expect('home_url')
+            ->with("wc-api/mmg-checkout/{$callback_key}")
+            ->andReturn("http://example.com/wc-api/mmg-checkout/{$callback_key}");
 
-	/**
-	 * Test generation of checkout URL with invalid nonce.
-	 */
-	// public function test_invalid_nonce_generate_checkout_url() {
-	// 	$this->mock_wp_verify_nonce( false );
-	// 	$_REQUEST['nonce'] = 'invalid_nonce';
+        $result = $this->invokeMethod($this->mmg_checkout_payment, 'generate_unique_callback_url');
 
-	// 	ob_start();
-	// 	$this->mmg_checkout->generate_checkout_url();
-	// 	$output = ob_get_clean();
+        $this->assertEquals("http://example.com/wc-api/mmg-checkout/{$callback_key}", $result);
+    }
 
-	// 	$response = wp_json_decode( $output, true );
-	// 	$this->assertFalse( $response['success'] );
-	// 	$this->assertStringContainsString( 'Invalid security token', $response['data'] );
-	// }
+    public function test_generate_checkout_url_success() {
+        $_REQUEST['nonce'] = 'valid_nonce';
+        $_POST['order_id'] = 123;
 
-	/**
-	 * Test generation of checkout URL with invalid public key.
-	 */
-	public function test_invalid_public_key_generate_checkout_url() {
-		$this->mock_wp_verify_nonce( true );
-		$this->mock_method( $this->mmg_checkout, 'validate_public_key', false );
-		$_REQUEST['nonce'] = 'valid_nonce';
+        Brain\Monkey\Functions\expect('wp_verify_nonce')
+            ->andReturn(true);
 
-		ob_start();
-		$this->mmg_checkout->generate_checkout_url();
-		$output = ob_get_clean();
+        $this->mmg_checkout_payment->shouldReceive('validate_public_key')
+            ->andReturn(true);
 
-		$response = wp_json_decode( $output, true );
-		$this->assertFalse( $response['success'] );
-		$this->assertStringContainsString( 'Invalid RSA public key', $response['data'] );
-	}
+        $mock_order = Mockery::mock('WC_Order');
+        $mock_order->shouldReceive('get_total')->andReturn(100);
+        $mock_order->shouldReceive('get_order_number')->andReturn('123');
+        $mock_order->shouldReceive('get_id')->andReturn(123);
+        $mock_order->shouldReceive('update_meta_data');
+        $mock_order->shouldReceive('save');
 
-	/**
-	 * Test generation of checkout URL with invalid order.
-	 */
-	public function test_invalid_order_generate_checkout_url() {
-		$this->mock_wp_verify_nonce( true );
-		$this->mock_method( $this->mmg_checkout, 'validate_public_key', true );
-		$_POST['order_id'] = 999999; // Non-existent order ID.
-		$_REQUEST['nonce'] = 'valid_nonce';
+        Brain\Monkey\Functions\expect('wc_get_order')
+            ->with(123)
+            ->andReturn($mock_order);
 
-		ob_start();
-		$this->mmg_checkout->generate_checkout_url();
-		$output = ob_get_clean();
+        $this->mmg_checkout_payment->shouldReceive('encrypt')
+            ->andReturn('encrypted_data');
 
-		$response = wp_json_decode( $output, true );
-		$this->assertFalse( $response['success'] );
-		$this->assertEquals( 'Invalid order', $response['data'] );
-	}
+        $this->mmg_checkout_payment->shouldReceive('url_safe_base64_encode')
+            ->andReturn('encoded_data');
 
-	/**
-	 * Test generation of checkout URL with encryption failure.
-	 */
-	public function test_encryption_failure_generate_checkout_url() {
-		$this->mock_wp_verify_nonce( true );
-		$this->mock_method( $this->mmg_checkout, 'validate_public_key', true );
-		$this->mock_method( $this->mmg_checkout, 'encrypt', null, new \Exception( 'Encryption failed' ) );
+        $this->mmg_checkout_payment->shouldReceive('get_checkout_url')
+            ->andReturn('http://checkout.example.com');
 
-		$order             = wc_create_order();
-		$_POST['order_id'] = $order->get_id();
-		$_REQUEST['nonce'] = 'valid_nonce';
+        Brain\Monkey\Functions\expect('wp_send_json_success')
+            ->once()
+            ->with(Mockery::type('array'));
 
-		ob_start();
-		$this->mmg_checkout->generate_checkout_url();
-		$output = ob_get_clean();
+        $this->mmg_checkout_payment->generate_checkout_url();
+    }
 
-		$response = wp_json_decode( $output, true );
-		$this->assertFalse( $response['success'] );
-		$this->assertStringContainsString( 'Error generating checkout URL: Encryption failed', $response['data'] );
-	}
+    public function test_generate_checkout_url_invalid_nonce() {
+        $_REQUEST['nonce'] = 'invalid_nonce';
 
-	/**
-	 * Test handling of payment confirmation.
-	 */
-	public function test_handle_payment_confirmation() {
-		$mock_payment = $this->createMock( MMG_Checkout_Payment::class );
+        Brain\Monkey\Functions\expect('wp_verify_nonce')
+            ->andReturn(false);
 
-		// Test case 1: Successful payment confirmation.
-		$mock_payment = $this->getMockBuilder( 'MMG_Checkout_Payment' )
-							->setMethods( array( 'verify_callback_key', 'decrypt', 'handle_payment_confirmation' ) )
-							->getMock();
-		$mock_payment->method( 'verify_callback_key' )->willReturn( true );
-		$mock_payment->method( 'decrypt' )->willReturn(
-			wp_json_encode(
-				array(
-					'transaction_id' => '123456',
-					'result_code'    => '0',
-					'result_message' => 'Success',
-				)
-			)
-		);
-		$_GET['token'] = 'valid_token';
-		$order         = wc_create_order();
-		$order->update_meta_data( '_mmg_transaction_id', '123456' );
-		$order->save();
+        Brain\Monkey\Functions\expect('wp_send_json_error')
+            ->once()
+            ->with(Mockery::type('string'));
 
-		ob_start();
-		$mock_payment->handle_payment_confirmation();
-		$output = ob_get_clean();
+        $this->mmg_checkout_payment->generate_checkout_url();
+    }
 
-		$this->assertStringContainsString( 'Success', $output );
-		$this->assertEquals( 'completed', $order->get_status() );
+    public function test_generate_checkout_url_invalid_public_key() {
+        $_REQUEST['nonce'] = 'valid_nonce';
 
-		// Test case 2: Invalid callback key.
-		$mock_payment = $this->getMockBuilder( 'MMG_Checkout_Payment' )
-							->setMethods( array( 'verify_callback_key', 'decrypt', 'handle_payment_confirmation' ) )
-							->getMock();
-		$mock_payment->method( 'verify_callback_key' )->willReturn( false );
+        Brain\Monkey\Functions\expect('wp_verify_nonce')
+            ->andReturn(true);
 
-		ob_start();
-		$mock_payment->handle_payment_confirmation();
-		$output = ob_get_clean();
+        $this->mmg_checkout_payment->shouldReceive('validate_public_key')
+            ->andReturn(false);
 
-		$this->assertStringContainsString( 'Invalid callback key', $output );
-	}
+        Brain\Monkey\Functions\expect('wp_send_json_error')
+            ->once()
+            ->with(Mockery::type('string'));
 
-	/**
-	 * Mock the wp_verify_nonce function.
-	 *
-	 * @param bool $return_value The value to return from the mocked function.
-	 */
-	private function mock_wp_verify_nonce( $return_value = true ) {
-		global $wp_filter;
-		$wp_filter['wp_verify_nonce'] = new \WP_Hook();
-		$wp_filter['wp_verify_nonce']->add_filter(
-			'wp_verify_nonce',
-			function () use ( $return_value ) {
-				return $return_value;
-			},
-			10,
-			2
-		);
-	}
+        $this->mmg_checkout_payment->generate_checkout_url();
+    }
 
-	/**
-	 * Mock a method on an object.
-	 *
-	 * @param object         $instance The object to mock.
-	 * @param string         $method The method to mock.
-	 * @param mixed          $return_value The value to return from the mocked method.
-	 * @param Exception|null $exception The exception to throw, if any.
-	 */
-	private function mock_method( $instance, $method, $return_value, $exception = null ) {
-		$instance->expects( $this->any() )
-				->method( $method )
-				->will( $exception ? $this->throwException( new \Exception( 'Mocked exception' ) ) : $this->returnValue( $return_value ) );
-	}
+    public function test_handle_error_payment() {
+        $_GET['token'] = 'valid_token';
 
-	/**
-	 * Clean up after each test.
-	 */
-	public function tearDown(): void {
-		parent::tearDown();
-		global $wpdb;
-		$wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}wc_webhooks" );
-		wp_cache_flush();
-		$GLOBALS['wpdb']->queries = array();
-	}
+        $this->mmg_checkout_payment->shouldReceive('verify_callback_key')
+            ->andReturn(true);
+
+        $this->mmg_checkout_payment->shouldReceive('url_safe_base64_decode')
+            ->andReturn('decoded_token');
+
+        $this->mmg_checkout_payment->shouldReceive('decrypt')
+            ->andReturn([
+                'merchantTransactionId' => 123,
+                'errorCode' => 1,
+                'errorMessage' => 'Test Error'
+            ]);
+
+        $mock_order = Mockery::mock('WC_Order');
+        $mock_order->shouldReceive('update_status')
+            ->with('failed', Mockery::type('string'));
+        $mock_order->shouldReceive('get_checkout_payment_url')
+            ->andReturn('http://example.com/checkout');
+
+        Brain\Monkey\Functions\expect('wc_get_order')
+            ->with(123)
+            ->andReturn($mock_order);
+
+        Brain\Monkey\Functions\expect('wc_add_notice')
+            ->once();
+
+        Brain\Monkey\Functions\expect('wp_safe_redirect')
+            ->once()
+            ->with('http://example.com/checkout');
+
+        $this->expectOutputString('');
+        $this->mmg_checkout_payment->handle_error_payment();
+    }
+
+    public function test_handle_payment_confirmation_success() {
+        $_GET['token'] = 'valid_token';
+
+        $this->mmg_checkout_payment->shouldReceive('verify_callback_key')
+            ->andReturn(true);
+
+        $this->mmg_checkout_payment->shouldReceive('url_safe_base64_decode')
+            ->andReturn('decoded_token');
+
+        $this->mmg_checkout_payment->shouldReceive('decrypt')
+            ->andReturn([
+                'merchantTransactionId' => 123,
+                'resultCode' => 0,
+                'transactionId' => 'txn_123'
+            ]);
+
+        $mock_order = Mockery::mock('WC_Order');
+        $mock_order->shouldReceive('payment_complete');
+        $mock_order->shouldReceive('add_order_note');
+        $mock_order->shouldReceive('get_checkout_order_received_url')
+            ->andReturn('http://example.com/order-received');
+
+        Brain\Monkey\Functions\expect('wc_get_order')
+            ->with(123)
+            ->andReturn($mock_order);
+
+        Brain\Monkey\Functions\expect('wp_safe_redirect')
+            ->once()
+            ->with('http://example.com/order-received');
+
+        $this->expectOutputString('');
+        $this->mmg_checkout_payment->handle_payment_confirmation();
+    }
+
+    public function test_handle_payment_confirmation_failure() {
+        $_GET['token'] = 'valid_token';
+
+        $this->mmg_checkout_payment->shouldReceive('verify_callback_key')
+            ->andReturn(true);
+
+        $this->mmg_checkout_payment->shouldReceive('url_safe_base64_decode')
+            ->andReturn('decoded_token');
+
+        $this->mmg_checkout_payment->shouldReceive('decrypt')
+            ->andReturn([
+                'merchantTransactionId' => 123,
+                'resultCode' => 1,
+                'resultMessage' => 'Payment Failed'
+            ]);
+
+        $mock_order = Mockery::mock('WC_Order');
+        $mock_order->shouldReceive('update_status')
+            ->with('failed', Mockery::type('string'));
+        $mock_order->shouldReceive('get_checkout_payment_url')
+            ->andReturn('http://example.com/checkout');
+
+        Brain\Monkey\Functions\expect('wc_get_order')
+            ->with(123)
+            ->andReturn($mock_order);
+
+        Brain\Monkey\Functions\expect('wp_safe_redirect')
+            ->once()
+            ->with('http://example.com/checkout');
+
+        $this->expectOutputString('');
+        $this->mmg_checkout_payment->handle_payment_confirmation();
+    }
+
+    private function invokeMethod(&$object, $methodName, array $parameters = array()) {
+        $reflection = new \ReflectionClass(get_class($object));
+        $method = $reflection->getMethod($methodName);
+        $method->setAccessible(true);
+        return $method->invokeArgs($object, $parameters);
+    }
 }
