@@ -23,4 +23,21 @@ jobs:
       run: composer install --prefer-dist --no-progress
 
     - name: Run PHPUnit tests
-      run: vendor/bin/phpunit
+      run: vendor/bin/phpunit --testdox --colors=always > phpunit-results.txt
+
+    - name: Post PHPUnit results as PR comment
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const fs = require('fs');
+          const phpunitOutput = fs.readFileSync('phpunit-results.txt', 'utf8');
+          const summary = phpunitOutput.split('\n').slice(0, 10).join('\n'); // Get first 10 lines for summary
+          const fullReport = '## PHPUnit Test Results\n\n<details><summary>Click to expand full report</summary>\n\n```\n' + phpunitOutput + '\n```\n</details>';
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '## PHPUnit Test Summary\n\n```\n' + summary + '\n```\n\n' + fullReport
+          });
