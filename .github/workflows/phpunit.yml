@@ -105,6 +105,10 @@ jobs:
         # Copy WooCommerce to WordPress test environment
         mkdir -p /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins
         cp -r wp-content/plugins/woocommerce /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/
+        # Activate WooCommerce and run its database setup
+        wp plugin activate woocommerce --path=/home/runner/wordpress-tests/wordpress-develop/src
+        wp wc tool run install_pages --path=/home/runner/wordpress-tests/wordpress-develop/src
+        wp wc update --path=/home/runner/wordpress-tests/wordpress-develop/src
         # Run PHPUnit tests and save output
         vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
         # Check if any tests failed and set output
