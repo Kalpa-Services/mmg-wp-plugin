@@ -1,6 +1,4 @@
 <?php
-namespace MMG\CheckoutPayment;
-
 /**
  * MMG Checkout Payment Class
  *
@@ -9,9 +7,12 @@ namespace MMG\CheckoutPayment;
  * @package MMG_Checkout
  */
 
+namespace MMG\CheckoutPayment;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
 /**
  * MMG_Checkout_Payment class.
  */

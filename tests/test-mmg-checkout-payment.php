@@ -1,10 +1,15 @@
 <?php
-use MMG\CheckoutPayment\MMG_Checkout_Payment;
 /**
  * Tests for MMG Checkout Payment functionality.
  *
+ * This file contains unit tests for the MMG_Checkout_Payment class,
+ * covering various scenarios of checkout URL generation and payment confirmation.
+ *
  * @package MMG_Checkout_Payment
+ * @subpackage Tests
  */
+
+use MMG\CheckoutPayment\MMG_Checkout_Payment;
 
 /**
  * Test case for MMG_Checkout_Payment class.
