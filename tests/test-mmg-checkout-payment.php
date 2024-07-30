@@ -67,7 +67,7 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 		$response = json_decode( $output, true );
 
 		// Assert that the response is successful.
-		$this->assertTrue( $response['success'], 'URL generation failed: ' . wp_json_encode( $response ) );
+		$this->assertTrue( $response['success'], 'URL generation failed: ' . wp_wp_json_encode( $response ) );
 
 		// Assert that a checkout URL is returned.
 		$this->assertArrayHasKey( 'checkout_url', $response['data'], 'Checkout URL not found in response.' );
@@ -117,10 +117,85 @@ LZ1DV5QsoLWZiIjeidgsmOMCAwEAAQ==
 	 */
 	public function test_handle_payment_confirmation() {
 		$mock_payment = $this->getMockBuilder( MMG_Checkout_Payment::class )
-							->setMethods( array( 'decrypt', 'url_safe_base64_decode', 'verify_callback_key' ) )
-							->getMock();
+			->setMethods( array( 'decrypt', 'url_safe_base64_decode', 'verify_callback_key' ) )
+			->getMock();
 
-		$this->mock_verify_callback_key( $mock_payment );
+		// Test case 1: Successful payment confirmation.
+		$this->mock_verify_callback_key( $mock_payment, true );
+		$mock_payment->method( 'decrypt' )->willReturn(
+			wp_json_encode(
+				array(
+					'transaction_id' => '123456',
+					'result_code'    => '0',
+					'result_message' => 'Success',
+				)
+			)
+		);
+		$_GET['token'] = 'valid_token';
+		$order         = wc_create_order();
+		$order->update_meta_data( '_mmg_transaction_id', '123456' );
+		$order->save();
+
+		ob_start();
+		$mock_payment->handle_payment_confirmation();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Success', $output );
+		$this->assertEquals( 'completed', $order->get_status() );
+
+		// Test case 2: Invalid callback key.
+		$this->mock_verify_callback_key( $mock_payment, false );
+
+		ob_start();
+		$mock_payment->handle_payment_confirmation();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Invalid callback key', $output );
+
+		// Test case 3: Decryption failure.
+		$this->mock_verify_callback_key( $mock_payment, true );
+		$mock_payment->method( 'decrypt' )->willReturn( false );
+
+		ob_start();
+		$mock_payment->handle_payment_confirmation();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Decryption failed', $output );
+
+		// Test case 4: Payment failure.
+		$mock_payment->method( 'decrypt' )->willReturn(
+			wp_json_encode(
+				array(
+					'transaction_id' => '123456',
+					'result_code'    => '2',
+					'result_message' => 'Payment Failed',
+				)
+			)
+		);
+
+		ob_start();
+		$mock_payment->handle_payment_confirmation();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Payment failed', $output );
+		$this->assertEquals( 'failed', $order->get_status() );
+
+		// Test case 5: Order not found.
+		$mock_payment->method( 'decrypt' )->willReturn(
+			wp_json_encode(
+				array(
+					'transaction_id' => 'non_existent',
+					'result_code'    => '0',
+					'result_message' => 'Success',
+				)
+			)
+		);
+
+		ob_start();
+		$mock_payment->handle_payment_confirmation();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Order not found', $output );
 	}
 
 	/**
