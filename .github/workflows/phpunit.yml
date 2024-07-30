@@ -9,7 +9,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       mysql:
         image: mysql:5.7
@@ -21,6 +21,9 @@ jobs:
         options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
     - name: Setup WordPress Test Suite
       run: |
         mkdir -p /home/runner/wordpress-tests
@@ -36,9 +39,7 @@ jobs:
       env:
         WP_TESTS_PATH: /home/runner/wordpress-tests/wordpress-develop/tests/phpunit
 
-    - uses: actions/checkout@v2
-
-    - name: Install PHP
+    - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
         php-version: '7.4'
@@ -102,7 +103,7 @@ jobs:
         mkdir -p /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins
         cp -r wp-content/plugins/woocommerce /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/
         # Modify bootstrap.php to load, initialize WooCommerce, and create tables
-        cat << EOF >> tests/bootstrap.php
+        cat << EOF >> /home/runner/wordpress-tests/wordpress-develop/tests/phpunit/includes/bootstrap.php
         // Load WooCommerce
         require_once '/home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/woocommerce/woocommerce.php';
         // Initialize WooCommerce
@@ -116,7 +117,8 @@ jobs:
         flush_rewrite_rules();
         EOF
         # Run PHPUnit tests and save output
-        vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
+        cd /home/runner/wordpress-tests/wordpress-develop
+        vendor/bin/phpunit --bootstrap tests/phpunit/includes/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
         # Check if any tests failed and set output
         if grep -q "FAILURES!" phpunit-results.txt; then
           echo "tests_failed=true" >> $GITHUB_OUTPUT
