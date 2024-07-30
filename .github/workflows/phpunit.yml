@@ -105,13 +105,20 @@ jobs:
         # Copy WooCommerce to WordPress test environment
         mkdir -p /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins
         cp -r wp-content/plugins/woocommerce /home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/
-        # Modify bootstrap.php to load and initialize WooCommerce
-        echo "
+        # Modify bootstrap.php to load, initialize WooCommerce, and create tables
+        cat << EOF >> tests/bootstrap.php
         // Load WooCommerce
         require_once '/home/runner/wordpress-tests/wordpress-develop/src/wp-content/plugins/woocommerce/woocommerce.php';
         // Initialize WooCommerce
         \$GLOBALS['woocommerce'] = WC();
-        " >> tests/bootstrap.php
+        // Ensure WooCommerce is fully loaded
+        do_action( 'woocommerce_loaded' );
+        // Run WooCommerce installation
+        WC_Install::install();
+        // Flush rewrite rules
+        \$GLOBALS['wp_rewrite']->init();
+        flush_rewrite_rules();
+        EOF
         # Run PHPUnit tests and save output
         vendor/bin/phpunit --bootstrap tests/bootstrap.php --debug --verbose --configuration phpunit.xml > phpunit-results.txt
         # Check if any tests failed and set output
