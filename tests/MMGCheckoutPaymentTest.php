@@ -27,9 +27,6 @@ class MMGCheckoutPaymentTest extends TestCase {
         $this->setup_global_function_mocks();
     }
 
-    /**
-     * @covers MMG_Checkout\MMG_Checkout_Payment::generate_checkout_url
-     */
     public function test_generate_checkout_url() {
         $_POST['order_id'] = 123;
         $_REQUEST['nonce'] = 'valid_nonce';
