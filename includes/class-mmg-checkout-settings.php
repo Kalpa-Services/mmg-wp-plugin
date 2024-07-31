@@ -105,10 +105,6 @@ class MMG_Checkout_Settings {
 						});
 					</script>
 					<tr valign="top">
-						<th scope="row">Checkout URL</th>
-						<td><?php echo esc_html( $this->get_checkout_url() ); ?></td>
-					</tr>
-					<tr valign="top">
 						<th scope="row">Callback URL</th>
 						<td>
 							<?php $callback_url = esc_url( $this->get_callback_url() ); ?>
