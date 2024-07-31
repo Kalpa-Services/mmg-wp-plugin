@@ -43,6 +43,8 @@ class MMG_Checkout_Settings {
 		register_setting( 'mmg_checkout_settings', 'mmg_rsa_public_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_rsa_private_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_merchant_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmg_checkout_settings', 'mmg_live_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
+		register_setting( 'mmg_checkout_settings', 'mmg_demo_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
 	}
 
 	/**
@@ -156,6 +158,14 @@ class MMG_Checkout_Settings {
 						<th scope="row">RSA Private Key (Merchant)</th>
 						<td><textarea name="mmg_rsa_private_key"><?php echo esc_textarea( get_option( 'mmg_rsa_private_key' ) ); ?></textarea></td>
 					</tr>
+					<tr valign="top">
+						<th scope="row">Live Checkout URL</th>
+						<td><input type="text" name="mmg_live_checkout_url" value="<?php echo esc_attr( get_option( 'mmg_live_checkout_url', 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home' ) ); ?>" /></td>
+					</tr>
+					<tr valign="top">
+						<th scope="row">Demo Checkout URL</th>
+						<td><input type="text" name="mmg_demo_checkout_url" value="<?php echo esc_attr( get_option( 'mmg_demo_checkout_url', 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home' ) ); ?>" /></td>
+					</tr>
 				</table>
 				<?php submit_button(); ?>
 			</form>
@@ -196,8 +206,8 @@ class MMG_Checkout_Settings {
 	 */
 	private function get_checkout_url() {
 		$mode              = get_option( 'mmg_mode', 'demo' );
-		$live_checkout_url = 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home';
-		$demo_checkout_url = 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
+		$live_checkout_url = get_option( 'mmg_live_checkout_url', 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home' );
+		$demo_checkout_url = get_option( 'mmg_demo_checkout_url', 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home' );
 		return 'live' === $mode ? $live_checkout_url : $demo_checkout_url;
 	}
 
