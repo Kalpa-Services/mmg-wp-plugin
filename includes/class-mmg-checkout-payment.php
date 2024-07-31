@@ -91,8 +91,8 @@ class MMG_Checkout_Payment {
 		add_action( 'plugins_loaded', array( $this, 'init_gateway_class' ), 11 );
 		add_action( 'parse_request', array( $this, 'parse_api_request' ) );
 
-		$this->live_checkout_url = $this->get_checkout_url('live');
-		$this->demo_checkout_url = $this->get_checkout_url('demo');
+		$this->live_checkout_url = $this->get_checkout_url( 'live' );
+		$this->demo_checkout_url = $this->get_checkout_url( 'demo' );
 	}
 
 	/**
@@ -517,17 +517,17 @@ class MMG_Checkout_Payment {
 	 * @param string $mode 'live' or 'demo'.
 	 * @return string
 	 */
-	private function get_checkout_url($mode) {
-		$constant_name = 'MMG_' . strtoupper($mode) . '_CHECKOUT_URL';
-		if (defined($constant_name)) {
-			return constant($constant_name);
+	private function get_checkout_url( $mode ) {
+		$constant_name = 'MMG_' . strtoupper( $mode ) . '_CHECKOUT_URL';
+		if ( defined( $constant_name ) ) {
+			return constant( $constant_name );
 		}
 
 		$option_name = 'mmg_' . $mode . '_checkout_url';
-		$default_url = $mode === 'live' 
+		$default_url = 'live' === $mode
 			? 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home'
 			: 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
 
-		return get_option($option_name, $default_url);
+		return get_option( $option_name, $default_url );
 	}
 }
