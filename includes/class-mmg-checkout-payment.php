@@ -165,9 +165,9 @@ class MMG_Checkout_Payment {
 			$description = 'Order #' . $order->get_order_number();
 
 			$token_data = array(
-				'secretKey'             => get_option( 'mmg_secret_key' ),
+				'secretKey'             => get_option( "mmg_{$this->mode}_secret_key" ),
 				'amount'                => $amount,
-				'merchantId'            => get_option( 'mmg_merchant_id' ),
+				'merchantId'            => get_option( "mmg_{$this->mode}_merchant_id" ),
 				'merchantTransactionId' => $order->get_id(), // Use order ID instead of order number.
 				'productDescription'    => $description,
 				'requestInitiationTime' => (string) round( microtime( true ) * 1000 ),
@@ -179,8 +179,8 @@ class MMG_Checkout_Payment {
 			$checkout_url = add_query_arg(
 				array(
 					'token'       => $encoded,
-					'merchantId'  => get_option( 'mmg_merchant_id' ),
-					'X-Client-ID' => get_option( 'mmg_client_id' ),
+					'merchantId'  => get_option( "mmg_{$this->mode}_merchant_id" ),
+					'X-Client-ID' => get_option( "mmg_{$this->mode}_client_id" ),
 				),
 				$this->get_checkout_url()
 			);
@@ -517,7 +517,12 @@ class MMG_Checkout_Payment {
 	 * @param string $mode 'live' or 'demo'.
 	 * @return string
 	 */
-	private function get_checkout_url( $mode ) {
+	private function get_checkout_url( $mode = null ) {
+		// If no mode is provided, use the current mode.
+		if ( null === $mode ) {
+			$mode = $this->mode;
+		}
+
 		$constant_name = 'MMG_' . strtoupper( $mode ) . '_CHECKOUT_URL';
 		if ( defined( $constant_name ) ) {
 			return constant( $constant_name );
@@ -528,6 +533,6 @@ class MMG_Checkout_Payment {
 			? 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home'
 			: 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
 
-		return get_option( $option_name, $default_url );
+			return get_option( $option_name, $default_url );
 	}
 }
