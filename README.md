@@ -1,67 +1,73 @@
-# MMG Checkout Payment Plugin
+# MMG Checkout Payment Plugin - Developer Contribution Guide
 
-### Notice: This readme will soon be "developer focused" and will only detail information about code contributions and code practices. The documentation is being migrated [here](https://github.com/Kalpa-Services/mmg-wp-plugin-docs).
+## Project Overview
 
-## Description
+MMG Checkout Payment is a WordPress plugin that integrates with WooCommerce to provide a secure payment gateway for MMG Merchants. This guide is for developers who want to contribute to the project.
 
-MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers. This plugin integrates seamlessly with WooCommerce to provide a secure and efficient payment gateway for your online store.
+## Development Prerequisites
 
+- WordPress 6.0+
+- WooCommerce 7.0+
+- PHP 7.4+
+- mbstring extension
+- Familiarity with WordPress plugin development
+- Understanding of payment gateway integrations
+- Knowledge of RSA encryption/decryption
 
-## Prerequisites
+## Setting Up the Development Environment
 
-- WordPress 5.6 or later
-- WooCommerce 7.0 or later
-- PHP 7.4 or later
-- mbstring extension enabled
-- MMG Checkout API credentials (obtain from merchantservices@mmg.gy)
-- RSA keys for encryption and decryption
+1. Clone the repository:
+   ```
+   git clone https://github.com/Kalpa-Services/mmg-wp-plugin.git
+   ```
+2. Run `composer install` to install the dependencies.
+3. Set up a local WordPress development environment with WooCommerce installed.
+4. Symlink or copy the plugin folder to your WordPress plugins directory.
+4. Activate the plugin in WordPress admin.
 
-## Features
+## Code Structure
 
-- Easy integration with WooCommerce
-- Secure payment processing
-- Admin settings page for easy configuration
-- Automatic generation of callback url
+[Provide an overview of the plugin's file structure and main components]
 
-## Installation
+## Coding Standards
 
-1. Download the latest release of the plugin from the [GitHub Releases page](https://github.com/Kalpa-Services/mmg-wp-plugin/releases).
-2. Upload the `mmg-checkout-payment` folder to the `/wp-content/plugins/` directory on your WordPress site.
-3. Activate the plugin through the 'Plugins' menu in WordPress.
-4. Configure the plugin settings in the WordPress admin area under 'Settings' > 'MMG Checkout'.
+- Follow WordPress Coding Standards (https://developer.wordpress.org/coding-standards/wordpress-coding-standards/)
+- Use meaningful variable and function names
+- Comment your code thoroughly, especially complex logic
+- Run `composer lint` to check for coding standards violations
 
-## Configuration
+## Testing
 
-1. Go to 'Settings' > 'MMG Checkout' in the WordPress admin area
-2. Enter your MMG Merchant credentials:
-   - Merchant Name (if different from site title)
-   - Client ID
-   - Merchant ID
-   - Secret Key
-   - RSA Public Key (MMG)
-   - RSA Private Key (Merchant) // used to decrypt the response from MMG, do not share this key with anyone.
-3. Save the settings
+- Ensure all new features or bug fixes include appropriate unit tests
+- Test the plugin with various WordPress and WooCommerce versions
+- Verify compatibility with popular WordPress themes
 
-### WooCommerce Integration
+## Submitting Changes
 
-The plugin automatically adds MMG Checkout as a payment method in WooCommerce. Customers can select it during the checkout process.
+1. Create a new branch for your feature or bug fix
+2. Make your changes and commit them with clear, concise commit messages
+3. Push your branch and create a pull request
+4. Ensure your PR description clearly explains the changes and their purpose
 
-## Support
+## Security Considerations
 
-For support or feature requests, please contact the plugin author or submit an issue on the plugin's GitHub repository.
+- Never commit sensitive information (API keys, passwords) to the repository
+- Follow WordPress security best practices (https://developer.wordpress.org/plugins/security/)
+- Be cautious when handling user data and payment information
+
+## Documentation
+
+- Update the README.md file with any new features or changes to installation/configuration steps
+- Document any new functions or classes using PHPDoc standards
+
+## Roadmap and Future Development
+
+- Implement processing of refunds
+
+## Getting Help
+
+For questions or support, please open an issue on the GitHub repository or contact the maintainers directly.
 
 ## License
 
-This plugin is released under the GPL v2 or later license.
-
-## Author
-
-Kalpa Services Inc.
-
-## Contributors
-
-- Jay Carter https://www.jaycarter.gy/
-
-# Roadmap
-
-- All for processing of refunds
+This project is licensed under GPL v2 or later. Ensure all contributions comply with this license.
