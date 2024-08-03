@@ -47,7 +47,7 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 				'title'   => 'Enable/Disable',
 				'type'    => 'checkbox',
 				'label'   => 'Enable MMG Checkout',
-				'default' => 'yes',
+				'default' => 'no',
 			),
 			'title'       => array(
 				'title'       => 'Title',
