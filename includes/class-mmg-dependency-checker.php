@@ -31,6 +31,10 @@ class MMG_Dependency_Checker {
 			add_action( 'admin_notices', array( __CLASS__, 'mbstring_missing_notice' ) );
 			return false;
 		}
+		if ( ! self::is_ssl_valid() ) {
+			add_action( 'admin_notices', array( __CLASS__, 'ssl_invalid_notice' ) );
+			return false;
+		}
 		return true;
 	}
 
@@ -53,6 +57,31 @@ class MMG_Dependency_Checker {
 	}
 
 	/**
+	 * Check if SSL is valid.
+	 *
+	 * @return bool True if SSL is valid or if on localhost, false otherwise.
+	 */
+	private static function is_ssl_valid() {
+		if ( self::is_localhost() ) {
+			return true;
+		}
+		return is_ssl();
+	}
+
+	/**
+	 * Check if the site is running on localhost.
+	 *
+	 * @return bool True if on localhost, false otherwise.
+	 */
+	private static function is_localhost() {
+		if ( ! isset( $_SERVER['SERVER_NAME'] ) ) {
+			return false;
+		}
+		$server_name = strtolower( sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) );
+		return in_array( $server_name, array( 'localhost', '127.0.0.1', '::1' ), true );
+	}
+
+	/**
 	 * Display admin notice for missing WooCommerce.
 	 */
 	public static function woocommerce_missing_notice() {
@@ -70,6 +99,17 @@ class MMG_Dependency_Checker {
 		?>
 		<div class="error">
 			<p><?php esc_html_e( 'MMG Checkout requires the mbstring PHP extension to be installed and active on the server. Please install and activate mbstring to use this plugin.', 'mmg-checkout' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Display admin notice for invalid SSL.
+	 */
+	public static function ssl_invalid_notice() {
+		?>
+		<div class="error">
+			<p><?php esc_html_e( 'MMG Checkout requires a valid SSL certificate to be installed on your website. Please install and configure an SSL certificate to use this plugin.', 'mmg-checkout' ); ?></p>
 		</div>
 		<?php
 	}
