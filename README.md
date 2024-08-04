@@ -17,7 +17,7 @@ MMG Checkout Payment is a WordPress plugin that integrates with WooCommerce to p
 ## Setting Up the Development Environment
 
 1. Clone the repository:
-   ```
+   ```sh
    git clone https://github.com/Kalpa-Services/mmg-wp-plugin.git
    ```
 2. Run `composer install` to install the dependencies.
