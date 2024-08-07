@@ -164,13 +164,14 @@ class MMG_Checkout_Payment {
 			$amount      = $order->get_total();
 			$description = 'Order #' . $order->get_order_number();
 
+			$timestamp  = round( microtime( true ) * 1000 ); // Use milliseconds.
 			$token_data = array(
 				'secretKey'             => get_option( "mmg_{$this->mode}_secret_key" ),
 				'amount'                => $amount,
 				'merchantId'            => get_option( "mmg_{$this->mode}_merchant_id" ),
-				'merchantTransactionId' => $order->get_id(), // Use order ID instead of order number.
+				'merchantTransactionId' => $order->get_id(),
 				'productDescription'    => $description,
-				'requestInitiationTime' => (string) round( microtime( true ) * 1000 ),
+				'requestInitiationTime' => (string) $timestamp,
 				'merchantName'          => get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ),
 			);
 
@@ -201,7 +202,7 @@ class MMG_Checkout_Payment {
 	 * @throws Exception If encryption fails.
 	 */
 	private function encrypt( $checkout_object ) {
-		$json_object = wp_json_encode( $checkout_object, JSON_PRETTY_PRINT );
+		$json_object = wp_json_encode( $checkout_object, JSON_UNESCAPED_SLASHES );
 
 		// Message to bytes.
 		if ( function_exists( 'mb_convert_encoding' ) ) {
@@ -213,7 +214,7 @@ class MMG_Checkout_Payment {
 
 		// Load the public key.
 		try {
-			$public_key = \phpseclib3\Crypt\PublicKeyLoader::load( get_option( 'mmg_rsa_public_key' ) );
+			$public_key = \phpseclib3\Crypt\PublicKeyLoader::load( get_option( 'mmg_' . $this->mode . '_rsa_public_key' ) );
 		} catch ( Exception $e ) {
 			throw new Exception( 'Failed to load RSA public key' );
 		}
@@ -249,7 +250,7 @@ class MMG_Checkout_Payment {
 	 * @return bool
 	 */
 	private function validate_public_key() {
-		$public_key = get_option( 'mmg_rsa_public_key' );
+		$public_key = get_option( 'mmg_' . $this->mode . '_rsa_public_key' );
 		if ( ! $public_key ) {
 			return false;
 		}
@@ -292,7 +293,7 @@ class MMG_Checkout_Payment {
 	private function decrypt( $encrypted_data ) {
 		// Load the private key.
 		try {
-			$private_key = \phpseclib3\Crypt\PublicKeyLoader::load( get_option( 'mmg_rsa_private_key' ) );
+			$private_key = \phpseclib3\Crypt\PublicKeyLoader::load( get_option( 'mmg_' . $this->mode . '_rsa_private_key' ) );
 		} catch ( Exception $e ) {
 			throw new Exception( 'Failed to load RSA private key' );
 		}
