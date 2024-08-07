@@ -161,6 +161,12 @@ class MMG_Checkout_Payment {
 				wp_send_json_error( 'Invalid order' );
 			}
 
+			// Get the current attempt number and increment it.
+			$attempt_number = $order->get_meta( '_mmg_payment_attempt', true );
+			$attempt_number = $attempt_number ? intval( $attempt_number ) + 1 : 1;
+			$order->update_meta_data( '_mmg_payment_attempt', $attempt_number );
+			$order->save();
+
 			$amount      = $order->get_total();
 			$description = 'Order #' . $order->get_order_number();
 
@@ -169,7 +175,7 @@ class MMG_Checkout_Payment {
 				'secretKey'             => get_option( "mmg_{$this->mode}_secret_key" ),
 				'amount'                => $amount,
 				'merchantId'            => get_option( "mmg_{$this->mode}_merchant_id" ),
-				'merchantTransactionId' => $order->get_id(),
+				'merchantTransactionId' => $order->get_id() . '-' . $attempt_number,
 				'productDescription'    => $description,
 				'requestInitiationTime' => (string) $timestamp,
 				'merchantName'          => get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ),
@@ -386,7 +392,7 @@ class MMG_Checkout_Payment {
 			wp_die( 'Error decrypting token: ' . esc_html( $e->getMessage() ), 'MMG Checkout Error', array( 'response' => 400 ) );
 		}
 
-		$order_id      = isset( $error_data['merchantTransactionId'] ) ? intval( $error_data['merchantTransactionId'] ) : 0;
+		$order_id      = $this->extract_order_id( $error_data['merchantTransactionId'] );
 		$error_code    = isset( $error_data['errorCode'] ) ? intval( $error_data['errorCode'] ) : null;
 		$error_message = isset( $error_data['errorMessage'] ) ? sanitize_text_field( $error_data['errorMessage'] ) : '';
 
@@ -426,7 +432,7 @@ class MMG_Checkout_Payment {
 			wp_die( 'Error decrypting token: ' . esc_html( $e->getMessage() ), 'MMG Checkout Error', array( 'response' => 400 ) );
 		}
 
-		$order_id       = isset( $payment_data['merchantTransactionId'] ) ? intval( $payment_data['merchantTransactionId'] ) : 0;
+		$order_id       = $this->extract_order_id( $payment_data['merchantTransactionId'] );
 		$result_code    = isset( $payment_data['resultCode'] ) ? intval( $payment_data['resultCode'] ) : null;
 		$result_message = isset( $payment_data['resultMessage'] ) ? sanitize_text_field( $payment_data['resultMessage'] ) : '';
 
@@ -535,5 +541,16 @@ class MMG_Checkout_Payment {
 			: 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
 
 			return get_option( $option_name, $default_url );
+	}
+
+	/**
+	 * Extract the original order ID from the merchantTransactionId.
+	 *
+	 * @param string $merchant_transaction_id The merchantTransactionId from the payment data.
+	 * @return int The original order ID.
+	 */
+	private function extract_order_id( $merchant_transaction_id ) {
+		$parts = explode( '-', $merchant_transaction_id );
+		return intval( $parts[0] );
 	}
 }
