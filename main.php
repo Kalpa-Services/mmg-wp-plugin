@@ -28,13 +28,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'MMG_PLUGIN_VERSION', '2.0.0' );
 require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmgcp-dependency-checker.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmgcp-checkout-payment-activator.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmgcp-checkout-payment-deactivator.php';
 
-if ( MMG_Dependency_Checker::check_dependencies() ) {
+if ( MMGCP_Dependency_Checker::mmgcp_check_dependencies() ) {
 	/**
 	 * Initialize the MMG Checkout Payment functionality.
 	 *
