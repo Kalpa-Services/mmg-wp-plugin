@@ -2,9 +2,9 @@
 /**
  * MMG Checkout Payment Deactivator
  *
- * This file contains the MMG_Checkout_Payment_Deactivator class and deactivation function.
+ * This file contains the MMGCP_Checkout_Payment_Deactivator class and deactivation function.
  *
- * @package MMG_Checkout_Payment
+ * @package MMGCP_Checkout_Payment
  * @since 1.0.0
  */
 
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @package    MMG Checkout Payment
  * @author     Kalpa Services Inc. <info@kalpa.dev>
  */
-class MMG_Checkout_Payment_Deactivator {
+class MMGCP_Checkout_Payment_Deactivator {
 
 	/**
 	 * Deactivate the plugin.
