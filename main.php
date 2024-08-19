@@ -30,7 +30,7 @@ define( 'MMG_PLUGIN_VERSION', '2.0.0' );
 require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-activator.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmgcp-checkout-payment-activator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
 
@@ -114,5 +114,5 @@ add_action(
 	}
 );
 
-register_activation_hook( __FILE__, array( 'MMG_Checkout_Payment_Activator', 'activate' ) );
+register_activation_hook( __FILE__, array( 'MMGCP_Checkout_Payment_Activator', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'MMG_Checkout_Payment_Deactivator', 'deactivate' ) );
