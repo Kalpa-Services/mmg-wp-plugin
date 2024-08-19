@@ -4,7 +4,7 @@
  *
  * This file contains the MMGCP_Checkout_Payment_Deactivator class and deactivation function.
  *
- * @package MMGCP_Checkout_Payment
+ * @package MMG_Checkout_Payment
  * @since 1.0.0
  */
 

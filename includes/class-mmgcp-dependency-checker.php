@@ -4,7 +4,7 @@
  *
  * This file contains the MMGCP_Dependency_Checker class which checks for required dependencies.
  *
- * @package MMGCP_Checkout_Payment
+ * @package MMG_Checkout_Payment
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

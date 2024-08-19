@@ -4,7 +4,7 @@
  *
  * This file contains the MMGCP_Checkout_Payment_Activator class and activation function.
  *
- * @package MMGCP_Checkout_Payment
+ * @package MMG_Checkout_Payment
  * @since 1.0.0
  */
 
