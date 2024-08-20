@@ -88,7 +88,7 @@ class MMGCP_Gateway extends WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 		echo '<div id="mmg-checkout-container" style="width: 100%;">';
 		echo '<button id="mmg-checkout-button" class="button alt" data-order-id="' . esc_attr( $order_id ) . '" style="background-color: #147047; color: white; display: flex; align-items: center; justify-content: center; padding: 15px 20px; width: 100%; font-size: 18px; border-radius: 6px; border: none;">';
-		echo '<img src="' . esc_url( plugins_url( 'assets/mmg-logo-white.png', __DIR__ ) ) . '" alt="MMG Logo" style="height: 30px; margin-right: 10px;">';
+		echo '<img src="' . esc_url( plugins_url( 'public/images/mmg-logo-white.png', __DIR__ ) ) . '" alt="MMG Logo" style="height: 30px; margin-right: 10px;">';
 		echo 'Pay with MMG</button>';
 		echo '</div>';
 	}
