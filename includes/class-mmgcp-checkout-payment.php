@@ -87,7 +87,7 @@ class MMGCP_Checkout_Payment {
 		add_action( 'wp_enqueue_scripts', array( $this, 'mmgcp_enqueue_scripts' ) );
 		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'mmgcp_generate_checkout_url' ) );
 		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'mmgcp_generate_checkout_url' ) );
-		add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateway_class' ) );
+		add_filter( 'woocommerce_payment_gateways', array( $this, 'mmgcp_add_gateway_class' ) );
 		add_action( 'plugins_loaded', array( $this, 'mmgcp_init_gateway_class' ), 11 );
 		add_action( 'parse_request', array( $this, 'mmgcp_parse_api_request' ) );
 
@@ -275,7 +275,7 @@ class MMGCP_Checkout_Payment {
 	 * @param array $gateways WooCommerce payment gateways.
 	 * @return array
 	 */
-	public function add_gateway_class( $gateways ) {
+	public function mmgcp_mmgcp_add_gateway_class( $gateways ) {
 		$gateways[] = 'MMGCP_Gateway';
 		return $gateways;
 	}
