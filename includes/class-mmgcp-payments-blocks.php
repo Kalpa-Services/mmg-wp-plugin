@@ -33,7 +33,7 @@ class MMGCP_Payments_Blocks extends AbstractPaymentMethodType {
 	 *
 	 * @return boolean
 	 */
-	public function is_active() {
+	public function mmgcp_is_active() {
 		return ! empty( $this->settings['enabled'] ) && 'yes' === $this->settings['enabled'];
 	}
 
