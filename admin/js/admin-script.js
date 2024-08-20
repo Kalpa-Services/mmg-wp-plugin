@@ -57,16 +57,13 @@ jQuery(document).ready(function($) {
 });
 
 function copyToClipboard(text) {
-    var tempInput = document.createElement('input');
-    tempInput.value = text;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    document.execCommand('copy');
-    document.body.removeChild(tempInput);
-    
-    var successMessage = document.getElementById('copy-success');
-    successMessage.style.display = 'inline';
-    setTimeout(function() {
-        successMessage.style.display = 'none';
-    }, 2000);
+    navigator.clipboard.writeText(text).then(function() {
+        var successMessage = document.getElementById('copy-success');
+        successMessage.style.display = 'inline';
+        setTimeout(function() {
+            successMessage.style.display = 'none';
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+    });
 }
