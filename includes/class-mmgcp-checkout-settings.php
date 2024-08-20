@@ -176,6 +176,7 @@ class MMGCP_Checkout_Settings {
 	}
 	/**
 	 * Enqueue admin scripts and styles.
+	 *
 	 * @param string $hook Hook suffix for the current admin page.
 	 */
 	public function mmgcp_enqueue_admin_scripts( $hook ) {
