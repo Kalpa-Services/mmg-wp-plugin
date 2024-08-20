@@ -4,15 +4,15 @@
  *
  * Integrates MMG Checkout payment method with WooCommerce Blocks.
  *
- * @package MMG_Checkout
+ * @package MMG_Checkout_Payment
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
 /**
- * WC_MMG_Payments_Blocks class.
+ * MMGCP_Payments_Blocks class.
  */
-class WC_MMG_Payments_Blocks extends AbstractPaymentMethodType {
+class MMGCP_Payments_Blocks extends AbstractPaymentMethodType {
 
 	/**
 	 * Payment method name.
@@ -42,15 +42,15 @@ class WC_MMG_Payments_Blocks extends AbstractPaymentMethodType {
 	 *
 	 * @return string[]
 	 */
-	public function get_payment_method_script_handles() {
+	public function mmgcp_get_payment_method_script_handles() {
 		wp_register_script(
-			'wc-mmg-payments-blocks',
+			'mmgcp-payments-blocks',
 			plugins_url( 'js/mmg-checkout-blocks.js', __DIR__ ),
 			array( 'wc-blocks-registry', 'wc-settings', 'wp-element', 'wp-html-entities', 'wp-i18n' ),
 			filemtime( plugin_dir_path( __DIR__ ) . 'js/mmg-checkout-blocks.js' ),
 			true
 		);
-		return array( 'wc-mmg-payments-blocks' );
+		return array( 'mmgcp-payments-blocks' );
 	}
 
 	/**
@@ -58,7 +58,7 @@ class WC_MMG_Payments_Blocks extends AbstractPaymentMethodType {
 	 *
 	 * @return array
 	 */
-	public function get_payment_method_data() {
+	public function mmgcp_get_payment_method_data() {
 		return array(
 			'title'       => $this->settings['title'],
 			'description' => $this->settings['description'],

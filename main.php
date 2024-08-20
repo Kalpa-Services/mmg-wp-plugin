@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'MMG_PLUGIN_VERSION', '2.0.0' );
+define( 'MMGCP_PLUGIN_VERSION', '2.0.0' );
 require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmgcp-dependency-checker.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmgcp-checkout-payment-activator.php';
@@ -56,11 +56,11 @@ add_action( 'woocommerce_blocks_loaded', 'mmg_checkout_register_block_support' )
  */
 function mmg_checkout_register_block_support() {
 	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
-		require_once plugin_dir_path( __FILE__ ) . 'includes/class-wc-mmg-payments-blocks.php';
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmgcp-payments-blocks.php';
 		add_action(
 			'woocommerce_blocks_payment_method_type_registration',
 			function ( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
-				$payment_method_registry->register( new WC_MMG_Payments_Blocks() );
+				$payment_method_registry->register( new MMGCP_Payments_Blocks() );
 			}
 		);
 	}
@@ -71,12 +71,12 @@ function mmg_checkout_register_block_support() {
  * @param array $vars The array of existing query variables.
  * @return array The updated array of query variables.
  */
-function mmg_query_vars( $vars ) {
+function mmgcp_query_vars( $vars ) {
 	$vars[] = 'mmg-checkout';
 	$vars[] = 'callback_key';
 	return $vars;
 }
-add_filter( 'query_vars', 'mmg_query_vars' );
+add_filter( 'query_vars', 'mmgcp_query_vars' );
 
 /**
  * Handle plugin updates.
@@ -84,14 +84,14 @@ add_filter( 'query_vars', 'mmg_query_vars' );
  * This function checks if the plugin version has changed and performs
  * necessary actions like flushing rewrite rules and updating the version option.
  */
-function mmg_plugin_updated() {
-	$version = get_option( 'mmg_plugin_version', '0' );
-	if ( version_compare( MMG_PLUGIN_VERSION, $version, '>' ) ) {
+function mmgcp_plugin_updated() {
+	$version = get_option( 'mmgcp_plugin_version', '0' );
+	if ( version_compare( MMGCP_PLUGIN_VERSION, $version, '>' ) ) {
 		flush_rewrite_rules();
-		update_option( 'mmg_plugin_version', MMG_PLUGIN_VERSION );
+		update_option( 'mmgcp_plugin_version', MMGCP_PLUGIN_VERSION );
 	}
 }
-add_action( 'plugins_loaded', 'mmg_plugin_updated' );
+add_action( 'plugins_loaded', 'mmgcp_plugin_updated' );
 
 /**
  * Remove the MMG Checkout Payment gateway from the list of available gateways.
@@ -99,11 +99,11 @@ add_action( 'plugins_loaded', 'mmg_plugin_updated' );
  * @param array $gateways The array of registered payment gateways.
  * @return array The updated array of payment gateways.
  */
-function mmg_remove_gateway( $gateways ) {
+function mmgcp_remove_gateway( $gateways ) {
 	unset( $gateways['mmg_checkout'] );
 	return $gateways;
 }
-add_filter( 'woocommerce_payment_gateways', 'mmg_remove_gateway', 20 );
+add_filter( 'woocommerce_payment_gateways', 'mmgcp_remove_gateway', 20 );
 
 add_action(
 	'init',
