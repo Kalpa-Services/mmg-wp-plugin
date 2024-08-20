@@ -45,9 +45,9 @@ class MMGCP_Payments_Blocks extends AbstractPaymentMethodType {
 	public function mmgcp_get_payment_method_script_handles() {
 		wp_register_script(
 			'mmgcp-payments-blocks',
-			plugins_url( '../admin/js/mmg-checkout-blocks.js', __DIR__ ),
+			plugins_url( '/admin/js/mmg-checkout-blocks.js', __DIR__ ),
 			array( 'wc-blocks-registry', 'wc-settings', 'wp-element', 'wp-html-entities', 'wp-i18n' ),
-			filemtime( plugin_dir_path( __DIR__ ) . '../admin/js/mmg-checkout-blocks.js' ),
+			filemtime( plugin_dir_path( __DIR__ ) . '/admin/js/mmg-checkout-blocks.js' ),
 			true
 		);
 		return array( 'mmgcp-payments-blocks' );
@@ -64,4 +64,15 @@ class MMGCP_Payments_Blocks extends AbstractPaymentMethodType {
 			'description' => $this->settings['description'],
 		);
 	}
+}
+
+add_action( 'wp_enqueue_scripts', 'enqueue_mmgcp_payment_script' );
+
+function enqueue_mmgcp_payment_script() {
+    $payment_blocks = new MMGCP_Payments_Blocks();
+    $script_handles = $payment_blocks->mmgcp_get_payment_method_script_handles();
+    
+    foreach ( $script_handles as $handle ) {
+        wp_enqueue_script( $handle );
+    }
 }

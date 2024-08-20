@@ -275,7 +275,7 @@ class MMGCP_Checkout_Payment {
 	 * @param array $gateways WooCommerce payment gateways.
 	 * @return array
 	 */
-	public function mmgcp_mmgcp_add_gateway_class( $gateways ) {
+	public function mmgcp_add_gateway_class( $gateways ) {
 		$gateways[] = 'MMGCP_Gateway';
 		return $gateways;
 	}
