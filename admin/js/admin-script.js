@@ -6,6 +6,9 @@ jQuery(document).ready(function($) {
         originalValues[this.id] = $(this).val();
     });
 
+    // Ensure mmgcp_mode is set correctly
+    originalValues['mmgcp_mode'] = $('#mmgcp_mode').val();
+
     $('.toggle-secret-key').click(function() {
         var targetId = $(this).data('target');
         var secretKeyInput = $('#' + targetId);
@@ -19,14 +22,14 @@ jQuery(document).ready(function($) {
     });
 
     function toggleLiveModeIndicator() {
-        if ($('#mmg_mode').val() === 'live') {
+        if ($('#mmgcp_mode').val() === 'live') {
             $('#live-mode-indicator').show();
         } else {
             $('#live-mode-indicator').hide();
         }
     }
 
-    $('#mmg_mode').on('change', toggleLiveModeIndicator);
+    $('#mmgcp_mode').on('change', toggleLiveModeIndicator);
     toggleLiveModeIndicator(); // Initial state
 
     $('form#mmg-checkout-settings-form').submit(function(e) {
@@ -40,8 +43,8 @@ jQuery(document).ready(function($) {
         if (changedFields.length > 0) {
             var confirmMessage = '';
             if (changedFields.includes('Mode')) {
-                var oldMode = originalValues['mmg_mode'];
-                var newMode = $('#mmg_mode').val();
+                var oldMode = originalValues['mmgcp_mode'];
+                var newMode = $('#mmgcp_mode').val();
                 confirmMessage = 'You have switched from ' + oldMode + ' to ' + newMode + '.\n\nAre you sure you want to save this change?';
             } else {
                 confirmMessage += 'You have changed the following fields:\n' + changedFields.join('\n') + '\nAre you sure you want to save these changes?';
@@ -62,8 +65,8 @@ function copyToClipboard(text) {
     document.body.removeChild(tempInput);
     
     var successMessage = document.getElementById('copy-success');
-		successMessage.style.display = 'inline';
-		setTimeout(function() {
-			successMessage.style.display = 'none';
-		}, 2000);
-	}   
+    successMessage.style.display = 'inline';
+    setTimeout(function() {
+        successMessage.style.display = 'none';
+    }, 2000);
+}

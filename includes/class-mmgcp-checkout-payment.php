@@ -75,7 +75,7 @@ class MMGCP_Checkout_Payment {
 	 */
 	public function __construct() {
 		// Initialize plugin.
-		$this->mode = get_option( 'mmg_mode', 'demo' ); // Default mode set to 'demo'.
+		$this->mode = get_option( 'mmgcp_mode', 'demo' ); // Default mode set to 'demo'.
 
 		// Generate or retrieve unique callback URL.
 		$this->callback_url = $this->mmgcp_generate_unique_callback_url();
@@ -172,13 +172,13 @@ class MMGCP_Checkout_Payment {
 
 			$timestamp  = round( microtime( true ) * 1000 ); // Use milliseconds.
 			$token_data = array(
-				'secretKey'             => get_option( "mmg_{$this->mode}_secret_key" ),
+				'secretKey'             => get_option( "mmgcp_{$this->mode}_secret_key" ),
 				'amount'                => $amount,
-				'merchantId'            => get_option( "mmg_{$this->mode}_merchant_id" ),
+				'merchantId'            => get_option( "mmgcp_{$this->mode}_merchant_id" ),
 				'merchantTransactionId' => $order->get_id() . '-' . $attempt_number,
 				'productDescription'    => $description,
 				'requestInitiationTime' => (string) $timestamp,
-				'merchantName'          => get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ),
+				'merchantName'          => get_option( 'mmgcp_merchant_name', get_bloginfo( 'name' ) ),
 			);
 
 			$encrypted    = $this->mmgcp_encrypt( $token_data );

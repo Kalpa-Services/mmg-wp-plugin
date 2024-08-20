@@ -36,26 +36,26 @@ class MMGCP_Checkout_Settings {
 	 * Register settings.
 	 */
 	public function mmgcp_register_settings() {
-		register_setting( 'mmgcp_checkout_settings', 'mmg_mode', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_mode' ) ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_mode', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_mode' ) ) );
 
 		// Live credentials.
-		register_setting( 'mmgcp_checkout_settings', 'mmg_live_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmgcp_checkout_settings', 'mmg_live_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmgcp_checkout_settings', 'mmg_live_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmgcp_checkout_settings', 'mmg_live_rsa_public_key', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_multiline_field' ) ) );
-		register_setting( 'mmgcp_checkout_settings', 'mmg_live_rsa_private_key', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_multiline_field' ) ) );
-		register_setting( 'mmgcp_checkout_settings', 'mmg_live_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_live_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_live_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_live_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_live_rsa_public_key', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_multiline_field' ) ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_live_rsa_private_key', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_multiline_field' ) ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_live_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
 
 		// Demo credentials.
-		register_setting( 'mmgcp_checkout_settings', 'mmg_demo_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmgcp_checkout_settings', 'mmg_demo_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmgcp_checkout_settings', 'mmg_demo_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'mmgcp_checkout_settings', 'mmg_demo_rsa_public_key', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_multiline_field' ) ) );
-		register_setting( 'mmgcp_checkout_settings', 'mmg_demo_rsa_private_key', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_multiline_field' ) ) );
-		register_setting( 'mmgcp_checkout_settings', 'mmg_demo_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_rsa_private_key', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_multiline_field' ) ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
 
 		// Common settings.
-		register_setting( 'mmgcp_checkout_settings', 'mmg_merchant_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_merchant_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 	}
 
 	/**
@@ -80,9 +80,9 @@ class MMGCP_Checkout_Settings {
 					<tr valign="top">
 						<th scope="row">Mode</th>
 						<td>
-							<select name="mmg_mode" id="mmg_mode">
-								<option value="live" <?php selected( get_option( 'mmg_mode' ), 'live' ); ?>>Live</option>
-								<option value="demo" <?php selected( get_option( 'mmg_mode' ), 'demo' ); ?>>Sandbox</option>
+							<select name="mmgcp_mode" id="mmgcp_mode">
+								<option value="live" <?php selected( get_option( 'mmgcp_mode' ), 'live' ); ?>>Live</option>
+								<option value="demo" <?php selected( get_option( 'mmgcp_mode' ), 'demo' ); ?>>Sandbox</option>
 							</select>
 							<span id="live-mode-indicator" style="display: none; margin-left: 10px;">
 								<span class="blinking-dot"></span> Live Mode
@@ -189,8 +189,8 @@ class MMGCP_Checkout_Settings {
 	 * @return string
 	 */
 	private function mmgcp_get_checkout_url() {
-		$mode = get_option( 'mmg_mode', 'demo' );
-		return get_option( "mmg_{$mode}_checkout_url", 'live' === $mode ? 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home' : 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home' );
+		$mode = get_option( 'mmgcp_mode', 'demo' );
+		return get_option( "mmgcp_{$mode}_checkout_url", 'live' === $mode ? 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home' : 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home' );
 	}
 
 	/**
