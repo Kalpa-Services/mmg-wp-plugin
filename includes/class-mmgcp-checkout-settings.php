@@ -176,8 +176,12 @@ class MMGCP_Checkout_Settings {
 	}
 	/**
 	 * Enqueue admin scripts and styles.
+	 * @param string $hook Hook suffix for the current admin page.
 	 */
-	public function mmgcp_enqueue_admin_scripts() {
+	public function mmgcp_enqueue_admin_scripts( $hook ) {
+		if ( 'settings_page_mmgcp-checkout-settings' !== $hook ) {
+			return;
+		}
 		wp_enqueue_script( 'jquery' );
 		wp_enqueue_script( 'mmgcp-admin-script', plugin_dir_url( __FILE__ ) . '../admin/js/admin-script.js', array( 'jquery' ), '1.0.0', true );
 		wp_enqueue_style( 'mmgcp-admin-style', plugin_dir_url( __FILE__ ) . '../admin/css/admin-style.css', array(), '1.0.0' );
