@@ -91,8 +91,8 @@ class MMG_Checkout_Payment {
 		add_action( 'plugins_loaded', array( $this, 'init_gateway_class' ), 11 );
 		add_action( 'parse_request', array( $this, 'parse_api_request' ) );
 
-		$this->live_checkout_url = $this->get_checkout_url( 'live' );
-		$this->demo_checkout_url = $this->get_checkout_url( 'demo' );
+		$this->live_checkout_url = $this->mmgcp_get_checkout_url( 'live' );
+		$this->demo_checkout_url = $this->mmgcp_get_checkout_url( 'demo' );
 	}
 
 	/**
@@ -189,7 +189,7 @@ class MMG_Checkout_Payment {
 					'merchantId'  => get_option( "mmg_{$this->mode}_merchant_id" ),
 					'X-Client-ID' => get_option( "mmg_{$this->mode}_client_id" ),
 				),
-				$this->get_checkout_url()
+				$this->mmgcp_get_checkout_url()
 			);
 
 			$order->update_meta_data( '_mmg_transaction_id', $token_data['merchantTransactionId'] );
@@ -524,7 +524,7 @@ class MMG_Checkout_Payment {
 	 * @param string $mode 'live' or 'demo'.
 	 * @return string
 	 */
-	private function get_checkout_url( $mode = null ) {
+	private function mmgcp_get_checkout_url( $mode = null ) {
 		// If no mode is provided, use the current mode.
 		if ( null === $mode ) {
 			$mode = $this->mode;

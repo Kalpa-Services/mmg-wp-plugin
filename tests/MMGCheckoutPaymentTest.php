@@ -11,13 +11,13 @@ class MMGCheckoutPaymentTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->mmg_checkout = $this->getMockBuilder(MMG_Checkout_Payment::class)
-            ->setMethods(['validate_public_key', 'encrypt', 'url_safe_base64_encode', 'get_checkout_url', 'generate_checkout_url'])
+            ->setMethods(['validate_public_key', 'encrypt', 'url_safe_base64_encode', 'mmgcp_get_checkout_url', 'generate_checkout_url'])
             ->getMock();
         
         $this->mmg_checkout->method('validate_public_key')->willReturn(true);
         $this->mmg_checkout->method('encrypt')->willReturn('encrypted_data');
         $this->mmg_checkout->method('url_safe_base64_encode')->willReturn('encoded_token');
-        $this->mmg_checkout->method('get_checkout_url')->willReturn('https://example.com/checkout');
+        $this->mmg_checkout->method('mmgcp_get_checkout_url')->willReturn('https://example.com/checkout');
 
         $this->mmg_checkout->method('generate_checkout_url')->willReturnCallback(function() {
             $checkout_url = 'https://example.com/checkout?token=encoded_token&merchantId=test_merchant_id&X-Client-ID=test_client_id';

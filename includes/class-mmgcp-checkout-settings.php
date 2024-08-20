@@ -278,7 +278,7 @@ class MMGCP_Checkout_Settings {
 	 *
 	 * @return string
 	 */
-	private function get_checkout_url() {
+	private function mmgcp_get_checkout_url() {
 		$mode = get_option( 'mmg_mode', 'demo' );
 		return get_option( "mmg_{$mode}_checkout_url", 'live' === $mode ? 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home' : 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home' );
 	}
