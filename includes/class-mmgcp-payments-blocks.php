@@ -69,10 +69,10 @@ class MMGCP_Payments_Blocks extends AbstractPaymentMethodType {
 add_action( 'wp_enqueue_scripts', 'enqueue_mmgcp_payment_script' );
 
 function enqueue_mmgcp_payment_script() {
-    $payment_blocks = new MMGCP_Payments_Blocks();
-    $script_handles = $payment_blocks->mmgcp_get_payment_method_script_handles();
-    
-    foreach ( $script_handles as $handle ) {
-        wp_enqueue_script( $handle );
-    }
+	$payment_blocks = new MMGCP_Payments_Blocks();
+	$script_handles = $payment_blocks->mmgcp_get_payment_method_script_handles();
+
+	foreach ( $script_handles as $handle ) {
+		wp_enqueue_script( $handle );
+	}
 }
