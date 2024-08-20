@@ -85,8 +85,8 @@ class MMGCP_Checkout_Payment {
 		new MMGCP_Checkout_Settings();
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'mmgcp_enqueue_scripts' ) );
-		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
-		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
+		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'mmgcp_generate_checkout_url' ) );
+		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'mmgcp_generate_checkout_url' ) );
 		add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateway_class' ) );
 		add_action( 'plugins_loaded', array( $this, 'mmgcp_init_gateway_class' ), 11 );
 		add_action( 'parse_request', array( $this, 'mmgcp_parse_api_request' ) );
@@ -144,7 +144,7 @@ class MMGCP_Checkout_Payment {
 	 *
 	 * @throws Exception If there's an error generating the checkout URL.
 	 */
-	public function generate_checkout_url() {
+	public function mmgcp_generate_checkout_url() {
 		try {
 			// Ensure 'nonce' is present in the request.
 			if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_key( $_REQUEST['nonce'] ), 'mmg_checkout_nonce' ) ) {

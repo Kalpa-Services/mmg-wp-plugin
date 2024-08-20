@@ -7,7 +7,7 @@ jQuery(document).ready(function($) {
         $button.prop('disabled', true).text('Processing...');
 
         var postData = {
-            action: 'generate_checkout_url',
+            action: 'mmgcp_generate_checkout_url',
             nonce: mmg_checkout_params.nonce,
             order_id: orderId,
         };

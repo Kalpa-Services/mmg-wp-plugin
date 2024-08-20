@@ -63,7 +63,7 @@ function mmgcp_checkout_register_block_support() {
 		);
 	}
 }
-add_action( 'woocommerce_blocks_loaded', 'mmgcp_checkout_register_block_support' );	
+add_action( 'woocommerce_blocks_loaded', 'mmgcp_checkout_register_block_support' );
 /**
  * Add custom query variables for MMG Checkout Payment.
  *
