@@ -81,8 +81,8 @@ class MMG_Checkout_Payment {
 		$this->callback_url = $this->generate_unique_callback_url();
 
 		// Load settings.
-		require_once __DIR__ . '/class-mmg-checkout-settings.php';
-		new MMG_Checkout_Settings();
+		require_once __DIR__ . '/class-mmgcp-checkout-settings.php';
+		new MMGCP_Checkout_Settings();
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
