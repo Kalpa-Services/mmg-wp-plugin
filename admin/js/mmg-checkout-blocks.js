@@ -11,13 +11,6 @@ const MMGCheckoutContent = ({ description }) => {
     return createElement('p', {}, decodeEntities(escapeHTML(description)));
 };
 
-const mmgCheckoutData = {
-    title: 'MMG Checkout',
-    description: 'Pay with MMG Checkout',
-    isEnabled: 'yes',
-    supports: ['refunds', 'products']
-};
-
 registerPaymentMethod({
     name: 'mmg_checkout',
     label: createElement(MMGCheckoutLabel, { title: mmgCheckoutData.title }),

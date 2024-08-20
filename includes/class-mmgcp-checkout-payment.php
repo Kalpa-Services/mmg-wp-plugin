@@ -247,6 +247,7 @@ class MMGCP_Checkout_Payment {
 	 * @return string
 	 */
 	private function mmgcp_url_safe_base64_encode( $data ) {
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		return rtrim( strtr( base64_encode( $data ), '+/', '-_' ), '=' );
 	}
 
@@ -344,7 +345,7 @@ class MMGCP_Checkout_Payment {
 		// Add padding if necessary.
 		$base64 = str_pad( $base64, strlen( $base64 ) % 4, '=', STR_PAD_RIGHT );
 
-		// Decode with strict mode.
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
 		$decoded = base64_decode( $base64, true );
 
 		if ( false === $decoded ) {
@@ -378,7 +379,8 @@ class MMGCP_Checkout_Payment {
 		if ( ! $this->mmgcp_verify_callback_key() ) {
 			wp_die( 'Invalid callback', 'MMG Checkout Error', array( 'response' => 403 ) );
 		}
-
+		// Note: Nonce verification is not used here because the token is from a third-party server.
+		// phpcs:ignore WordPress.Security.NonceVerification
 		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 
 		if ( empty( $token ) ) {
@@ -419,6 +421,8 @@ class MMGCP_Checkout_Payment {
 			wp_die( 'Invalid callback', 'MMG Checkout Error', array( 'response' => 403 ) );
 		}
 
+		// Note: Nonce verification is not used here because the token is from a third-party server.
+		// phpcs:ignore WordPress.Security.NonceVerification
 		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 
 		if ( empty( $token ) ) {
