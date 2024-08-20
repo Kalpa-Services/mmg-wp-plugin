@@ -39,14 +39,12 @@ if ( MMGCP_Dependency_Checker::mmgcp_check_dependencies() ) {
 	 * This function is called when all plugins are loaded and dependencies are met.
 	 * It includes the main plugin class and instantiates it.
 	 */
-	function mmg_checkout_init() {
-		require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment.php';
-		new MMG_Checkout_Payment();
+	function mmgcp_checkout_init() {
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmgcp-checkout-payment.php';
+		new MMGCP_Checkout_Payment();
 	}
-	add_action( 'plugins_loaded', 'mmg_checkout_init' );
+	add_action( 'plugins_loaded', 'mmgcp_checkout_init' );
 }
-
-add_action( 'woocommerce_blocks_loaded', 'mmg_checkout_register_block_support' );
 
 /**
  * Register MMG Checkout Payment support for WooCommerce Blocks.
@@ -54,7 +52,7 @@ add_action( 'woocommerce_blocks_loaded', 'mmg_checkout_register_block_support' )
  * This function checks if the WooCommerce Blocks abstract payment method class exists,
  * and if so, registers the MMG Payments Block support.
  */
-function mmg_checkout_register_block_support() {
+function mmgcp_checkout_register_block_support() {
 	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmgcp-payments-blocks.php';
 		add_action(
@@ -65,6 +63,7 @@ function mmg_checkout_register_block_support() {
 		);
 	}
 }
+add_action( 'woocommerce_blocks_loaded', 'mmgcp_checkout_register_block_support' );	
 /**
  * Add custom query variables for MMG Checkout Payment.
  *

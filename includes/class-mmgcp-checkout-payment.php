@@ -4,16 +4,16 @@
  *
  * This class handles the payment processing for MMG Checkout.
  *
- * @package MMG_Checkout
+ * @package MMG_Checkout_Payment
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 /**
- * MMG_Checkout_Payment class.
+ * MMGCP_Checkout_Payment class.
  */
-class MMG_Checkout_Payment {
+class MMGCP_Checkout_Payment {
 	/**
 	 * Client ID.
 	 *
@@ -78,18 +78,18 @@ class MMG_Checkout_Payment {
 		$this->mode = get_option( 'mmg_mode', 'demo' ); // Default mode set to 'demo'.
 
 		// Generate or retrieve unique callback URL.
-		$this->callback_url = $this->generate_unique_callback_url();
+		$this->callback_url = $this->mmgcp_generate_unique_callback_url();
 
 		// Load settings.
 		require_once __DIR__ . '/class-mmgcp-checkout-settings.php';
 		new MMGCP_Checkout_Settings();
 
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'mmgcp_enqueue_scripts' ) );
 		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
 		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
 		add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateway_class' ) );
-		add_action( 'plugins_loaded', array( $this, 'init_gateway_class' ), 11 );
-		add_action( 'parse_request', array( $this, 'parse_api_request' ) );
+		add_action( 'plugins_loaded', array( $this, 'mmgcp_init_gateway_class' ), 11 );
+		add_action( 'parse_request', array( $this, 'mmgcp_parse_api_request' ) );
 
 		$this->live_checkout_url = $this->mmgcp_get_checkout_url( 'live' );
 		$this->demo_checkout_url = $this->mmgcp_get_checkout_url( 'demo' );
@@ -100,7 +100,7 @@ class MMG_Checkout_Payment {
 	 *
 	 * @return string
 	 */
-	private function generate_unique_callback_url() {
+	private function mmgcp_generate_unique_callback_url() {
 		$callback_key = get_option( 'mmg_callback_key' );
 		if ( ! $callback_key ) {
 			$callback_key = wp_generate_password( 32, false );
@@ -112,9 +112,9 @@ class MMG_Checkout_Payment {
 	/**
 	 * Enqueue scripts and styles.
 	 */
-	public function enqueue_scripts() {
+	public function mmgcp_enqueue_scripts() {
 		if ( is_checkout_pay_page() ) {
-			wp_enqueue_script( 'mmg-checkout', plugin_dir_url( __DIR__ ) . 'js/mmg-checkout.js', array( 'jquery' ), '3.0', true );
+			wp_enqueue_script( 'mmg-checkout', plugin_dir_url( __DIR__ ) . '../admin/js/mmg-checkout.js', array( 'jquery' ), '3.0', true );
 			wp_localize_script(
 				'mmg-checkout',
 				'mmg_checkout_params',
@@ -128,7 +128,7 @@ class MMG_Checkout_Payment {
 		// For blocks support.
 		$gateway_settings = get_option( 'woocommerce_mmg_checkout_settings', array() );
 		wp_localize_script(
-			'wc-mmg-payments-blocks',
+			'mmgcp-payments-blocks',
 			'mmgCheckoutData',
 			array(
 				'title'       => isset( $gateway_settings['title'] ) ? $gateway_settings['title'] : 'MMG Checkout',
@@ -150,7 +150,7 @@ class MMG_Checkout_Payment {
 			if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_key( $_REQUEST['nonce'] ), 'mmg_checkout_nonce' ) ) {
 				throw new Exception( 'Invalid security token' );
 			}
-			if ( ! $this->validate_public_key() ) {
+			if ( ! $this->mmgcp_validate_public_key() ) {
 				throw new Exception( 'Invalid RSA public key' );
 			}
 
@@ -181,8 +181,8 @@ class MMG_Checkout_Payment {
 				'merchantName'          => get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ),
 			);
 
-			$encrypted    = $this->encrypt( $token_data );
-			$encoded      = $this->url_safe_base64_encode( $encrypted );
+			$encrypted    = $this->mmgcp_encrypt( $token_data );
+			$encoded      = $this->mmgcp_url_safe_base64_encode( $encrypted );
 			$checkout_url = add_query_arg(
 				array(
 					'token'       => $encoded,
@@ -207,7 +207,7 @@ class MMG_Checkout_Payment {
 	 * @return string
 	 * @throws Exception If encryption fails.
 	 */
-	private function encrypt( $checkout_object ) {
+	private function mmgcp_encrypt( $checkout_object ) {
 		$json_object = wp_json_encode( $checkout_object, JSON_UNESCAPED_SLASHES );
 
 		// Message to bytes.
@@ -246,7 +246,7 @@ class MMG_Checkout_Payment {
 	 * @param string $data Data to encode.
 	 * @return string
 	 */
-	private function url_safe_base64_encode( $data ) {
+	private function mmgcp_url_safe_base64_encode( $data ) {
 		return rtrim( strtr( base64_encode( $data ), '+/', '-_' ), '=' );
 	}
 
@@ -255,7 +255,7 @@ class MMG_Checkout_Payment {
 	 *
 	 * @return bool
 	 */
-	private function validate_public_key() {
+	private function mmgcp_validate_public_key() {
 		$public_key = get_option( 'mmg_' . $this->mode . '_rsa_public_key' );
 		if ( ! $public_key ) {
 			return false;
@@ -283,7 +283,7 @@ class MMG_Checkout_Payment {
 	/**
 	 * Initialize gateway class.
 	 */
-	public function init_gateway_class() {
+	public function mmgcp_init_gateway_class() {
 		if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			require_once __DIR__ . '/class-mmgcp-gateway.php';
 		}
@@ -296,7 +296,7 @@ class MMG_Checkout_Payment {
 	 * @return array
 	 * @throws Exception If decryption fails.
 	 */
-	private function decrypt( $encrypted_data ) {
+	private function mmgcp_decrypt( $encrypted_data ) {
 		// Load the private key.
 		try {
 			$private_key = \phpseclib3\Crypt\PublicKeyLoader::load( get_option( 'mmg_' . $this->mode . '_rsa_private_key' ) );
@@ -332,7 +332,7 @@ class MMG_Checkout_Payment {
 	 * @return string
 	 * @throws InvalidArgumentException If input is invalid.
 	 */
-	private function url_safe_base64_decode( $data ) {
+	private function mmgcp_url_safe_base64_decode( $data ) {
 		// Validate input.
 		if ( ! is_string( $data ) ) {
 			throw new InvalidArgumentException( 'Input must be a string' );
@@ -357,14 +357,14 @@ class MMG_Checkout_Payment {
 	/**
 	 * Parse API request.
 	 */
-	public function parse_api_request() {
+	public function mmgcp_parse_api_request() {
 		global $wp;
 		if ( isset( $wp->query_vars['mmg-checkout'] ) ) {
 			$path_info = isset( $_SERVER['PATH_INFO'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PATH_INFO'] ) ) : '';
 			if ( strpos( $path_info, '/errorpayment' ) !== false ) {
-				$this->handle_error_payment();
+				$this->mmgcp_handle_error_payment();
 			} else {
-				$this->handle_payment_confirmation();
+				$this->mmgcp_handle_payment_confirmation();
 			}
 			exit;
 		}
@@ -373,9 +373,9 @@ class MMG_Checkout_Payment {
 	/**
 	 * Handle error payment.
 	 */
-	public function handle_error_payment() {
+	public function mmgcp_handle_error_payment() {
 		// Verify the callback key first.
-		if ( ! $this->verify_callback_key() ) {
+		if ( ! $this->mmgcp_verify_callback_key() ) {
 			wp_die( 'Invalid callback', 'MMG Checkout Error', array( 'response' => 403 ) );
 		}
 
@@ -386,13 +386,13 @@ class MMG_Checkout_Payment {
 		}
 
 		try {
-			$decoded_token = $this->url_safe_base64_decode( $token );
+			$decoded_token = $this->mmgcp_url_safe_base64_decode( $token );
 			$error_data    = $this->decrypt( $decoded_token );
 		} catch ( Exception $e ) {
 			wp_die( 'Error decrypting token: ' . esc_html( $e->getMessage() ), 'MMG Checkout Error', array( 'response' => 400 ) );
 		}
 
-		$order_id      = $this->extract_order_id( $error_data['merchantTransactionId'] );
+		$order_id      = $this->mmgcp_extract_order_id( $error_data['merchantTransactionId'] );
 		$error_code    = isset( $error_data['errorCode'] ) ? intval( $error_data['errorCode'] ) : null;
 		$error_message = isset( $error_data['errorMessage'] ) ? sanitize_text_field( $error_data['errorMessage'] ) : '';
 
@@ -413,9 +413,9 @@ class MMG_Checkout_Payment {
 	/**
 	 * Handle payment confirmation.
 	 */
-	public function handle_payment_confirmation() {
+	public function mmgcp_handle_payment_confirmation() {
 		// Verify the callback key first.
-		if ( ! $this->verify_callback_key() ) {
+		if ( ! $this->mmgcp_verify_callback_key() ) {
 			wp_die( 'Invalid callback', 'MMG Checkout Error', array( 'response' => 403 ) );
 		}
 
@@ -426,13 +426,13 @@ class MMG_Checkout_Payment {
 		}
 
 		try {
-			$decoded_token = $this->url_safe_base64_decode( $token );
-			$payment_data  = $this->decrypt( $decoded_token );
+			$decoded_token = $this->mmgcp_url_safe_base64_decode( $token );
+			$payment_data  = $this->mmgcp_decrypt( $decoded_token );
 		} catch ( Exception $e ) {
 			wp_die( 'Error decrypting token: ' . esc_html( $e->getMessage() ), 'MMG Checkout Error', array( 'response' => 400 ) );
 		}
 
-		$order_id       = $this->extract_order_id( $payment_data['merchantTransactionId'] );
+		$order_id       = $this->mmgcp_extract_order_id( $payment_data['merchantTransactionId'] );
 		$result_code    = isset( $payment_data['resultCode'] ) ? intval( $payment_data['resultCode'] ) : null;
 		$result_message = isset( $payment_data['resultMessage'] ) ? sanitize_text_field( $payment_data['resultMessage'] ) : '';
 
@@ -496,7 +496,7 @@ class MMG_Checkout_Payment {
 	 *
 	 * @return bool
 	 */
-	private function verify_callback_key() {
+	private function mmgcp_verify_callback_key() {
 		$parsed_url = isset( $_SERVER['REQUEST_URI'] ) ? wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) : array();
 		$path       = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '';
 		$uri_parts  = explode( '/', trim( $path, '/' ) );
@@ -549,7 +549,7 @@ class MMG_Checkout_Payment {
 	 * @param string $merchant_transaction_id The merchantTransactionId from the payment data.
 	 * @return int The original order ID.
 	 */
-	private function extract_order_id( $merchant_transaction_id ) {
+	private function mmgcp_extract_order_id( $merchant_transaction_id ) {
 		$parts = explode( '-', $merchant_transaction_id );
 		return intval( $parts[0] );
 	}
