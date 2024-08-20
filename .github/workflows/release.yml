@@ -16,7 +16,7 @@ jobs:
       with:
         fetch-depth: 0
         token: ${{ secrets.PAT }}
-    - name: Update version in main.php
+    - name: Update version in mmg-checkout-payment.php
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
       run: |
@@ -51,7 +51,7 @@ jobs:
       run: composer install --no-dev --optimize-autoloader
 
     - name: Zip project
-      run: zip -r mmg-checkout-payment.zip main.php LICENSE.txt uninstall.php vendor/* README.txt js/* public/* admin/* includes/*
+      run: zip -r mmg-checkout-payment.zip mmg-checkout-payment.php LICENSE.txt uninstall.php vendor/* README.txt js/* public/* admin/* includes/*
 
     - name: Setup GitHub CLI
       uses: actions/setup-go@v4

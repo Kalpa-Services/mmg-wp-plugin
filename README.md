@@ -33,7 +33,7 @@ MMG Checkout Payment is a WordPress plugin that integrates with WooCommerce to p
 - `js/`: Contains the JavaScript files for the plugin.
 - `public/`: Contains public assets for the plugin.
 - `admin/`: Contains admin assets for the plugin.
-- `main.php`: The main plugin file.
+- `mmg-checkout-payment.php`: The main plugin file.
 - `uninstall.php`: The uninstallation script for the plugin.
 - `readme.txt`: The readme file for the plugin used by WordPress.
 
