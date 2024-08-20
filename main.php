@@ -113,4 +113,4 @@ add_action(
 );
 
 register_activation_hook( __FILE__, array( 'MMGCP_Checkout_Payment_Activator', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'MMG_Checkout_Payment_Deactivator', 'deactivate' ) );
+register_deactivation_hook( __FILE__, array( 'MMGCP_Checkout_Payment_Deactivator', 'deactivate' ) );

@@ -276,7 +276,7 @@ class MMG_Checkout_Payment {
 	 * @return array
 	 */
 	public function add_gateway_class( $gateways ) {
-		$gateways[] = 'WC_MMG_Gateway';
+		$gateways[] = 'MMGCP_Gateway';
 		return $gateways;
 	}
 
@@ -285,7 +285,7 @@ class MMG_Checkout_Payment {
 	 */
 	public function init_gateway_class() {
 		if ( class_exists( 'WC_Payment_Gateway' ) ) {
-			require_once __DIR__ . '/class-wc-mmg-gateway.php';
+			require_once __DIR__ . '/class-mmgcp-gateway.php';
 		}
 	}
 
