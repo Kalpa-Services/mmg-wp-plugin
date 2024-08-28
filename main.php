@@ -43,7 +43,9 @@ if ( MMG_Dependency_Checker::check_dependencies() ) {
 	 */
 	function mmg_checkout_init() {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment.php';
-		new MMG_Checkout_Payment();
+		$mmg_checkout = new MMG_Checkout_Payment();
+
+		add_action( 'parse_request', array( $mmg_checkout, 'parse_api_request' ), 10, 1 );
 	}
 	add_action( 'plugins_loaded', 'mmg_checkout_init' );
 }
