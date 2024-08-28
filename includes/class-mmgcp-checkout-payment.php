@@ -84,12 +84,21 @@ class MMGCP_Checkout_Payment {
 		require_once __DIR__ . '/class-mmgcp-checkout-settings.php';
 		new MMGCP_Checkout_Settings();
 
+<<<<<<< HEAD:includes/class-mmgcp-checkout-payment.php
 		add_action( 'wp_enqueue_scripts', array( $this, 'mmgcp_enqueue_scripts' ) );
 		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'mmgcp_generate_checkout_url' ) );
 		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'mmgcp_generate_checkout_url' ) );
 		add_filter( 'woocommerce_payment_gateways', array( $this, 'mmgcp_add_gateway_class' ) );
 		add_action( 'plugins_loaded', array( $this, 'mmgcp_init_gateway_class' ), 11 );
 		add_action( 'parse_request', array( $this, 'mmgcp_parse_api_request' ) );
+=======
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
+		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
+		add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateway_class' ) );
+		add_action( 'plugins_loaded', array( $this, 'init_gateway_class' ), 11 );
+		add_action( 'parse_request', array( $this, 'parse_api_request' ), 10, 1 );
+>>>>>>> 384084a (Bug fix: rewrite rule not initialized (#56)):includes/class-mmg-checkout-payment.php
 
 		$this->live_checkout_url = $this->mmgcp_get_checkout_url( 'live' );
 		$this->demo_checkout_url = $this->mmgcp_get_checkout_url( 'demo' );
@@ -357,10 +366,18 @@ class MMGCP_Checkout_Payment {
 
 	/**
 	 * Parse API request.
+	 *
+	 * @param WP $wp The WordPress environment instance.
 	 */
+<<<<<<< HEAD:includes/class-mmgcp-checkout-payment.php
 	public function mmgcp_parse_api_request() {
 		global $wp;
 		if ( isset( $wp->query_vars['mmg-checkout'] ) ) {
+=======
+	public function parse_api_request( $wp ) {
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : 'No REQUEST_URI';
+		if ( isset( $wp->query_vars['mmg-checkout'] ) || strpos( $request_uri, 'mmg-checkout' ) !== false ) {
+>>>>>>> 384084a (Bug fix: rewrite rule not initialized (#56)):includes/class-mmg-checkout-payment.php
 			$path_info = isset( $_SERVER['PATH_INFO'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PATH_INFO'] ) ) : '';
 			if ( strpos( $path_info, '/errorpayment' ) !== false ) {
 				$this->mmgcp_handle_error_payment();
@@ -451,7 +468,8 @@ class MMGCP_Checkout_Payment {
 		if ( $payment_verified ) {
 			$order->payment_complete();
 			$order->add_order_note( "Payment completed via MMG Checkout. Transaction ID: {$payment_data['transactionId']}" );
-			wp_safe_redirect( $order->get_checkout_order_received_url() );
+			$redirect_url = $order->get_checkout_order_received_url();
+			wp_safe_redirect( $redirect_url );
 		} else {
 			$status_messages = array(
 				1 => array(
@@ -485,12 +503,15 @@ class MMGCP_Checkout_Payment {
 			);
 
 			if ( isset( $status_messages[ $result_code ] ) ) {
-				$order->update_status( $status_messages[ $result_code ]['status'], "Payment failed. Reason: {$status_messages[$result_code]['message']}" );
+				$status  = $status_messages[ $result_code ]['status'];
+				$message = $status_messages[ $result_code ]['message'];
+				$order->update_status( $status, "Payment failed. Reason: $message" );
 			} else {
 				$order->update_status( 'failed', "Payment failed. Result Code: {$result_code}, Message: {$result_message}" );
 			}
 
-			wp_safe_redirect( $order->get_checkout_payment_url() );
+			$redirect_url = $order->get_checkout_payment_url();
+			wp_safe_redirect( $redirect_url );
 		}
 		exit;
 	}

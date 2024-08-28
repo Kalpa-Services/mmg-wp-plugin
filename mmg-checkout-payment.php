@@ -39,9 +39,11 @@ if ( MMGCP_Dependency_Checker::mmgcp_check_dependencies() ) {
 	 * This function is called when all plugins are loaded and dependencies are met.
 	 * It includes the main plugin class and instantiates it.
 	 */
-	function mmgcp_checkout_init() {
-		require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmgcp-checkout-payment.php';
-		new MMGCP_Checkout_Payment();
+	function mmg_checkout_init() {
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment.php';
+		$mmg_checkout = new MMG_Checkout_Payment();
+
+		add_action( 'parse_request', array( $mmg_checkout, 'parse_api_request' ), 10, 1 );
 	}
 	add_action( 'plugins_loaded', 'mmgcp_checkout_init' );
 }
