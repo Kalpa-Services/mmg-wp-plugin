@@ -357,10 +357,10 @@ class MMG_Checkout_Payment {
 	/**
 	 * Parse API request.
 	 */
-	public function parse_api_request($wp) {		
-		$request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : 'No REQUEST_URI';
-		if ( isset( $wp->query_vars['mmg-checkout'] ) || strpos($request_uri, 'mmg-checkout') !== false ) {
-			$path_info = isset( $_SERVER['PATH_INFO'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PATH_INFO'] ) ) : '';			
+	public function parse_api_request( $wp ) {
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : 'No REQUEST_URI';
+		if ( isset( $wp->query_vars['mmg-checkout'] ) || strpos( $request_uri, 'mmg-checkout' ) !== false ) {
+			$path_info = isset( $_SERVER['PATH_INFO'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PATH_INFO'] ) ) : '';
 			if ( strpos( $path_info, '/errorpayment' ) !== false ) {
 				$this->handle_error_payment();
 			} else {
@@ -414,28 +414,28 @@ class MMG_Checkout_Payment {
 	 * Handle payment confirmation.
 	 */
 	public function handle_payment_confirmation() {
-		file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment confirmation started\n", FILE_APPEND);
+		file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment confirmation started\n", FILE_APPEND );
 
 		// Verify the callback key first.
 		if ( ! $this->verify_callback_key() ) {
-			file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Invalid callback key\n", FILE_APPEND);
+			file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Invalid callback key\n", FILE_APPEND );
 			wp_die( 'Invalid callback', 'MMG Checkout Error', array( 'response' => 403 ) );
 		}
 
 		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
 
 		if ( empty( $token ) ) {
-			file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Empty token\n", FILE_APPEND);
+			file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Empty token\n", FILE_APPEND );
 			wp_die( 'Invalid token', 'MMG Checkout Error', array( 'response' => 400 ) );
 		}
 
 		try {
 			$decoded_token = $this->url_safe_base64_decode( $token );
 			$payment_data  = $this->decrypt( $decoded_token );
-			file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment data decrypted successfully\n", FILE_APPEND);
-			file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment data: " . print_r($payment_data, true) . "\n", FILE_APPEND);
+			file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment data decrypted successfully\n", FILE_APPEND );
+			file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', 'Payment data: ' . print_r( $payment_data, true ) . "\n", FILE_APPEND );
 		} catch ( Exception $e ) {
-			file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Error decrypting token: " . $e->getMessage() . "\n", FILE_APPEND);
+			file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', 'Error decrypting token: ' . $e->getMessage() . "\n", FILE_APPEND );
 			wp_die( 'Error decrypting token: ' . esc_html( $e->getMessage() ), 'MMG Checkout Error', array( 'response' => 400 ) );
 		}
 
@@ -446,21 +446,21 @@ class MMG_Checkout_Payment {
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order ) {
-			file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Invalid order\n", FILE_APPEND);
+			file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Invalid order\n", FILE_APPEND );
 			wp_die( 'Invalid order', 'MMG Checkout Error', array( 'response' => 400 ) );
 		}
 
 		$payment_verified = ( 0 === $result_code ); // 0 indicates a successful transaction
 
 		if ( $payment_verified ) {
-			file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment verified\n", FILE_APPEND);
+			file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment verified\n", FILE_APPEND );
 			$order->payment_complete();
 			$order->add_order_note( "Payment completed via MMG Checkout. Transaction ID: {$payment_data['transactionId']}" );
 			$redirect_url = $order->get_checkout_order_received_url();
-			file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Redirecting to $redirect_url\n", FILE_APPEND);
+			file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Redirecting to $redirect_url\n", FILE_APPEND );
 			wp_safe_redirect( $redirect_url );
 		} else {
-			file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment not verified\n", FILE_APPEND);
+			file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment not verified\n", FILE_APPEND );
 			$status_messages = array(
 				1 => array(
 					'status'  => 'failed',
@@ -493,20 +493,20 @@ class MMG_Checkout_Payment {
 			);
 
 			if ( isset( $status_messages[ $result_code ] ) ) {
-				$status = $status_messages[ $result_code ]['status'];
+				$status  = $status_messages[ $result_code ]['status'];
 				$message = $status_messages[ $result_code ]['message'];
 				$order->update_status( $status, "Payment failed. Reason: $message" );
-				file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Order status updated to $status. Reason: $message\n", FILE_APPEND);
+				file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Order status updated to $status. Reason: $message\n", FILE_APPEND );
 			} else {
 				$order->update_status( 'failed', "Payment failed. Result Code: {$result_code}, Message: {$result_message}" );
-				file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Order status updated to failed. Result Code: $result_code, Message: $result_message\n", FILE_APPEND);
+				file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Order status updated to failed. Result Code: $result_code, Message: $result_message\n", FILE_APPEND );
 			}
 
 			$redirect_url = $order->get_checkout_payment_url();
-			file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Redirecting to $redirect_url\n", FILE_APPEND);
+			file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Redirecting to $redirect_url\n", FILE_APPEND );
 			wp_safe_redirect( $redirect_url );
 		}
-		file_put_contents(WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment confirmation completed\n", FILE_APPEND);
+		file_put_contents( WP_CONTENT_DIR . '/mmg_payment_confirmation.txt', "Payment confirmation completed\n", FILE_APPEND );
 		exit;
 	}
 
