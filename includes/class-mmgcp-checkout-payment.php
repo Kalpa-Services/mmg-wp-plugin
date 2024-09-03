@@ -84,11 +84,11 @@ class MMGCP_Checkout_Payment {
 		require_once __DIR__ . '/class-mmgcp-checkout-settings.php';
 		new MMGCP_Checkout_Settings();
 
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
-		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
-		add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateway_class' ) );
-		add_action( 'plugins_loaded', array( $this, 'init_gateway_class' ), 11 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'mmgcp_enqueue_scripts' ) );
+		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'mmgcp_generate_checkout_url' ) );
+		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'mmgcp_generate_checkout_url' ) );
+		add_filter( 'woocommerce_payment_gateways', array( $this, 'mmgcp_add_gateway_class' ) );
+		add_action( 'plugins_loaded', array( $this, 'mmgcp_init_gateway_class' ), 11 );
 		add_action( 'parse_request', array( $this, 'mmgcp_parse_api_request' ), 10, 1 );
 
 		$this->live_checkout_url = $this->mmgcp_get_checkout_url( 'live' );
