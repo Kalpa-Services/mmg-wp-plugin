@@ -4,7 +4,7 @@
  *
  * This class handles the settings page for the MMG Checkout plugin.
  *
- * @package MMG_Checkout_Payment
+ * @package MMGCP_Checkout_Payment
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -50,7 +50,7 @@ class MMGCP_Checkout_Settings {
 		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmgcp_checkout_settings', 'mmg_demo_rsa_public_key', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_multiline_field' ) ) );
+		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_rsa_public_key', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_multiline_field' ) ) );
 		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_rsa_private_key', array( 'sanitize_callback' => array( $this, 'mmgcp_sanitize_multiline_field' ) ) );
 		register_setting( 'mmgcp_checkout_settings', 'mmgcp_demo_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
 
@@ -100,7 +100,7 @@ class MMGCP_Checkout_Settings {
 					</tr>
 					<tr valign="top">
 						<th scope="row">Merchant Name</th>
-						<td><input type="text" name="mmg_merchant_name" id="mmg_merchant_name" value="<?php echo esc_attr( get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ) ); ?>" /></td>
+						<td><input type="text" name="mmgcp_merchant_name" id="mmgcp_merchant_name" value="<?php echo esc_attr( get_option( 'mmgcp_merchant_name', get_bloginfo( 'name' ) ) ); ?>" /></td>
 					</tr>
 				</table>
 	
@@ -108,31 +108,31 @@ class MMGCP_Checkout_Settings {
 				<table class="form-table">
 					<tr valign="top">
 						<th scope="row">Live Client ID</th>
-						<td><input type="text" name="mmg_live_client_id" id="mmg_live_client_id" value="<?php echo esc_attr( get_option( 'mmg_live_client_id' ) ); ?>" /></td>
+						<td><input type="text" name="mmgcp_live_client_id" id="mmgcp_live_client_id" value="<?php echo esc_attr( get_option( 'mmgcp_live_client_id' ) ); ?>" /></td>
 					</tr>
 					<tr valign="top">
 						<th scope="row">Live Merchant ID</th>
-						<td><input type="text" name="mmg_live_merchant_id" id="mmg_live_merchant_id" value="<?php echo esc_attr( get_option( 'mmg_live_merchant_id' ) ); ?>" /></td>
+						<td><input type="text" name="mmgcp_live_merchant_id" id="mmgcp_live_merchant_id" value="<?php echo esc_attr( get_option( 'mmgcp_live_merchant_id' ) ); ?>" /></td>
 					</tr>
 					<tr valign="top">
 						<th scope="row">Live Secret Key</th>
 						<td>
-							<input type="password" id="mmg_live_secret_key" name="mmg_live_secret_key" value="<?php echo esc_attr( get_option( 'mmg_live_secret_key' ) ); ?>" />
-							<button type="button" class="toggle-secret-key" data-target="mmg_live_secret_key">Show</button>
+							<input type="password" id="mmgcp_live_secret_key" name="mmgcp_live_secret_key" value="<?php echo esc_attr( get_option( 'mmgcp_live_secret_key' ) ); ?>" />
+							<button type="button" class="toggle-secret-key" data-target="mmgcp_live_secret_key">Show</button>
 						</td>
 					</tr>
 					<tr valign="top">
 						<th scope="row">Live RSA Public Key (MMG)</th>
-						<td><textarea name="mmg_live_rsa_public_key" id="mmg_live_rsa_public_key"><?php echo esc_textarea( get_option( 'mmg_live_rsa_public_key' ) ); ?></textarea></td>
+						<td><textarea name="mmgcp_live_rsa_public_key" id="mmgcp_live_rsa_public_key"><?php echo esc_textarea( get_option( 'mmgcp_live_rsa_public_key' ) ); ?></textarea></td>
 					</tr>
 					<tr valign="top">
 						<th scope="row">Live RSA Private Key (Merchant)</th>
-						<td><textarea name="mmg_live_rsa_private_key" id="mmg_live_rsa_private_key"><?php echo esc_textarea( get_option( 'mmg_live_rsa_private_key' ) ); ?></textarea></td>
+						<td><textarea name="mmgcp_live_rsa_private_key" id="mmgcp_live_rsa_private_key"><?php echo esc_textarea( get_option( 'mmgcp_live_rsa_private_key' ) ); ?></textarea></td>
 					</tr>
 					<tr valign="top">
 						<th scope="row">Live Checkout URL</th>
 						<td>
-							<input type="text" id="mmg_live_checkout_url" name="mmg_live_checkout_url" value="<?php echo esc_attr( get_option( 'mmg_live_checkout_url', 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home' ) ); ?>" />
+							<input type="text" id="mmgcp_live_checkout_url" name="mmgcp_live_checkout_url" value="<?php echo esc_attr( get_option( 'mmgcp_live_checkout_url', 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home' ) ); ?>" />
 						</td>
 					</tr>
 				</table>
@@ -141,31 +141,31 @@ class MMGCP_Checkout_Settings {
 				<table class="form-table">
 					<tr valign="top">
 						<th scope="row">Sandbox Client ID</th>
-						<td><input type="text" name="mmg_demo_client_id" id="mmg_demo_client_id" value="<?php echo esc_attr( get_option( 'mmg_demo_client_id' ) ); ?>" /></td>
+						<td><input type="text" name="mmgcp_demo_client_id" id="mmgcp_demo_client_id" value="<?php echo esc_attr( get_option( 'mmgcp_demo_client_id' ) ); ?>" /></td>
 					</tr>
 					<tr valign="top">
 						<th scope="row">Sandbox Merchant ID</th>
-						<td><input type="text" name="mmg_demo_merchant_id" id="mmg_demo_merchant_id" value="<?php echo esc_attr( get_option( 'mmg_demo_merchant_id' ) ); ?>" /></td>
+						<td><input type="text" name="mmgcp_demo_merchant_id" id="mmgcp_demo_merchant_id" value="<?php echo esc_attr( get_option( 'mmgcp_demo_merchant_id' ) ); ?>" /></td>
 					</tr>
 					<tr valign="top">
 						<th scope="row">Sandbox Secret Key</th>
 						<td>
-							<input type="password" id="mmg_demo_secret_key" name="mmg_demo_secret_key" value="<?php echo esc_attr( get_option( 'mmg_demo_secret_key' ) ); ?>" />
-							<button type="button" class="toggle-secret-key" data-target="mmg_demo_secret_key">Show</button>
+							<input type="password" id="mmgcp_demo_secret_key" name="mmgcp_demo_secret_key" value="<?php echo esc_attr( get_option( 'mmgcp_demo_secret_key' ) ); ?>" />
+							<button type="button" class="toggle-secret-key" data-target="mmgcp_demo_secret_key">Show</button>
 						</td>
 					</tr>
 					<tr valign="top">
 						<th scope="row">Sandbox RSA Public Key (MMG)</th>
-						<td><textarea name="mmg_demo_rsa_public_key" id="mmg_demo_rsa_public_key"><?php echo esc_textarea( get_option( 'mmg_demo_rsa_public_key' ) ); ?></textarea></td>
+						<td><textarea name="mmgcp_demo_rsa_public_key" id="mmgcp_demo_rsa_public_key"><?php echo esc_textarea( get_option( 'mmgcp_demo_rsa_public_key' ) ); ?></textarea></td>
 					</tr>
 					<tr valign="top">
 						<th scope="row">Sandbox RSA Private Key (Merchant)</th>
-						<td><textarea name="mmg_demo_rsa_private_key" id="mmg_demo_rsa_private_key"><?php echo esc_textarea( get_option( 'mmg_demo_rsa_private_key' ) ); ?></textarea></td>
+						<td><textarea name="mmgcp_demo_rsa_private_key" id="mmgcp_demo_rsa_private_key"><?php echo esc_textarea( get_option( 'mmgcp_demo_rsa_private_key' ) ); ?></textarea></td>
 					</tr>
 					<tr valign="top">
 						<th scope="row">Sandbox Checkout URL</th>
 						<td>
-							<input type="text" id="mmg_demo_checkout_url" name="mmg_demo_checkout_url" value="<?php echo esc_attr( get_option( 'mmg_demo_checkout_url', 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home' ) ); ?>" />
+							<input type="text" id="mmgcp_demo_checkout_url" name="mmgcp_demo_checkout_url" value="<?php echo esc_attr( get_option( 'mmgcp_demo_checkout_url', 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home' ) ); ?>" />
 						</td>
 					</tr>
 				</table>
@@ -204,7 +204,7 @@ class MMGCP_Checkout_Settings {
 	 * @return string
 	 */
 	private function mmgcp_get_callback_url() {
-		$callback_key = get_option( 'mmg_callback_key' );
+		$callback_key = get_option( 'mmgcp_callback_key' );
 		$callback_url = $callback_key ? home_url( 'wc-api/mmg-checkout/' . $callback_key ) : 'Not generated yet';
 		return $callback_url;
 	}

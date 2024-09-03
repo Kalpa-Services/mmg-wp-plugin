@@ -101,10 +101,10 @@ class MMGCP_Checkout_Payment {
 	 * @return string
 	 */
 	private function mmgcp_generate_unique_callback_url() {
-		$callback_key = get_option( 'mmg_callback_key' );
+		$callback_key = get_option( 'mmgcp_callback_key' );
 		if ( ! $callback_key ) {
 			$callback_key = wp_generate_password( 32, false );
-			update_option( 'mmg_callback_key', $callback_key );
+			update_option( 'mmgcp_callback_key', $callback_key );
 		}
 		return home_url( "wc-api/mmg-checkout/{$callback_key}" );
 	}
@@ -186,8 +186,8 @@ class MMGCP_Checkout_Payment {
 			$checkout_url = add_query_arg(
 				array(
 					'token'       => $encoded,
-					'merchantId'  => get_option( "mmg_{$this->mode}_merchant_id" ),
-					'X-Client-ID' => get_option( "mmg_{$this->mode}_client_id" ),
+					'merchantId'  => get_option( "mmgcp_{$this->mode}_merchant_id" ),
+					'X-Client-ID' => get_option( "mmgcp_{$this->mode}_client_id" ),
 				),
 				$this->mmgcp_get_checkout_url()
 			);
@@ -220,7 +220,7 @@ class MMGCP_Checkout_Payment {
 
 		// Load the public key.
 		try {
-			$public_key = \phpseclib3\Crypt\PublicKeyLoader::load( get_option( 'mmg_' . $this->mode . '_rsa_public_key' ) );
+			$public_key = \phpseclib3\Crypt\PublicKeyLoader::load( get_option( 'mmgcp_' . $this->mode . '_rsa_public_key' ) );
 		} catch ( Exception $e ) {
 			throw new Exception( 'Failed to load RSA public key' );
 		}
@@ -257,7 +257,7 @@ class MMGCP_Checkout_Payment {
 	 * @return bool
 	 */
 	private function mmgcp_validate_public_key() {
-		$public_key = get_option( 'mmg_' . $this->mode . '_rsa_public_key' );
+		$public_key = get_option( 'mmgcp_' . $this->mode . '_rsa_public_key' );
 		if ( ! $public_key ) {
 			return false;
 		}
@@ -300,7 +300,7 @@ class MMGCP_Checkout_Payment {
 	private function mmgcp_decrypt( $encrypted_data ) {
 		// Load the private key.
 		try {
-			$private_key = \phpseclib3\Crypt\PublicKeyLoader::load( get_option( 'mmg_' . $this->mode . '_rsa_private_key' ) );
+			$private_key = \phpseclib3\Crypt\PublicKeyLoader::load( get_option( 'mmgcp_' . $this->mode . '_rsa_private_key' ) );
 		} catch ( Exception $e ) {
 			throw new Exception( 'Failed to load RSA private key' );
 		}
@@ -523,7 +523,7 @@ class MMGCP_Checkout_Payment {
 			}
 		}
 
-		$stored_callback_key = get_option( 'mmg_callback_key' );
+		$stored_callback_key = get_option( 'mmgcp_callback_key' );
 
 		return ! empty( $callback_key ) && $callback_key === $stored_callback_key;
 	}
@@ -540,12 +540,12 @@ class MMGCP_Checkout_Payment {
 			$mode = $this->mode;
 		}
 
-		$constant_name = 'MMG_' . strtoupper( $mode ) . '_CHECKOUT_URL';
+		$constant_name = 'MMGCP_' . strtoupper( $mode ) . '_CHECKOUT_URL';
 		if ( defined( $constant_name ) ) {
 			return constant( $constant_name );
 		}
 
-		$option_name = 'mmg_' . $mode . '_checkout_url';
+		$option_name = 'mmgcp_' . $mode . '_checkout_url';
 		$default_url = 'live' === $mode
 			? 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home'
 			: 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
