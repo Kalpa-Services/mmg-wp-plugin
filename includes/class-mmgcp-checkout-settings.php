@@ -184,8 +184,8 @@ class MMGCP_Checkout_Settings {
 			return;
 		}
 		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( 'mmgcp-admin-script', plugin_dir_url( __FILE__ ) . '../admin/js/admin-script.js', array( 'jquery' ), '1.0.0', true );
-		wp_enqueue_style( 'mmgcp-admin-style', plugin_dir_url( __FILE__ ) . '../admin/css/admin-style.css', array(), '1.0.0' );
+		wp_enqueue_script( 'mmgcp-admin-script', plugin_dir_url( __FILE__ ) . 'admin/js/admin-script.js', array( 'jquery' ), '1.0.0', true );
+		wp_enqueue_style( 'mmgcp-admin-style', plugin_dir_url( __FILE__ ) . 'admin/css/admin-style.css', array(), '1.0.0' );
 	}
 
 	/**
