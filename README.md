@@ -1,8 +1,5 @@
 # MMG Checkout Payment Plugin - Developer Contribution Guide
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin?ref=badge_shield)
-
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin?ref=badge_shield&issueType=security)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin?ref=badge_shield)  [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin?ref=badge_shield&issueType=security)
 
 ## Project Overview
 
