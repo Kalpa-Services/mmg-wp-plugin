@@ -1,5 +1,7 @@
 # MMG Checkout Payment Plugin - Developer Contribution Guide
 
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin?ref=badge_shield&issueType=security)
+
 ## Project Overview
 
 MMG Checkout Payment is a WordPress plugin that integrates with WooCommerce to provide a secure payment gateway for MMG Merchants. This guide is for developers who want to contribute to the project.
