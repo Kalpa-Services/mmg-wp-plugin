@@ -18,7 +18,12 @@ jQuery(document).ready(function($) {
             data: postData,
             success: function(response) {
                 if (response.success && response.data.checkout_url) {
-                    window.location.href = response.data.checkout_url;
+                    if (isValidUrl(response.data.checkout_url)) {
+                        window.location.href = response.data.checkout_url;
+                    } else {
+                        alert('Invalid checkout URL received.');
+                        $button.prop('disabled', false).text('Pay with MMG');
+                    }
                 } else {
                     alert('Error generating checkout URL: ' + (response.data.error || 'Unknown error'));
                     $button.prop('disabled', false).text('Pay with MMG');
@@ -31,3 +36,13 @@ jQuery(document).ready(function($) {
         });
     });
 });
+
+function isValidUrl(url) {
+    try {
+        const parsedUrl = new URL(url);
+        const allowedHosts = ['qpass.com'];
+        return ['https:', 'http:'].includes(parsedUrl.protocol) && allowedHosts.includes(parsedUrl.hostname);
+    } catch (e) {
+        return false;
+    }
+}
