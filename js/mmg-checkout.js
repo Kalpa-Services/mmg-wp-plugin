@@ -40,7 +40,8 @@ jQuery(document).ready(function($) {
 function isValidUrl(url) {
     try {
         const parsedUrl = new URL(url);
-        return ['https:', 'http:'].includes(parsedUrl.protocol) && parsedUrl.hostname.endsWith('qpass.com');
+        const allowedHosts = ['qpass.com', 'subdomain.qpass.com'];
+        return ['https:', 'http:'].includes(parsedUrl.protocol) && allowedHosts.includes(parsedUrl.hostname);
     } catch (e) {
         return false;
     }
