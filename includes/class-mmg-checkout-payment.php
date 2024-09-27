@@ -89,7 +89,7 @@ class MMG_Checkout_Payment {
 		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
 		add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateway_class' ) );
 		add_action( 'plugins_loaded', array( $this, 'init_gateway_class' ), 11 );
-		add_action( 'parse_request', array( $this, 'parse_api_request' ), 10, 1 );
+		add_action( 'parse_request', array( $this, 'parse_api_request' ) );
 
 		$this->live_checkout_url = $this->get_checkout_url( 'live' );
 		$this->demo_checkout_url = $this->get_checkout_url( 'demo' );
@@ -356,12 +356,10 @@ class MMG_Checkout_Payment {
 
 	/**
 	 * Parse API request.
-	 *
-	 * @param WP $wp The WordPress environment instance.
 	 */
-	public function parse_api_request( $wp ) {
-		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : 'No REQUEST_URI';
-		if ( isset( $wp->query_vars['mmg-checkout'] ) || strpos( $request_uri, 'mmg-checkout' ) !== false ) {
+	public function parse_api_request() {
+		global $wp;
+		if ( isset( $wp->query_vars['mmg-checkout'] ) ) {
 			$path_info = isset( $_SERVER['PATH_INFO'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PATH_INFO'] ) ) : '';
 			if ( strpos( $path_info, '/errorpayment' ) !== false ) {
 				$this->handle_error_payment();
@@ -449,8 +447,7 @@ class MMG_Checkout_Payment {
 		if ( $payment_verified ) {
 			$order->payment_complete();
 			$order->add_order_note( "Payment completed via MMG Checkout. Transaction ID: {$payment_data['transactionId']}" );
-			$redirect_url = $order->get_checkout_order_received_url();
-			wp_safe_redirect( $redirect_url );
+			wp_safe_redirect( $order->get_checkout_order_received_url() );
 		} else {
 			$status_messages = array(
 				1 => array(
@@ -484,15 +481,12 @@ class MMG_Checkout_Payment {
 			);
 
 			if ( isset( $status_messages[ $result_code ] ) ) {
-				$status  = $status_messages[ $result_code ]['status'];
-				$message = $status_messages[ $result_code ]['message'];
-				$order->update_status( $status, "Payment failed. Reason: $message" );
+				$order->update_status( $status_messages[ $result_code ]['status'], "Payment failed. Reason: {$status_messages[$result_code]['message']}" );
 			} else {
 				$order->update_status( 'failed', "Payment failed. Result Code: {$result_code}, Message: {$result_message}" );
 			}
 
-			$redirect_url = $order->get_checkout_payment_url();
-			wp_safe_redirect( $redirect_url );
+			wp_safe_redirect( $order->get_checkout_payment_url() );
 		}
 		exit;
 	}
