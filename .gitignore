@@ -11,3 +11,4 @@
 wp-content/*
 vendor
 .phpunit.cache
+logs
