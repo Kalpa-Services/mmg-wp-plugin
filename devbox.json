@@ -11,15 +11,13 @@
     "php83Extensions.zip",
     "php83Extensions.intl",
     "php83Extensions.openssl",
-    "nginx@latest"
+    "nginx@latest",
+    "mysql80@latest"
   ],
   "shell": {
     "init_hook": [
       "echo 'Welcome to the mmg-wp-plugin development environment!'",
-      "mkdir -p logs/nginx",
-      "NGINX_CONFDIR=devbox.d/nginx/nginx.conf",
-      "NGINX_PATH_PREFIX=.devbox/virtenv/nginx",
-      "NGINX_TMPDIR=.devbox/virtenv/nginx/temp"
+      "mkdir -p logs/nginx"
     ],
     "scripts": {
       "test": [
