@@ -11,13 +11,12 @@
     "php83Extensions.zip",
     "php83Extensions.intl",
     "php83Extensions.openssl",
-    "nginx@latest",
-    "mysql80@latest"
+    "mysql80@latest",
+    "caddy"
   ],
   "shell": {
     "init_hook": [
-      "echo 'Welcome to the mmg-wp-plugin development environment!'",
-      "mkdir -p logs/nginx"
+      "echo 'Welcome to the mmg-wp-plugin development environment!'"
     ],
     "scripts": {
       "test": [
