@@ -7,7 +7,18 @@ server {
          listen       $NGINX_WEB_PORT;
          listen       [::]:$NGINX_WEB_PORT;
          server_name  $NGINX_WEB_SERVER_NAME;
-         root         $NGINX_WEB_ROOT;
+         root         devbox.d/wordpress;
+
+         location = /favicon.ico {
+            log_not_found off;
+            access_log off;
+        }
+
+        location = /robots.txt {
+            allow all;
+            log_not_found off;
+            access_log off;
+        }
 
          error_log error.log error;
          access_log access.log;
@@ -17,7 +28,7 @@ server {
          uwsgi_temp_path temp/uwsgi;
          scgi_temp_path temp/scgi;
 
-         index index.html;
+         index index.php;
          server_tokens off;
     }
 }

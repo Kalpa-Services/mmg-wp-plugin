@@ -12,3 +12,4 @@ wp-content/*
 vendor
 .phpunit.cache
 logs
+devbox.d/wordpress
