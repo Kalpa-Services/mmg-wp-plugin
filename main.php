@@ -9,7 +9,7 @@
  *
  * @wordpress-plugin
  * Plugin Name:       MMG Checkout Payment
- * Plugin URI:        https://mmg-wp-plugin-docs.pages.dev
+ * Plugin URI:        https://mmg-plugin.kalpa.dev
  * Description:       Enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
  * Version:           2.0.6
  * Requires at least: 6.0
@@ -35,6 +35,14 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checke
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-activator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
+// This is temporary until the plugin is uploaded to the WordPress repository.
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+$update_checker = PucFactory::buildUpdateChecker(
+	'updater.json',
+	__FILE__,
+	'mmg-checkout-payment'
+);
 
 if ( MMG_Dependency_Checker::check_dependencies() ) {
 	/**

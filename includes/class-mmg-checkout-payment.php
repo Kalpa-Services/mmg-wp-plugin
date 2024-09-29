@@ -215,7 +215,7 @@ class MMG_Checkout_Payment {
 			$json_bytes = mb_convert_encoding( $json_object, 'ISO-8859-1', 'UTF-8' );
 		} else {
 			// Fallback method.
-			$json_bytes = utf8_decode( $json_object );
+			$json_bytes = mb_convert_encoding( $json_object, 'ISO-8859-1', 'UTF-8' );
 		}
 
 		// Load the public key.

@@ -13,3 +13,4 @@ vendor
 .phpunit.cache
 logs
 devbox.d/wordpress
+plugin-updater
