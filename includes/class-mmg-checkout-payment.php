@@ -108,10 +108,9 @@ class MMG_Checkout_Payment {
 		}
 		return home_url( "wc-api/mmg-checkout/{$callback_key}" );
 	}
-
-	/**
-	 * Enqueue scripts and styles.
-	 */
+		/**
+		 * Enqueue scripts and styles.
+		 */
 	public function enqueue_scripts() {
 		if ( is_checkout_pay_page() ) {
 			wp_enqueue_script( 'mmg-checkout', plugin_dir_url( __DIR__ ) . 'js/mmg-checkout.js', array( 'jquery' ), '3.0', true );
@@ -127,18 +126,24 @@ class MMG_Checkout_Payment {
 
 		// For blocks support.
 		$gateway_settings = get_option( 'woocommerce_mmg_checkout_settings', array() );
+		$description      = isset( $gateway_settings['description'] ) ? $gateway_settings['description'] : 'Use your MMG account to pay for your order.';
+
+		// Check if the plugin is in sandbox mode and update the description.
+		if ( 'demo' === $this->mode ) {
+			$description .= ' (Sandbox mode: No payment will be processed)';
+		}
+
 		wp_localize_script(
 			'wc-mmg-payments-blocks',
 			'mmgCheckoutData',
 			array(
 				'title'       => isset( $gateway_settings['title'] ) ? $gateway_settings['title'] : 'MMG Checkout',
-				'description' => isset( $gateway_settings['description'] ) ? $gateway_settings['description'] : 'Pay with MMG Checkout',
+				'description' => $description,
 				'supports'    => array( 'products', 'refunds' ),
 				'isEnabled'   => isset( $gateway_settings['enabled'] ) ? $gateway_settings['enabled'] : 'no',
 			)
 		);
 	}
-
 	/**
 	 * Generate checkout URL.
 	 *
