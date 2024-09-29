@@ -44,6 +44,7 @@ $update_checker = PucFactory::buildUpdateChecker(
 	'mmg-checkout-payment'
 );
 $update_checker->setBranch( 'main' );
+$update_checker->getVcsApi()->enableReleaseAssets();
 
 if ( MMG_Dependency_Checker::check_dependencies() ) {
 	/**
