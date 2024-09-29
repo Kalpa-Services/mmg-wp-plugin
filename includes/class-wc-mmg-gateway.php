@@ -17,7 +17,7 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 	 */
 	public function __construct() {
 		$this->id                 = 'mmg_checkout';
-		$this->icon               = '';
+		$this->icon               = 'assets/mmg-logo-white.png';
 		$this->has_fields         = false;
 		$this->method_title       = 'MMG Checkout';
 		$this->method_description = 'Enables MMG Checkout Payment flow for WooCommerce';
@@ -60,7 +60,7 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 				'title'       => 'Description',
 				'type'        => 'textarea',
 				'description' => 'This controls the description which the user sees during checkout.',
-				'default'     => 'Pay with MMG Checkout',
+				'default'     => 'Use your MMG account to pay for your order.',
 			),
 		);
 	}

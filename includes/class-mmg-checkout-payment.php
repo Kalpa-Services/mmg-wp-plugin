@@ -126,7 +126,7 @@ class MMG_Checkout_Payment {
 
 		// For blocks support.
 		$gateway_settings = get_option( 'woocommerce_mmg_checkout_settings', array() );
-		$description      = isset( $gateway_settings['description'] ) ? $gateway_settings['description'] : 'Pay with MMG Checkout';
+		$description      = isset( $gateway_settings['description'] ) ? $gateway_settings['description'] : 'Use your MMG account to pay for your order.';
 
 		// Check if the plugin is in sandbox mode and update the description.
 		if ( 'demo' === $this->mode ) {
