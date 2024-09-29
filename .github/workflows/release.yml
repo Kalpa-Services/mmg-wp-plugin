@@ -3,7 +3,7 @@ name: Create or Update Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -12,55 +12,55 @@ jobs:
   update-version:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.PAT }}
-    - name: Update version in main.php
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}
-      run: |
-        git config --local user.email "carl@kalpa.dev"
-        git config --local user.name "Carl Handy"
-        git fetch --all
-        git checkout main
-        git pull origin main
-        chmod +x .github/scripts/update-version.sh
-        ./.github/scripts/update-version.sh
-        git push origin main
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
+      - name: Update version in main.php
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        run: |
+          git config --local user.email "carl@kalpa.dev"
+          git config --local user.name "Carl Handy"
+          git fetch --all
+          git checkout main
+          git pull origin main
+          chmod +x .github/scripts/update-version.sh
+          ./.github/scripts/update-version.sh
+          git push origin main
 
   build:
     needs: update-version
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Fetch latest changes
-      run: |
-        git fetch --all
-        git checkout main
-        git pull origin main
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Fetch latest changes
+        run: |
+          git fetch --all
+          git checkout main
+          git pull origin main
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '7.4'
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "7.4"
 
-    - name: Install Composer dependencies
-      run: composer install --no-dev --optimize-autoloader
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader
 
-    - name: Zip project
-      run: zip -r mmg-checkout-payment.zip main.php LICENSE.txt uninstall.php vendor/* README.txt js/* assets/* includes/*
+      - name: Zip project
+        run: zip -r mmg-checkout-payment.zip main.php LICENSE.txt uninstall.php vendor/* README.txt js/* assets/* includes/* plugin-updater/*
 
-    - name: Setup GitHub CLI
-      uses: actions/setup-go@v4
-      with:
-        go-version: '>=1.18.0'
-    - run: go install github.com/cli/cli/v2/cmd/gh@latest
+      - name: Setup GitHub CLI
+        uses: actions/setup-go@v4
+        with:
+          go-version: ">=1.18.0"
+      - run: go install github.com/cli/cli/v2/cmd/gh@latest
 
-    - name: Upload Release Asset
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        gh release upload ${{ github.ref_name }} ./mmg-checkout-payment.zip --clobber
+      - name: Upload Release Asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} ./mmg-checkout-payment.zip --clobber

@@ -9,7 +9,7 @@
  *
  * @wordpress-plugin
  * Plugin Name:       MMG Checkout Payment
- * Plugin URI:        https://mmg-wp-plugin-docs.pages.dev
+ * Plugin URI:        https://mmg-plugin.kalpa.dev
  * Description:       Enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
  * Version:           2.0.5
  * Requires at least: 6.0
@@ -20,8 +20,6 @@
  * License:           GPL v2 or later
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Requires Plugins:  woocommerce
- * GitHub Plugin URI: https://github.com/Kalpa-Services/mmg-wp-plugin
- * GitHub Release Asset: true
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -35,6 +33,16 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checke
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-activator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
+// This is temporary until the plugin is uploaded to the WordPress repository.
+require_once plugin_dir_path( __FILE__ ) . 'plugin-updater/plugin-update-checker.php';
+
+$updateChecker = Puc_v4_Factory::buildUpdateChecker(
+    'https://github.com/Kalpa-Services/mmg-wp-plugin/',
+    __FILE__,
+    'mmg-checkout-payment'
+);
+
+$updateChecker->getVcsApi()->enableReleaseAssets();
 
 if ( MMG_Dependency_Checker::check_dependencies() ) {
 	/**
