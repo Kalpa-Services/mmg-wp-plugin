@@ -17,7 +17,7 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 	 */
 	public function __construct() {
 		$this->id                 = 'mmg_checkout';
-		$this->icon               = 'admin/images/mmg-logo-white.png';
+		$this->icon               = 'public/images/mmg-logo-white.png';
 		$this->has_fields         = false;
 		$this->method_title       = 'MMG Checkout';
 		$this->method_description = 'Enables MMG Checkout Payment flow for WooCommerce';
@@ -88,7 +88,7 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 		echo '<div id="mmg-checkout-container" style="width: 100%;">';
 		echo '<button id="mmg-checkout-button" class="button alt" data-order-id="' . esc_attr( $order_id ) . '" style="background-color: #147047; color: white; display: flex; align-items: center; justify-content: center; padding: 15px 20px; width: 100%; font-size: 18px; border-radius: 6px; border: none;">';
-		echo '<img src="' . esc_url( plugins_url( 'admin/images/mmg-logo-white.png', __DIR__ ) ) . '" alt="MMG Logo" style="height: 50px; margin-right: 10px;">';
+		echo '<img src="' . esc_url( plugins_url( 'public/images/mmg-logo-white.png', __DIR__ ) ) . '" alt="MMG Logo" style="height: 50px; margin-right: 10px;">';
 		echo 'Pay with MMG</button>';
 		echo '</div>';
 	}

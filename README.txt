@@ -80,10 +80,10 @@ This version includes important updates and improvements. Please upgrade to ensu
 == Screenshots ==
 
 1. MMG Checkout Payment gateway settings page
-![MMG Checkout Payment gateway settings page](admin/images/settings-page.png)
+![MMG Checkout Payment gateway settings page](public/images/settings-page.png)
 
 2. MMG Checkout option on WooCommerce checkout page
-![MMG Checkout option on WooCommerce checkout page](admin/images/checkout-options.png)
+![MMG Checkout option on WooCommerce checkout page](public/images/checkout-options.png)
 
 == Support ==
 

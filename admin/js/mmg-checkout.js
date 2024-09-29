@@ -25,7 +25,7 @@ jQuery(document).ready(function($) {
                         $button.prop('disabled', false).text('Pay with MMG');
                     }
                 } else {
-                    alert('Error generating checkout URL: ' + (response.data.error || 'Unknown error'));
+                    alert(response.data);
                     $button.prop('disabled', false).text('Pay with MMG');
                 }
             },
