@@ -20,6 +20,8 @@
  * License:           GPL v2 or later
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Requires Plugins:  woocommerce
+ * GitHub Plugin URI: https://github.com/Kalpa-Services/mmg-wp-plugin
+ * GitHub Release Asset: true
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
