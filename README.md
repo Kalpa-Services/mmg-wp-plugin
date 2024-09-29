@@ -24,26 +24,27 @@ MMG Checkout Payment is a WordPress plugin that integrates with WooCommerce to p
    ```sh
    git clone https://github.com/Kalpa-Services/mmg-wp-plugin.git
    ```
-1. Navigate to project directory and run `devbox install`. Doing so should install all the required dependencies. If not run `devbox install` again.
+1. Navigate to project directory. Doing so should automatically install all the required environment dependencies. If not run `devbox install`.
+2. Run `composer install` project dependencies.
 1. Run `devbox services up` to start all services.
 1. Run `mysql -u root` to connect to the database and create a new database for wordpress.
 1. Create a new directory called `wordpress` in `devbox.d` and run the following commands inside it:
 
-```sh
-curl -O https://wordpress.org/latest.tar.gz
-tar -xzvf latest.tar.gz
-mv wordpress/* .
-rm -rf wordpress latest.tar.gz
-```
+   ```sh
+   curl -O https://wordpress.org/latest.tar.gz
+   tar -xzvf latest.tar.gz
+   mv wordpress/* .
+   rm -rf wordpress latest.tar.gz
+   ```
 
-7. Configure your wp-config.php file and navigate to `http://localhost:8082` to complete the WordPress setup.
-8. Navigae to `devbox.d/wordpress/wp-content/plugins` and run the following command:
+1. Configure your wp-config.php file and navigate to `http://localhost:8082` to complete the WordPress setup.
+1. Navigae to `devbox.d/wordpress/wp-content/plugins` and run the following command:
 
    ```sh
    ln -s /path/to/project/mmg-wp-plugin mmg-checkout-payment
    ```
 
-9. Activate plugin in the WordPress admin panel.
+1. Activate plugin in the WordPress admin panel.
 
 ## Code Structure
 
