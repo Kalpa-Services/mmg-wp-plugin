@@ -1,7 +1,7 @@
  {
  	"name" : "MMG Checkout Payment",
  	"version" : "2.0.6",
- 	"download_url" : "https://github.com/Kalpa-Services/mmg-wp-plugin/releases/download/v2.0.6/mmg-checkout-payment.zip",
+ 	"download_url" : "https://github.com/Kalpa-Services/mmg-wp-plugin/releases/download/v2.0.7/mmg-checkout-payment.zip",
  	"sections" : {
  		"description" : "Enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers."
  	}
