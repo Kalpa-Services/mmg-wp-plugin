@@ -11,8 +11,6 @@ sed -i "s/\([ *]*Version:[ ]*\)[0-9.]\+/\1$NEW_VERSION/" main.php
 sed -i "s/\(define('MMG_PLUGIN_VERSION', '\)[0-9.]\+/\1$NEW_VERSION/" main.php
 # Update the Stable tag in README.txt
 sed -i "s/\(Stable tag: \)[0-9.]\+/\1$NEW_VERSION/" README.txt
-sed -i "s/\([ "]version:[ ]"\)[0-9.]\+/\1$NEW_VERSION/" updater.json
-sed -i "s|/releases/download/v[0-9.]\+/mmg-checkout-payment.zip|/releases/download/v$NEW_VERSION/mmg-checkout-payment.zip|" updater.json
 
 git add README.txt updater.json main.php
 git commit -m "Bump version to $NEW_VERSION"

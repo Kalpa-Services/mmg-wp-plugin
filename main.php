@@ -39,10 +39,11 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $update_checker = PucFactory::buildUpdateChecker(
-	'updater.json',
+	'https://github.com/Kalpa-Services/mmg-wp-plugin/',
 	__FILE__,
 	'mmg-checkout-payment'
 );
+$update_checker->setBranch( 'main' );
 
 if ( MMG_Dependency_Checker::check_dependencies() ) {
 	/**
