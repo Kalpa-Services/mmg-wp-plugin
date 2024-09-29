@@ -36,13 +36,13 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-
 // This is temporary until the plugin is uploaded to the WordPress repository.
 require_once plugin_dir_path( __FILE__ ) . 'plugin-updater/plugin-update-checker.php';
 
-$updateChecker = Puc_v4_Factory::buildUpdateChecker(
-    'https://github.com/Kalpa-Services/mmg-wp-plugin/',
-    __FILE__,
-    'mmg-checkout-payment'
+$update_checker = Puc_v4_Factory::buildUpdateChecker(
+	'https://github.com/Kalpa-Services/mmg-wp-plugin/',
+	__FILE__,
+	'mmg-checkout-payment'
 );
 
-$updateChecker->getVcsApi()->enableReleaseAssets();
+$update_checker->getVcsApi()->enableReleaseAssets();
 
 if ( MMG_Dependency_Checker::check_dependencies() ) {
 	/**
