@@ -1,4 +1,5 @@
 # MMG Checkout Payment Plugin - Developer Contribution Guide
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin?ref=badge_shield&issueType=security)
 
 ## Project Overview
@@ -17,14 +18,33 @@ MMG Checkout Payment is a WordPress plugin that integrates with WooCommerce to p
 
 ## Setting Up the Development Environment
 
+1. Configure [devbox](https://www.jetify.com/devbox/docs/quickstart/) on your local machine.
+
 1. Clone the repository:
    ```sh
    git clone https://github.com/Kalpa-Services/mmg-wp-plugin.git
    ```
-2. Run `composer install` to install the dependencies.
-3. Set up a local WordPress development environment with WooCommerce installed.
-4. Symlink or copy the plugin folder to your WordPress plugins directory.
-4. Activate the plugin in WordPress admin.
+1. Navigate to project directory. Doing so should automatically install all the required environment dependencies. If not run `devbox install`.
+2. Run `composer install` project dependencies.
+1. Run `devbox services up` to start all services.
+1. Run `mysql -u root` to connect to the database and create a new database for wordpress.
+1. Create a new directory called `wordpress` in `devbox.d` and run the following commands inside it:
+
+   ```sh
+   curl -O https://wordpress.org/latest.tar.gz
+   tar -xzvf latest.tar.gz
+   mv wordpress/* .
+   rm -rf wordpress latest.tar.gz
+   ```
+
+1. Configure your wp-config.php file and navigate to `http://localhost:8082` to complete the WordPress setup.
+1. Navigae to `devbox.d/wordpress/wp-content/plugins` and run the following command:
+
+   ```sh
+   ln -s /path/to/project/mmg-wp-plugin mmg-checkout-payment
+   ```
+
+1. Activate plugin in the WordPress admin panel.
 
 ## Code Structure
 

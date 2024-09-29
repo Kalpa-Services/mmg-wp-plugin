@@ -1,18 +1,33 @@
 {
-    "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
-    "packages": [
-        "php@latest",
-        "php83Packages.composer@latest"
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.13.0/.schema/devbox.schema.json",
+  "packages": [
+    "php83",
+    "php83Packages.composer",
+    "mysql80",
+    "php83Extensions.curl",
+    "php83Extensions.dom",
+    "php83Extensions.gd",
+    "php83Extensions.mbstring",
+    "php83Extensions.zip",
+    "php83Extensions.intl",
+    "php83Extensions.openssl",
+    "mysql80@latest",
+    "caddy"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to the mmg-wp-plugin development environment!'"
     ],
-    "shell": {
-      "init_hook": [
-        "echo 'Welcome to devbox!' > /dev/null"
+    "scripts": {
+      "test": [
+        "composer run-script test"
       ],
-      "scripts": {
-        "test": [
-          "echo \"Error: no test specified\" && exit 1"
-        ]
-      }
+      "lint": [
+        "composer run-script lint"
+      ],
+      "setup": [
+        "composer install"
+      ]
     }
   }
-  
+}
