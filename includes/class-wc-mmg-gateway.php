@@ -17,7 +17,6 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 	 */
 	public function __construct() {
 		$this->id                 = 'mmg_checkout';
-		$this->icon               = plugins_url( 'public/images/mmg-logo-white.png', __DIR__ );
 		$this->has_fields         = false;
 		$this->method_title       = 'MMG Checkout';
 		$this->method_description = 'Enables MMG Checkout Payment flow for WooCommerce';
