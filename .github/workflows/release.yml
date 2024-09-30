@@ -53,7 +53,7 @@ jobs:
       - name: Zip project
         run: |
           mkdir -p mmg-checkout-payment
-          cp -r main.php LICENSE.txt uninstall.php vendor/* README.txt includes/* admin/* public/*  mmg-checkout-payment/
+          cp -r main.php LICENSE.txt uninstall.php vendor README.txt includes admin public  mmg-checkout-payment/
           zip -r mmg-checkout-payment.zip mmg-checkout-payment
 
       - name: Setup GitHub CLI
