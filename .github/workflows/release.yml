@@ -51,10 +51,7 @@ jobs:
         run: composer install --no-dev --optimize-autoloader
 
       - name: Zip project
-        run: |
-          mkdir -p mmg-checkout-payment
-          cp -r main.php LICENSE.txt uninstall.php vendor README.txt includes admin public  mmg-checkout-payment/
-          zip -r mmg-checkout-payment.zip mmg-checkout-payment
+        run: zip -r mmg-checkout-payment.zip main.php LICENSE.txt uninstall.php vendor/* README.txt admin/* public/* includes/*
 
       - name: Setup GitHub CLI
         uses: actions/setup-go@v4
