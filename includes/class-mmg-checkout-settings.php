@@ -89,21 +89,7 @@ class MMG_Checkout_Settings {
 							</span>
 						</td>
 					</tr>
-					<style>
-						.blinking-dot {
-							display: inline-block;
-							width: 10px;
-							height: 10px;
-							background-color: #00ff00;
-							border-radius: 50%;
-							animation: blink 1s infinite;
-						}
-						@keyframes blink {
-							0% { opacity: 0; }
-							50% { opacity: 1; }
-							100% { opacity: 0; }
-						}
-					</style>
+
 					<tr valign="top">
 						<th scope="row">Callback URL</th>
 						<td>
@@ -187,77 +173,6 @@ class MMG_Checkout_Settings {
 				<?php submit_button(); ?>
 			</form>
 		</div>
-		<script>
-		jQuery(document).ready(function($) {
-			var originalValues = {};
-
-			// Store original values
-			$('form#mmg-checkout-settings-form :input').each(function() {
-				originalValues[this.id] = $(this).val();
-			});
-
-			$('.toggle-secret-key').click(function() {
-				var targetId = $(this).data('target');
-				var secretKeyInput = $('#' + targetId);
-				if (secretKeyInput.attr('type') === 'password') {
-					secretKeyInput.attr('type', 'text');
-					$(this).text('Hide');
-				} else {
-					secretKeyInput.attr('type', 'password');
-					$(this).text('Show');
-				}
-			});
-
-			function toggleLiveModeIndicator() {
-				if ($('#mmg_mode').val() === 'live') {
-					$('#live-mode-indicator').show();
-				} else {
-					$('#live-mode-indicator').hide();
-				}
-			}
-
-			$('#mmg_mode').on('change', toggleLiveModeIndicator);
-			toggleLiveModeIndicator(); // Initial state
-
-			$('form#mmg-checkout-settings-form').submit(function(e) {
-				var changedFields = [];
-				$('form#mmg-checkout-settings-form :input').each(function() {
-					if ($(this).val() !== originalValues[this.id]) {
-						changedFields.push($(this).closest('tr').find('th').text());
-					}
-				});
-
-				if (changedFields.length > 0) {
-					var confirmMessage = '';
-					if (changedFields.includes('Mode')) {
-						var oldMode = originalValues['mmg_mode'];
-						var newMode = $('#mmg_mode').val();
-						confirmMessage = 'You have switched from ' + oldMode + ' to ' + newMode + '.\n\nAre you sure you want to save this change?';
-					} else {
-						confirmMessage += 'You have changed the following fields:\n' + changedFields.join('\n') + '\nAre you sure you want to save these changes?';
-					}
-					if (!confirm(confirmMessage)) {
-						e.preventDefault();
-					}
-				}
-			});
-		});
-
-		function copyToClipboard(text) {
-			var tempInput = document.createElement('input');
-			tempInput.value = text;
-			document.body.appendChild(tempInput);
-			tempInput.select();
-			document.execCommand('copy');
-			document.body.removeChild(tempInput);
-			
-			var successMessage = document.getElementById('copy-success');
-			successMessage.style.display = 'inline';
-			setTimeout(function() {
-				successMessage.style.display = 'none';
-			}, 2000);
-		}
-		</script>
 		<?php
 	}
 
@@ -271,6 +186,8 @@ class MMG_Checkout_Settings {
 			return;
 		}
 		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script( 'mmg-admin-script', plugin_dir_url( __FILE__ ) . '../admin/js/admin-script.js', array( 'jquery' ), '1.0.0', true );
+		wp_enqueue_style( 'mmg-admin-style', plugin_dir_url( __FILE__ ) . '../admin/css/admin-style.css', array(), '1.0.0' );
 	}
 
 	/**
