@@ -34,7 +34,9 @@ function isValidUrl(url) {
     try {
         const parsedUrl = new URL(url);
         const allowedHosts = ['qpass.com'];
-        return ['https:', 'http:'].includes(parsedUrl.protocol) && allowedHosts.includes(parsedUrl.hostname);
+        const hostnameWithoutPort = parsedUrl.hostname.split(':')[0]; // Remove port number if present
+        const isValid = ['https:', 'http:'].includes(parsedUrl.protocol) && allowedHosts.some(host => hostnameWithoutPort.endsWith(host));
+        return isValid;
     } catch (e) {
         return false;
     }
