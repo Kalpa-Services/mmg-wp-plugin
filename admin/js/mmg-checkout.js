@@ -17,25 +17,18 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: postData,
             success: function(response) {
-                if (response.success && response.data.checkout_url) {
-                    if (isValidUrl(response.data.checkout_url)) {
-                        window.location.href = response.data.checkout_url;
-                    } else {
-                        alert('Invalid checkout URL received.');
-                        $button.prop('disabled', false).text('Pay with MMG');
-                    }
+                if (response.success && isValidUrl(response.data.checkout_url)) {
+                    window.location.href = response.data.checkout_url;
                 } else {
-                    alert(response.data);
-                    $button.prop('disabled', false).text('Pay with MMG');
+                    alert(response.data || 'Invalid checkout URL.');
                 }
             },
-            error: function(error) {
-                alert('Error communicating with the server. Please try again.', error);
-                $button.prop('disabled', false).text('Pay with MMG');
+            error: function() {
+                alert('Error communicating with the server. Please try again.');
             }
         });
     });
-});
+});    
 
 function isValidUrl(url) {
     try {
