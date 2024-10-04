@@ -1,5 +1,4 @@
 <?php
-
 /**
  * MMG Checkout Payment Activator
  *
@@ -10,7 +9,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-    exit; // Exit if accessed directly.
+	exit; // Exit if accessed directly.
 }
 
 /**
@@ -24,45 +23,45 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class MMG_Checkout_Payment_Activator {
 
-    /**
-     * Activate the plugin.
-     *
-     * @since 1.0.0
-     * @return void
-     */
-    public static function activate() {
-        self::mmg_activate();
-        add_action( 'init', array( 'self', 'add_rewrite_rules' ) ); 
-    }
+	/**
+	 * Activate the plugin.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public static function activate() {
+		self::mmg_activate();
+		add_action( 'init', array( 'self', 'add_rewrite_rules' ) );
+	}
 
-    /**
-     * Perform activation tasks.
-     *
-     * @since 1.0.0
-     * @return void
-     */
-    private static function mmg_activate() {
-        self::add_rewrite_rules();
-        flush_rewrite_rules();
-    }
+	/**
+	 * Perform activation tasks.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	private static function mmg_activate() {
+		self::add_rewrite_rules();
+		flush_rewrite_rules();
+	}
 
-    /**
-     * Add rewrite rules for MMG Checkout Payment callbacks.
-     *
-     * This function adds a rewrite rule to handle MMG Checkout Payment callbacks
-     * through a custom endpoint.
-     */
-    private static function add_rewrite_rules() {
-        add_rewrite_rule(
-            '^wc-api/mmg-checkout/([^/]+)/?$',
-            'index.php?mmg-checkout=1&callback_key=$matches[1]',
-            'top'
-        );
-        add_rewrite_rule(
-            '^wc-api/mmg-checkout/([^/]+)/errorpayment/?$',
-            'index.php?mmg-checkout=errorpayment&callback_key=$matches[1]',
-            'top'
-        );
-        add_rewrite_tag( '%mmg-checkout%', '([^&]+)' );
-    }
+	/**
+	 * Add rewrite rules for MMG Checkout Payment callbacks.
+	 *
+	 * This function adds a rewrite rule to handle MMG Checkout Payment callbacks
+	 * through a custom endpoint.
+	 */
+	private static function add_rewrite_rules() {
+		add_rewrite_rule(
+			'^wc-api/mmg-checkout/([^/]+)/?$',
+			'index.php?mmg-checkout=1&callback_key=$matches[1]',
+			'top'
+		);
+		add_rewrite_rule(
+			'^wc-api/mmg-checkout/([^/]+)/errorpayment/?$',
+			'index.php?mmg-checkout=errorpayment&callback_key=$matches[1]',
+			'top'
+		);
+		add_rewrite_tag( '%mmg-checkout%', '([^&]+)' );
+	}
 }

@@ -21,6 +21,7 @@ jQuery(document).ready(function($) {
                     window.location.href = response.data.checkout_url;
                 } else {
                     alert(response.data || 'Invalid checkout URL.');
+                    location.reload();
                 }
             },
             error: function() {

@@ -143,6 +143,8 @@ class MMG_Checkout_Payment {
 				'isEnabled'   => isset( $gateway_settings['enabled'] ) ? $gateway_settings['enabled'] : 'no',
 			)
 		);
+
+		wp_enqueue_style( 'mmg-public-style', plugin_dir_url( __FILE__ ) . '../public/css/main-style.css', array(), '1.0.0' );
 	}
 	/**
 	 * Generate checkout URL.
