@@ -66,6 +66,9 @@ Please contact MMG directly at merchantservices@mmg.gy to register as a merchant
 
 == Changelog ==
 
+= 2.1.7 =
+* UI/UX improvements.
+
 = 1.1.15 =
 * Latest version with improvements and bug fixes.
 
