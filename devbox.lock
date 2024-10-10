@@ -6,54 +6,6 @@
       "resolved": "github:NixOS/nixpkgs/75a52265bda7fd25e06e3a67dee3f0354e73243c#caddy",
       "source": "nixpkg"
     },
-    "caddy@latest": {
-      "last_modified": "2024-09-10T15:01:03Z",
-      "resolved": "github:NixOS/nixpkgs/5ed627539ac84809c78b2dd6d26a5cebeb5ae269#caddy",
-      "source": "devbox-search",
-      "version": "2.8.4",
-      "systems": {
-        "aarch64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/74v8xnm6jls4n40wqfsk0f60468k1fz9-caddy-2.8.4",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/74v8xnm6jls4n40wqfsk0f60468k1fz9-caddy-2.8.4"
-        },
-        "aarch64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/slaf8sbgs814sgj71gr0w5ad6w07yrjz-caddy-2.8.4",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/slaf8sbgs814sgj71gr0w5ad6w07yrjz-caddy-2.8.4"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/854ps2a0p2300fhzr7pz0izkvdl1rk8g-caddy-2.8.4",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/854ps2a0p2300fhzr7pz0izkvdl1rk8g-caddy-2.8.4"
-        },
-        "x86_64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/d59pz9n8kzwd66zlh8s7hq042lpfh0nv-caddy-2.8.4",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/d59pz9n8kzwd66zlh8s7hq042lpfh0nv-caddy-2.8.4"
-        }
-      }
-    },
     "mysql80@latest": {
       "last_modified": "2024-09-10T15:01:03Z",
       "plugin_version": "0.0.3",
@@ -119,6 +71,11 @@
         }
       }
     },
+    "php83": {
+      "plugin_version": "0.0.3",
+      "resolved": "github:NixOS/nixpkgs/75a52265bda7fd25e06e3a67dee3f0354e73243c#php83",
+      "source": "nixpkg"
+    },
     "php83Extensions.curl": {
       "resolved": "github:NixOS/nixpkgs/75a52265bda7fd25e06e3a67dee3f0354e73243c#php83Extensions.curl",
       "source": "nixpkg"
@@ -150,54 +107,6 @@
     "php83Packages.composer": {
       "resolved": "github:NixOS/nixpkgs/75a52265bda7fd25e06e3a67dee3f0354e73243c#php83Packages.composer",
       "source": "nixpkg"
-    },
-    "php83Packages.composer@latest": {
-      "last_modified": "2024-09-10T15:01:03Z",
-      "resolved": "github:NixOS/nixpkgs/5ed627539ac84809c78b2dd6d26a5cebeb5ae269#php83Packages.composer",
-      "source": "devbox-search",
-      "version": "2.7.9",
-      "systems": {
-        "aarch64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/8bbh5pdbdzq6vp5h5w8ixzplsx2hnymv-composer-2.7.9",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/8bbh5pdbdzq6vp5h5w8ixzplsx2hnymv-composer-2.7.9"
-        },
-        "aarch64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/xxgasspa2jvxq9knrp8k4p154yidqjhv-composer-2.7.9",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/xxgasspa2jvxq9knrp8k4p154yidqjhv-composer-2.7.9"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/656grsckzkwk72z0g9d4knwq0cdc2f0z-composer-2.7.9",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/656grsckzkwk72z0g9d4knwq0cdc2f0z-composer-2.7.9"
-        },
-        "x86_64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/ikm0vm76yk5q6iqd4763628vv51s280l-composer-2.7.9",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/ikm0vm76yk5q6iqd4763628vv51s280l-composer-2.7.9"
-        }
-      }
     }
   }
 }
