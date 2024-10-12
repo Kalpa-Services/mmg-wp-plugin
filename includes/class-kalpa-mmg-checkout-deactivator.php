@@ -1,10 +1,10 @@
 <?php
 /**
- * MMG Checkout Payment Deactivator
+ *  MMG Checkout for WooCommerce Deactivator
  *
  * This file contains the MMG_Checkout_Payment_Deactivator class and deactivation function.
  *
- * @package MMG_Checkout_Payment
+ * @package Kalpa_MMG_Checkout_Payment
  * @since 1.0.0
  */
 
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Fired during plugin deactivation
  *
  * @since      1.0.0
- * @package    MMG Checkout Payment
+ * @package     MMG Checkout for WooCommerce
  * @author     Kalpa Services Inc. <info@kalpa.dev>
  */
 class MMG_Checkout_Payment_Deactivator {

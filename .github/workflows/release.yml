@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.PAT }}
-      - name: Update version in main.php
+      - name: Update version in kalpa-mmg-checkout.php
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
         run: |
@@ -51,7 +51,7 @@ jobs:
         run: composer install --no-dev --optimize-autoloader
 
       - name: Zip project
-        run: zip -r mmg-checkout-payment.zip main.php LICENSE.txt uninstall.php vendor/* README.txt admin/* public/* includes/*
+        run: zip -r kalpa-mmg-checkout.zip kalpa-mmg-checkout.php LICENSE.txt uninstall.php vendor/* README.txt admin/* public/* includes/*
 
       - name: Setup GitHub CLI
         uses: actions/setup-go@v4
@@ -63,4 +63,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ github.ref_name }} ./mmg-checkout-payment.zip --clobber
+          gh release upload ${{ github.ref_name }} ./kalpa-mmg-checkout.zip --clobber

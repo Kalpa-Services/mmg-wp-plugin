@@ -1,22 +1,22 @@
 <?php
 /**
- * Plugin Name: MMG Checkout Payment
+ * Plugin Name:  MMG Checkout for WooCommerce
  *
- * @package           MMG Checkout Payment
+ * @package            MMG Checkout for WooCommerce
  * @author            Kalpa Services Inc.
  * @copyright         2024 Kalpa Services Inc.
  * @license           GPL-2.0-or-later
  *
  * @wordpress-plugin
- * Plugin Name:       MMG Checkout Payment
+ * Plugin Name:        MMG Checkout for WooCommerce
  * Plugin URI:        https://mmg-plugin.kalpa.dev
- * Description:       Enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
+ * Description:       Enables  MMG Checkout for WooCommerce flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
  * Version:           2.1.7
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kalpa Services Inc.
  * Author URI:        https://kalpa.dev
- * Text Domain:       mmg-checkout-payment
+ * Text Domain:       kalpa-mmg-checkout
  * License:           GPL v2 or later
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Requires Plugins:  woocommerce
@@ -28,30 +28,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'MMG_PLUGIN_VERSION', '2.0.0' );
 require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-activator.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-kalpa-mmg-checkout-dependency-checker.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-kalpa-mmg-checkout-activator.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-kalpa-mmg-checkout-deactivator.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-kalpa-mmg-checkout-deactivator.php';
 // This is temporary until the plugin is uploaded to the WordPress repository.
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $update_checker = PucFactory::buildUpdateChecker(
 	'https://github.com/Kalpa-Services/mmg-wp-plugin/',
 	__FILE__,
-	'mmg-checkout-payment'
+	'kalpa-mmg-checkout'
 );
 $update_checker->getVcsApi()->enableReleaseAssets();
 
 if ( MMG_Dependency_Checker::check_dependencies() ) {
 	/**
-	 * Initialize the MMG Checkout Payment functionality.
+	 * Initialize the  MMG Checkout for WooCommerce functionality.
 	 *
 	 * This function is called when all plugins are loaded and dependencies are met.
 	 * It includes the main plugin class and instantiates it.
 	 */
 	function mmg_checkout_init() {
-		require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment.php';
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-kalpa-mmg-checkout-main.php';
 		new MMG_Checkout_Payment();
 	}
 	add_action( 'plugins_loaded', 'mmg_checkout_init' );
@@ -60,14 +59,14 @@ if ( MMG_Dependency_Checker::check_dependencies() ) {
 add_action( 'woocommerce_blocks_loaded', 'mmg_checkout_register_block_support' );
 
 /**
- * Register MMG Checkout Payment support for WooCommerce Blocks.
+ * Register  MMG Checkout for WooCommerce support for WooCommerce Blocks.
  *
  * This function checks if the WooCommerce Blocks abstract payment method class exists,
  * and if so, registers the MMG Payments Block support.
  */
 function mmg_checkout_register_block_support() {
 	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
-		require_once plugin_dir_path( __FILE__ ) . 'includes/class-wc-mmg-payments-blocks.php';
+		require_once plugin_dir_path( __FILE__ ) . 'includes/class-kalpa-mmg-checkout-payments-blocks.php';
 		add_action(
 			'woocommerce_blocks_payment_method_type_registration',
 			function ( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
@@ -77,7 +76,7 @@ function mmg_checkout_register_block_support() {
 	}
 }
 /**
- * Add custom query variables for MMG Checkout Payment.
+ * Add custom query variables for  MMG Checkout for WooCommerce.
  *
  * @param array $vars The array of existing query variables.
  * @return array The updated array of query variables.
@@ -105,7 +104,7 @@ function mmg_plugin_updated() {
 add_action( 'plugins_loaded', 'mmg_plugin_updated' );
 
 /**
- * Remove the MMG Checkout Payment gateway from the list of available gateways.
+ * Remove the  MMG Checkout for WooCommerce gateway from the list of available gateways.
  *
  * @param array $gateways The array of registered payment gateways.
  * @return array The updated array of payment gateways.

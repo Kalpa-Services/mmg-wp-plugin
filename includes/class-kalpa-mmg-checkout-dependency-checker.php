@@ -4,7 +4,7 @@
  *
  * This file contains the MMG_Dependency_Checker class which checks for required dependencies.
  *
- * @package MMG_Checkout
+ * @package Kalpa_MMG_Checkout
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

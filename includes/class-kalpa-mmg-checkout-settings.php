@@ -4,7 +4,7 @@
  *
  * This class handles the settings page for the MMG Checkout plugin.
  *
- * @package MMG_Checkout_Payment
+ * @package Kalpa_MMG_Checkout_Payment
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

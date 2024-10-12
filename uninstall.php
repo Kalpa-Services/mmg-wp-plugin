@@ -21,7 +21,7 @@
  * @link       https://github.com/kalpa-services/mmg-wp-plugin
  * @since      1.0.0
  *
- * @package    MMG Checkout Payment
+ * @package     MMG Checkout for WooCommerce
  */
 
 // If uninstall not called from WordPress, then exit.

@@ -1,10 +1,10 @@
 <?php
 /**
- * MMG Checkout Payment Class
+ *  MMG Checkout for WooCommerce Class
  *
  * This class handles the payment processing for MMG Checkout.
  *
- * @package MMG_Checkout
+ * @package Kalpa_MMG_Checkout
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -81,7 +81,7 @@ class MMG_Checkout_Payment {
 		$this->callback_url = $this->generate_unique_callback_url();
 
 		// Load settings.
-		require_once __DIR__ . '/class-mmg-checkout-settings.php';
+		require_once __DIR__ . '/class-kalpa-mmg-checkout-settings.php';
 		new MMG_Checkout_Settings();
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -292,7 +292,7 @@ class MMG_Checkout_Payment {
 	 */
 	public function init_gateway_class() {
 		if ( class_exists( 'WC_Payment_Gateway' ) ) {
-			require_once __DIR__ . '/class-wc-mmg-gateway.php';
+			require_once __DIR__ . '/class-kalpa-mmg-checkout-gateway.php';
 		}
 	}
 

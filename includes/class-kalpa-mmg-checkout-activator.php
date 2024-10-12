@@ -1,10 +1,10 @@
 <?php
 /**
- * MMG Checkout Payment Activator
+ *  MMG Checkout for WooCommerce Activator
  *
  * This file contains the MMG_Checkout_Payment_Activator class and activation function.
  *
- * @package MMG_Checkout_Payment
+ * @package Kalpa_MMG_Checkout_Payment
  * @since 1.0.0
  */
 
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * This class defines all code necessary to run during the plugin's activation.
  *
  * @since 1.0.0
- * @package MMG_Checkout_Payment
+ * @package Kalpa_MMG_Checkout_Payment
  * @author Kalpa Services Inc. <info@kalpa.dev>
  */
 class MMG_Checkout_Payment_Activator {
@@ -46,9 +46,9 @@ class MMG_Checkout_Payment_Activator {
 	}
 
 	/**
-	 * Add rewrite rules for MMG Checkout Payment callbacks.
+	 * Add rewrite rules for  MMG Checkout for WooCommerce callbacks.
 	 *
-	 * This function adds a rewrite rule to handle MMG Checkout Payment callbacks
+	 * This function adds a rewrite rule to handle  MMG Checkout for WooCommerce callbacks
 	 * through a custom endpoint.
 	 */
 	private static function add_rewrite_rules() {
