@@ -4,7 +4,7 @@
  *
  * This class handles the settings page for the MMG Checkout plugin.
  *
- * @package Kalpa_Kalpa_MMG_Checkout_Main
+ * @package Kalpa_MMG_Checkout_Main
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -29,33 +29,33 @@ class Kalpa_MMG_Checkout_Settings {
 	 * Add admin menu.
 	 */
 	public function add_admin_menu() {
-		add_options_page( 'MMG Checkout Settings', 'MMG Checkout', 'manage_options', 'mmg-checkout-settings', array( $this, 'settings_page' ) );
+		add_options_page( 'MMG Checkout Settings', 'MMG Checkout', 'manage_options', 'kalpa-mmg-checkout-settings', array( $this, 'settings_page' ) );
 	}
 
 	/**
 	 * Register settings.
 	 */
 	public function register_settings() {
-		register_setting( 'mmg_checkout_settings', 'mmg_mode', array( 'sanitize_callback' => array( $this, 'sanitize_mode' ) ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_mode', array( 'sanitize_callback' => array( $this, 'sanitize_mode' ) ) );
 
 		// Live credentials.
-		register_setting( 'mmg_checkout_settings', 'mmg_live_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_live_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_live_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_live_rsa_public_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_live_rsa_private_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_live_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_rsa_public_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_rsa_private_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
 
 		// Demo credentials.
-		register_setting( 'mmg_checkout_settings', 'mmg_demo_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_demo_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_demo_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_demo_rsa_public_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_demo_rsa_private_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_demo_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_rsa_public_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_rsa_private_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
 
 		// Common settings.
-		register_setting( 'mmg_checkout_settings', 'mmg_merchant_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_merchant_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 	}
 
 	/**
@@ -73,8 +73,8 @@ class Kalpa_MMG_Checkout_Settings {
 			</div>
 			<form method="post" action="options.php" id="mmg-checkout-settings-form">
 				<?php
-				settings_fields( 'mmg_checkout_settings' );
-				do_settings_sections( 'mmg_checkout_settings' );
+				settings_fields( 'kalpa_mmg_checkout_settings' );
+				do_settings_sections( 'kalpa_mmg_checkout_settings' );
 				?>
 				<table class="form-table">
 					<tr valign="top">

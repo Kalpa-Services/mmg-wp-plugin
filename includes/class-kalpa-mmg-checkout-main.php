@@ -113,9 +113,9 @@ class Kalpa_MMG_Checkout_Main {
 		 */
 	public function enqueue_scripts() {
 		if ( is_checkout_pay_page() ) {
-			wp_enqueue_script( 'mmg-checkout', plugin_dir_url( __DIR__ ) . 'admin/js/mmg-checkout.js', array( 'jquery' ), '3.0', true );
+			wp_enqueue_script( 'kalpa-mmg-checkout', plugin_dir_url( __DIR__ ) . 'admin/js/mmg-checkout.js', array( 'jquery' ), '3.0', true );
 			wp_localize_script(
-				'mmg-checkout',
+				'kalpa-mmg-checkout',
 				'mmg_checkout_params',
 				array(
 					'ajax_url' => admin_url( 'admin-ajax.php' ),
@@ -134,7 +134,7 @@ class Kalpa_MMG_Checkout_Main {
 		}
 
 		wp_localize_script(
-			'wc-mmg-payments-blocks',
+			'kalpa-mmg-payment-blocks',
 			'mmgCheckoutData',
 			array(
 				'title'       => isset( $gateway_settings['title'] ) ? $gateway_settings['title'] : 'MMG Checkout',
@@ -412,7 +412,7 @@ class Kalpa_MMG_Checkout_Main {
 		$order->update_status( 'failed', "Payment failed. Error Code: {$error_code}, Message: {$error_message}" );
 
 		// Redirect to the order page with an error message.
-		wc_add_notice( __( 'Payment failed. Please try again or contact support.', 'mmg-checkout' ), 'error' );
+		wc_add_notice( __( 'Payment failed. Please try again or contact support.', 'kalpa-mmg-checkout' ), 'error' );
 		wp_safe_redirect( $order->get_checkout_payment_url() );
 		exit;
 	}

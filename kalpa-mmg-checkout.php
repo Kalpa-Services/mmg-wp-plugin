@@ -1,14 +1,14 @@
 <?php
 /**
- * Plugin Name:  MMG Checkout for WooCommerce
+ * Plugin Name: MMG Checkout for WooCommerce
  *
- * @package            MMG Checkout for WooCommerce
+ * @package           MMG Checkout for WooCommerce
  * @author            Kalpa Services Inc.
  * @copyright         2024 Kalpa Services Inc.
  * @license           GPL-2.0-or-later
  *
  * @wordpress-plugin
- * Plugin Name:        MMG Checkout for WooCommerce
+ * Plugin Name:       MMG Checkout for WooCommerce
  * Plugin URI:        https://mmg-plugin.kalpa.dev
  * Description:       Enables  MMG Checkout for WooCommerce flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
  * Version:           2.1.7
@@ -82,7 +82,7 @@ function mmg_checkout_register_block_support() {
  * @return array The updated array of query variables.
  */
 function mmg_query_vars( $vars ) {
-	$vars[] = 'mmg-checkout';
+	$vars[] = 'mmg-checkout'; // changing this will cause a breaking change for existing users.
 	$vars[] = 'callback_key';
 	return $vars;
 }
