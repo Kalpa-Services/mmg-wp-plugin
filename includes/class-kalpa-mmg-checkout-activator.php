@@ -4,7 +4,7 @@
  *
  * This file contains the Kalpa_MMG_Checkout_Activator class and activation function.
  *
- * @package Kalpa_Kalpa_MMG_Checkout_Main
+ * @package Kalpa_MMG_Checkout_Main
  * @since 1.0.0
  */
 
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * This class defines all code necessary to run during the plugin's activation.
  *
  * @since 1.0.0
- * @package Kalpa_Kalpa_MMG_Checkout_Main
+ * @package Kalpa_MMG_Checkout_Main
  * @author Kalpa Services Inc. <info@kalpa.dev>
  */
 class Kalpa_MMG_Checkout_Activator {

@@ -4,7 +4,7 @@
  *
  * This file contains the Kalpa_MMG_Checkout_Deactivator class and deactivation function.
  *
- * @package Kalpa_Kalpa_MMG_Checkout_Main
+ * @package Kalpa_MMG_Checkout_Main
  * @since 1.0.0
  */
 

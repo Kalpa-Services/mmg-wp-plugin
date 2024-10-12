@@ -44,13 +44,13 @@ class Kalpa_MMG_Checkout_Payments_Blocks extends AbstractPaymentMethodType {
 	 */
 	public function get_payment_method_script_handles() {
 		wp_register_script(
-			'wc-mmg-payments-blocks',
+			'kalpa-mmg-payment-blocks',
 			plugins_url( 'admin/js/mmg-checkout-blocks.js', __DIR__ ),
 			array( 'wc-blocks-registry', 'wc-settings', 'wp-element', 'wp-html-entities', 'wp-i18n' ),
 			filemtime( plugin_dir_path( __DIR__ ) . 'admin/js/mmg-checkout-blocks.js' ),
 			true
 		);
-		return array( 'wc-mmg-payments-blocks' );
+		return array( 'kalpa-mmg-payment-blocks' );
 	}
 
 	/**
