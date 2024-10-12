@@ -11,7 +11,7 @@ class MMGCheckoutPaymentTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->mmg_checkout = $this->getMockBuilder(Kalpa_MMG_Checkout_Main::class)
-            ->setMethods(['kalpa_validate_public_key', 'kalpa_encrypt', 'url_safe_base64_encode', 'kalpa_get_checkout_url', 'kalpa_generate_checkout_url'])
+            ->setMethods(['kalpa_validate_public_key', 'kalpa_encrypt', 'kalpa_url_safe_base64_encode', 'kalpa_get_checkout_url', 'kalpa_generate_checkout_url'])
             ->getMock();
         
         $this->mmg_checkout->method('kalpa_validate_public_key')->willReturn(true);
