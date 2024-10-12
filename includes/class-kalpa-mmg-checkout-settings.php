@@ -20,38 +20,38 @@ class Kalpa_MMG_Checkout_Settings {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'admin_menu', array( $this, 'kalpa_add_admin_menu' ) );
+		add_action( 'admin_init', array( $this, 'kalpa_register_settings' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'kalpa_enqueue_admin_scripts' ) );
 	}
 
 	/**
 	 * Add admin menu.
 	 */
-	public function add_admin_menu() {
-		add_options_page( 'MMG Checkout Settings', 'MMG Checkout', 'manage_options', 'kalpa-mmg-checkout-settings', array( $this, 'settings_page' ) );
+	public function kalpa_add_admin_menu() {
+		add_options_page( 'MMG Checkout Settings', 'MMG Checkout', 'manage_options', 'kalpa-mmg-checkout-settings', array( $this, 'kalpa_settings_page' ) );
 	}
 
 	/**
 	 * Register settings.
 	 */
-	public function register_settings() {
-		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_mode', array( 'sanitize_callback' => array( $this, 'sanitize_mode' ) ) );
+	public function kalpa_register_settings() {
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_mode', array( 'sanitize_callback' => array( $this, 'kalpa_sanitize_mode' ) ) );
 
 		// Live credentials.
 		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_rsa_public_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
-		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_rsa_private_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_rsa_public_key', array( 'sanitize_callback' => array( $this, 'kalpa_sanitize_multiline_field' ) ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_rsa_private_key', array( 'sanitize_callback' => array( $this, 'kalpa_sanitize_multiline_field' ) ) );
 		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_live_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
 
 		// Demo credentials.
 		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_rsa_public_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
-		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_rsa_private_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_rsa_public_key', array( 'sanitize_callback' => array( $this, 'kalpa_sanitize_multiline_field' ) ) );
+		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_rsa_private_key', array( 'sanitize_callback' => array( $this, 'kalpa_sanitize_multiline_field' ) ) );
 		register_setting( 'kalpa_mmg_checkout_settings', 'mmg_demo_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
 
 		// Common settings.
@@ -61,7 +61,7 @@ class Kalpa_MMG_Checkout_Settings {
 	/**
 	 * Render settings page.
 	 */
-	public function settings_page() {
+	public function kalpa_settings_page() {
 		?>
 		<div class="wrap">
 			<h1>MMG Checkout Settings</h1>
@@ -93,7 +93,7 @@ class Kalpa_MMG_Checkout_Settings {
 					<tr valign="top">
 						<th scope="row">Callback URL</th>
 						<td>
-							<?php $callback_url = esc_url( $this->get_callback_url() ); ?>
+							<?php $callback_url = esc_url( $this->kalpa_set_callback_url() ); ?>
 							<?php echo esc_html( $callback_url ); ?>
 							<button type="button" class="button" onclick="copyToClipboard('<?php echo esc_js( $callback_url ); ?>')">Copy</button>
 							<span id="copy-success" style="color: green; display: none; margin-left: 10px;">Copied!</span>
@@ -181,8 +181,8 @@ class Kalpa_MMG_Checkout_Settings {
 	 *
 	 * @param string $hook The current admin page.
 	 */
-	public function enqueue_admin_scripts( $hook ) {
-		if ( 'settings_page_mmg-checkout-settings' !== $hook ) {
+	public function kalpa_enqueue_admin_scripts( $hook ) {
+		if ( 'kalpa_settings_page_mmg-checkout-settings' !== $hook ) {
 			return;
 		}
 		wp_enqueue_script( 'jquery' );
@@ -195,7 +195,7 @@ class Kalpa_MMG_Checkout_Settings {
 	 *
 	 * @return string
 	 */
-	private function get_checkout_url() {
+	private function kalpa_set_checkout_url() {
 		$mode = get_option( 'mmg_mode', 'demo' );
 		return get_option( "mmg_{$mode}_checkout_url", 'live' === $mode ? 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home' : 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home' );
 	}
@@ -205,7 +205,7 @@ class Kalpa_MMG_Checkout_Settings {
 	 *
 	 * @return string
 	 */
-	private function get_callback_url() {
+	private function kalpa_set_callback_url() {
 		$callback_key = get_option( 'mmg_callback_key' );
 		$callback_url = $callback_key ? home_url( 'wc-api/mmg-checkout/' . $callback_key ) : 'Not generated yet';
 		return $callback_url;
@@ -217,7 +217,7 @@ class Kalpa_MMG_Checkout_Settings {
 	 * @param string $input The input to sanitize.
 	 * @return string
 	 */
-	public function sanitize_mode( $input ) {
+	public function kalpa_sanitize_mode( $input ) {
 		$valid_modes = array( 'live', 'demo' );
 		return in_array( $input, $valid_modes, true ) ? $input : 'demo';
 	}
@@ -228,7 +228,7 @@ class Kalpa_MMG_Checkout_Settings {
 	 * @param string $input The input to sanitize.
 	 * @return string
 	 */
-	public function sanitize_multiline_field( $input ) {
+	public function kalpa_sanitize_multiline_field( $input ) {
 		return implode( "\n", array_map( 'sanitize_text_field', explode( "\n", $input ) ) );
 	}
 }

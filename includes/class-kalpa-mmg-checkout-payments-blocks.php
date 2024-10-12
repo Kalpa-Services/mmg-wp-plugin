@@ -33,7 +33,7 @@ class Kalpa_MMG_Checkout_Payments_Blocks extends AbstractPaymentMethodType {
 	 *
 	 * @return boolean
 	 */
-	public function is_active() {
+	public function kalpa_is_active() {
 		return ! empty( $this->settings['enabled'] ) && 'yes' === $this->settings['enabled'];
 	}
 
@@ -42,7 +42,7 @@ class Kalpa_MMG_Checkout_Payments_Blocks extends AbstractPaymentMethodType {
 	 *
 	 * @return string[]
 	 */
-	public function get_payment_method_script_handles() {
+	public function kalpa_get_payment_method_script_handles() {
 		wp_register_script(
 			'kalpa-mmg-payment-blocks',
 			plugins_url( 'admin/js/mmg-checkout-blocks.js', __DIR__ ),
@@ -58,7 +58,7 @@ class Kalpa_MMG_Checkout_Payments_Blocks extends AbstractPaymentMethodType {
 	 *
 	 * @return array
 	 */
-	public function get_payment_method_data() {
+	public function kalpa_get_payment_method_data() {
 		return array(
 			'title'       => $this->settings['title'],
 			'description' => $this->settings['description'],
