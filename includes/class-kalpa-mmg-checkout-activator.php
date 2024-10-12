@@ -2,9 +2,9 @@
 /**
  *  MMG Checkout for WooCommerce Activator
  *
- * This file contains the MMG_Checkout_Payment_Activator class and activation function.
+ * This file contains the Kalpa_MMG_Checkout_Activator class and activation function.
  *
- * @package Kalpa_MMG_Checkout_Payment
+ * @package Kalpa_Kalpa_MMG_Checkout_Main
  * @since 1.0.0
  */
 
@@ -18,10 +18,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * This class defines all code necessary to run during the plugin's activation.
  *
  * @since 1.0.0
- * @package Kalpa_MMG_Checkout_Payment
+ * @package Kalpa_Kalpa_MMG_Checkout_Main
  * @author Kalpa Services Inc. <info@kalpa.dev>
  */
-class MMG_Checkout_Payment_Activator {
+class Kalpa_MMG_Checkout_Activator {
 
 	/**
 	 * Activate the plugin.

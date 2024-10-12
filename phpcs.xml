@@ -3,6 +3,6 @@
     <description>WordPress Coding Standards</description>
     <rule ref="WordPress" />
     <file>./includes</file>
-    <file>kalpa-mmg-checkou.php</file>
+    <file>kalpa-mmg-checkout.php</file>
     <file>uninstall.php</file>
 </ruleset>

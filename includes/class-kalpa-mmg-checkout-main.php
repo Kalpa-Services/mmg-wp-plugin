@@ -11,9 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 /**
- * MMG_Checkout_Payment class.
+ * Kalpa_MMG_Checkout_Main class.
  */
-class MMG_Checkout_Payment {
+class Kalpa_MMG_Checkout_Main {
 	/**
 	 * Client ID.
 	 *
@@ -82,7 +82,7 @@ class MMG_Checkout_Payment {
 
 		// Load settings.
 		require_once __DIR__ . '/class-kalpa-mmg-checkout-settings.php';
-		new MMG_Checkout_Settings();
+		new Kalpa_MMG_Checkout_Settings();
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
@@ -283,7 +283,7 @@ class MMG_Checkout_Payment {
 	 * @return array
 	 */
 	public function add_gateway_class( $gateways ) {
-		$gateways[] = 'WC_MMG_Gateway';
+		$gateways[] = 'Kalpa_MMG_Checkout_Gateway';
 		return $gateways;
 	}
 

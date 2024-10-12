@@ -8,9 +8,9 @@
  */
 
 /**
- * WC_MMG_Gateway class.
+ * Kalpa_MMG_Checkout_Gateway class.
  */
-class WC_MMG_Gateway extends WC_Payment_Gateway {
+class Kalpa_MMG_Checkout_Gateway extends WC_Payment_Gateway {
 
 	/**
 	 * Constructor for the gateway.

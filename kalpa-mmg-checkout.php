@@ -42,7 +42,7 @@ $update_checker = PucFactory::buildUpdateChecker(
 );
 $update_checker->getVcsApi()->enableReleaseAssets();
 
-if ( MMG_Dependency_Checker::check_dependencies() ) {
+if ( Kalpa_MMG_Checkout_Dependency_Checker::check_dependencies() ) {
 	/**
 	 * Initialize the  MMG Checkout for WooCommerce functionality.
 	 *
@@ -51,7 +51,7 @@ if ( MMG_Dependency_Checker::check_dependencies() ) {
 	 */
 	function mmg_checkout_init() {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-kalpa-mmg-checkout-main.php';
-		new MMG_Checkout_Payment();
+		new Kalpa_MMG_Checkout_Main();
 	}
 	add_action( 'plugins_loaded', 'mmg_checkout_init' );
 }
@@ -70,7 +70,7 @@ function mmg_checkout_register_block_support() {
 		add_action(
 			'woocommerce_blocks_payment_method_type_registration',
 			function ( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
-				$payment_method_registry->register( new WC_MMG_Payments_Blocks() );
+				$payment_method_registry->register( new Kalpa_MMG_Checkout_Payments_Blocks() );
 			}
 		);
 	}
@@ -122,5 +122,5 @@ add_action(
 	}
 );
 
-register_activation_hook( __FILE__, array( 'MMG_Checkout_Payment_Activator', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'MMG_Checkout_Payment_Deactivator', 'deactivate' ) );
+register_activation_hook( __FILE__, array( 'Kalpa_MMG_Checkout_Activator', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'Kalpa_MMG_Checkout_Deactivator', 'deactivate' ) );

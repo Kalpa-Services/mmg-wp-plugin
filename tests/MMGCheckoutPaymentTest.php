@@ -1,16 +1,16 @@
 <?php
 
-namespace MMG_Checkout_Payment;
+namespace Kalpa_MMG_Checkout_Main;
 
 use PHPUnit\Framework\TestCase;
-use MMG_Checkout\MMG_Checkout_Payment;
+use MMG_Checkout\Kalpa_MMG_Checkout_Main;
 
 class MMGCheckoutPaymentTest extends TestCase {
     private $mmg_checkout;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->mmg_checkout = $this->getMockBuilder(MMG_Checkout_Payment::class)
+        $this->mmg_checkout = $this->getMockBuilder(Kalpa_MMG_Checkout_Main::class)
             ->setMethods(['validate_public_key', 'encrypt', 'url_safe_base64_encode', 'get_checkout_url', 'generate_checkout_url'])
             ->getMock();
         

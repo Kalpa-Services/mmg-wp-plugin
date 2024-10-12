@@ -10,9 +10,9 @@
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
 /**
- * WC_MMG_Payments_Blocks class.
+ * Kalpa_MMG_Checkout_Payments_Blocks class.
  */
-class WC_MMG_Payments_Blocks extends AbstractPaymentMethodType {
+class Kalpa_MMG_Checkout_Payments_Blocks extends AbstractPaymentMethodType {
 
 	/**
 	 * Payment method name.
