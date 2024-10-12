@@ -2,9 +2,9 @@
 /**
  * MMG Dependency Checker
  *
- * This file contains the MMG_Dependency_Checker class which checks for required dependencies.
+ * This file contains the Kalpa_MMG_Checkout_Dependency_Checker class which checks for required dependencies.
  *
- * @package MMG_Checkout
+ * @package Kalpa_MMG_Checkout
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,11 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class MMG_Dependency_Checker
+ * Class Kalpa_MMG_Checkout_Dependency_Checker
  *
  * Checks for required dependencies and displays notices if they are missing.
  */
-class MMG_Dependency_Checker {
+class Kalpa_MMG_Checkout_Dependency_Checker {
 	/**
 	 * Check if all dependencies are met.
 	 *

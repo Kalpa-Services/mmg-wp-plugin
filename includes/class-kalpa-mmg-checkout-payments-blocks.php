@@ -2,17 +2,17 @@
 /**
  * MMG Payments Blocks Integration
  *
- * Integrates MMG Checkout payment method with WooCommerce Blocks.
+ * Integrates  MMG Checkout for WooCommerce method with WooCommerce Blocks.
  *
- * @package MMG_Checkout
+ * @package Kalpa_MMG_Checkout
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
 /**
- * WC_MMG_Payments_Blocks class.
+ * Kalpa_MMG_Checkout_Payments_Blocks class.
  */
-class WC_MMG_Payments_Blocks extends AbstractPaymentMethodType {
+class Kalpa_MMG_Checkout_Payments_Blocks extends AbstractPaymentMethodType {
 
 	/**
 	 * Payment method name.

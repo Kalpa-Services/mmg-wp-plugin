@@ -1,4 +1,4 @@
-=== MMG Checkout Payment for WooCommerce ===
+===  MMG Checkout for WooCommerce for WooCommerce ===
 Contributors: kalpaservices
 Tags: woocommerce, payment gateway, mmg, checkout
 Requires at least: 5.6
@@ -8,11 +8,11 @@ Stable tag: 2.1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
+Enables  MMG Checkout for WooCommerce flow for registered MMG Merchants to receive E-Commerce payments from MMG customers.
 
 == Description ==
 
-MMG Checkout Payment is a WordPress plugin that enables MMG Checkout Payment flow for registered MMG Merchants to receive E-Commerce payments from MMG customers. This plugin integrates seamlessly with WooCommerce to provide a secure and efficient payment gateway for your online store.
+ MMG Checkout for WooCommerce is a WordPress plugin that enables  MMG Checkout for WooCommerce flow for registered MMG Merchants to receive E-Commerce payments from MMG customers. This plugin integrates seamlessly with WooCommerce to provide a secure and efficient payment gateway for your online store.
 
 Key Features:
 * Easy integration with WooCommerce
@@ -27,7 +27,7 @@ Key Features:
 
 1. Log in to your WordPress admin panel.
 2. Navigate to 'Plugins' -> 'Add New'.
-3. In the search box, type "MMG Checkout Payment for WooCommerce".
+3. In the search box, type " MMG Checkout for WooCommerce for WooCommerce".
 4. Look for the plugin in the search results and click "Install Now".
 5. After installation, click "Activate" to enable the plugin.
 6. Configure the plugin settings in the WordPress admin area under 'Settings' > 'MMG Checkout'.
@@ -82,8 +82,8 @@ This version includes important updates and improvements. Please upgrade to ensu
 
 == Screenshots ==
 
-1. MMG Checkout Payment gateway settings page
-![MMG Checkout Payment gateway settings page](public/images/settings-page.png)
+1.  MMG Checkout for WooCommerce gateway settings page
+![ MMG Checkout for WooCommerce gateway settings page](public/images/settings-page.png)
 
 2. MMG Checkout option on WooCommerce checkout page
 ![MMG Checkout option on WooCommerce checkout page](public/images/checkout-options.png)

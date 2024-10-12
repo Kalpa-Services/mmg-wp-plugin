@@ -4,13 +4,13 @@
  *
  * This class defines the MMG payment gateway for WooCommerce.
  *
- * @package MMG_Checkout
+ * @package Kalpa_MMG_Checkout
  */
 
 /**
- * WC_MMG_Gateway class.
+ * Kalpa_MMG_Checkout_Gateway class.
  */
-class WC_MMG_Gateway extends WC_Payment_Gateway {
+class Kalpa_MMG_Checkout_Gateway extends WC_Payment_Gateway {
 
 	/**
 	 * Constructor for the gateway.
@@ -19,7 +19,7 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		$this->id                 = 'mmg_checkout';
 		$this->has_fields         = false;
 		$this->method_title       = 'MMG Checkout';
-		$this->method_description = 'Enables MMG Checkout Payment flow for WooCommerce';
+		$this->method_description = 'Enables  MMG Checkout for WooCommerce';
 
 		$this->init_form_fields();
 		$this->init_settings();
