@@ -42,21 +42,21 @@ $update_checker = PucFactory::buildUpdateChecker(
 );
 $update_checker->getVcsApi()->enableReleaseAssets();
 
-if ( Kalpa_MMG_Checkout_Dependency_Checker::check_dependencies() ) {
+if ( Kalpa_MMG_Checkout_Dependency_Checker::kalpa_check_dependencies() ) {
 	/**
 	 * Initialize the  MMG Checkout for WooCommerce functionality.
 	 *
 	 * This function is called when all plugins are loaded and dependencies are met.
 	 * It includes the main plugin class and instantiates it.
 	 */
-	function mmg_checkout_init() {
+	function kalpa_mmg_checkout_init() {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-kalpa-mmg-checkout-main.php';
 		new Kalpa_MMG_Checkout_Main();
 	}
-	add_action( 'plugins_loaded', 'mmg_checkout_init' );
+	add_action( 'plugins_loaded', 'kalpa_mmg_checkout_init' );
 }
 
-add_action( 'woocommerce_blocks_loaded', 'mmg_checkout_register_block_support' );
+add_action( 'woocommerce_blocks_loaded', 'kalpa_mmg_checkout_register_block_support' );
 
 /**
  * Register  MMG Checkout for WooCommerce support for WooCommerce Blocks.
@@ -64,7 +64,7 @@ add_action( 'woocommerce_blocks_loaded', 'mmg_checkout_register_block_support' )
  * This function checks if the WooCommerce Blocks abstract payment method class exists,
  * and if so, registers the MMG Payments Block support.
  */
-function mmg_checkout_register_block_support() {
+function kalpa_mmg_checkout_register_block_support() {
 	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
 		require_once plugin_dir_path( __FILE__ ) . 'includes/class-kalpa-mmg-checkout-payments-blocks.php';
 		add_action(
@@ -81,12 +81,12 @@ function mmg_checkout_register_block_support() {
  * @param array $vars The array of existing query variables.
  * @return array The updated array of query variables.
  */
-function mmg_query_vars( $vars ) {
+function kalpa_mmg_query_vars( $vars ) {
 	$vars[] = 'mmg-checkout'; // changing this will cause a breaking change for existing users.
 	$vars[] = 'callback_key';
 	return $vars;
 }
-add_filter( 'query_vars', 'mmg_query_vars' );
+add_filter( 'query_vars', 'kalpa_mmg_query_vars' );
 
 /**
  * Handle plugin updates.
@@ -94,14 +94,14 @@ add_filter( 'query_vars', 'mmg_query_vars' );
  * This function checks if the plugin version has changed and performs
  * necessary actions like flushing rewrite rules and updating the version option.
  */
-function mmg_plugin_updated() {
+function kalpa_mmg_plugin_updated() {
 	$version = get_option( 'mmg_plugin_version', '0' );
 	if ( version_compare( MMG_PLUGIN_VERSION, $version, '>' ) ) {
 		flush_rewrite_rules();
 		update_option( 'mmg_plugin_version', MMG_PLUGIN_VERSION );
 	}
 }
-add_action( 'plugins_loaded', 'mmg_plugin_updated' );
+add_action( 'plugins_loaded', 'kalpa_mmg_plugin_updated' );
 
 /**
  * Remove the  MMG Checkout for WooCommerce gateway from the list of available gateways.
@@ -109,11 +109,11 @@ add_action( 'plugins_loaded', 'mmg_plugin_updated' );
  * @param array $gateways The array of registered payment gateways.
  * @return array The updated array of payment gateways.
  */
-function mmg_remove_gateway( $gateways ) {
+function kalpa_mmg_remove_gateway( $gateways ) {
 	unset( $gateways['mmg_checkout'] );
 	return $gateways;
 }
-add_filter( 'woocommerce_payment_gateways', 'mmg_remove_gateway', 20 );
+add_filter( 'woocommerce_payment_gateways', 'kalpa_mmg_remove_gateway', 20 );
 
 add_action(
 	'init',

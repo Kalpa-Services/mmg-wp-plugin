@@ -78,21 +78,21 @@ class Kalpa_MMG_Checkout_Main {
 		$this->mode = get_option( 'mmg_mode', 'demo' ); // Default mode set to 'demo'.
 
 		// Generate or retrieve unique callback URL.
-		$this->callback_url = $this->generate_unique_callback_url();
+		$this->callback_url = $this->kalpa_generate_unique_callback_url();
 
 		// Load settings.
 		require_once __DIR__ . '/class-kalpa-mmg-checkout-settings.php';
 		new Kalpa_MMG_Checkout_Settings();
 
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
-		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'generate_checkout_url' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'kalpa_enqueue_scripts' ) );
+		add_action( 'wp_ajax_generate_checkout_url', array( $this, 'kalpa_generate_checkout_url' ) );
+		add_action( 'wp_ajax_nopriv_generate_checkout_url', array( $this, 'kalpa_generate_checkout_url' ) );
 		add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateway_class' ) );
 		add_action( 'plugins_loaded', array( $this, 'init_gateway_class' ), 11 );
 		add_action( 'parse_request', array( $this, 'parse_api_request' ) );
 
-		$this->live_checkout_url = $this->get_checkout_url( 'live' );
-		$this->demo_checkout_url = $this->get_checkout_url( 'demo' );
+		$this->live_checkout_url = $this->kalpa_get_checkout_url( 'live' );
+		$this->demo_checkout_url = $this->kalpa_get_checkout_url( 'demo' );
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Kalpa_MMG_Checkout_Main {
 	 *
 	 * @return string
 	 */
-	private function generate_unique_callback_url() {
+	private function kalpa_generate_unique_callback_url() {
 		$callback_key = get_option( 'mmg_callback_key' );
 		if ( ! $callback_key ) {
 			$callback_key = wp_generate_password( 32, false );
@@ -111,7 +111,7 @@ class Kalpa_MMG_Checkout_Main {
 		/**
 		 * Enqueue scripts and styles.
 		 */
-	public function enqueue_scripts() {
+	public function kalpa_enqueue_scripts() {
 		if ( is_checkout_pay_page() ) {
 			wp_enqueue_script( 'kalpa-mmg-checkout', plugin_dir_url( __DIR__ ) . 'admin/js/mmg-checkout.js', array( 'jquery' ), '3.0', true );
 			wp_localize_script(
@@ -151,7 +151,7 @@ class Kalpa_MMG_Checkout_Main {
 	 *
 	 * @throws Exception If there's an error generating the checkout URL.
 	 */
-	public function generate_checkout_url() {
+	public function kalpa_generate_checkout_url() {
 		try {
 			// Ensure 'nonce' is present in the request.
 			if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_key( $_REQUEST['nonce'] ), 'mmg_checkout_nonce' ) ) {
@@ -188,15 +188,15 @@ class Kalpa_MMG_Checkout_Main {
 				'merchantName'          => get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ),
 			);
 
-			$encrypted    = $this->encrypt( $token_data );
-			$encoded      = $this->url_safe_base64_encode( $encrypted );
+			$encrypted    = $this->kalpa_encrypt( $token_data );
+			$encoded      = $this->kalpa_url_safe_base64_encode( $encrypted );
 			$checkout_url = add_query_arg(
 				array(
 					'token'       => $encoded,
 					'merchantId'  => get_option( "mmg_{$this->mode}_merchant_id" ),
 					'X-Client-ID' => get_option( "mmg_{$this->mode}_client_id" ),
 				),
-				$this->get_checkout_url()
+				$this->kalpa_get_checkout_url()
 			);
 
 			$order->update_meta_data( '_mmg_transaction_id', $token_data['merchantTransactionId'] );
@@ -214,7 +214,7 @@ class Kalpa_MMG_Checkout_Main {
 	 * @return string
 	 * @throws Exception If encryption fails.
 	 */
-	private function encrypt( $checkout_object ) {
+	private function kalpa_encrypt( $checkout_object ) {
 		$json_object = wp_json_encode( $checkout_object, JSON_UNESCAPED_SLASHES );
 
 		// Message to bytes.
@@ -253,7 +253,7 @@ class Kalpa_MMG_Checkout_Main {
 	 * @param string $data Data to encode.
 	 * @return string
 	 */
-	private function url_safe_base64_encode( $data ) {
+	private function kalpa_url_safe_base64_encode( $data ) {
 		return rtrim( strtr( base64_encode( $data ), '+/', '-_' ), '=' );
 	}
 
@@ -531,7 +531,7 @@ class Kalpa_MMG_Checkout_Main {
 	 * @param string $mode 'live' or 'demo'.
 	 * @return string
 	 */
-	private function get_checkout_url( $mode = null ) {
+	private function kalpa_get_checkout_url( $mode = null ) {
 		// If no mode is provided, use the current mode.
 		if ( null === $mode ) {
 			$mode = $this->mode;

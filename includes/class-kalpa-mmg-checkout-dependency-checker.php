@@ -22,7 +22,7 @@ class Kalpa_MMG_Checkout_Dependency_Checker {
 	 *
 	 * @return bool True if all dependencies are met, false otherwise.
 	 */
-	public static function check_dependencies() {
+	public static function kalpa_check_dependencies() {
 		if ( ! self::is_woocommerce_active() ) {
 			add_action( 'admin_notices', array( __CLASS__, 'woocommerce_missing_notice' ) );
 			return false;

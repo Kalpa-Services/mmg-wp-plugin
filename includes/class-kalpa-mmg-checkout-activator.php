@@ -30,8 +30,8 @@ class Kalpa_MMG_Checkout_Activator {
 	 * @return void
 	 */
 	public static function activate() {
-		self::mmg_activate();
-		add_action( 'init', array( 'self', 'add_rewrite_rules' ) );
+		self::kalpa_mmg_activate();
+		add_action( 'init', array( 'self', 'kalpa_add_rewrite_rules' ) );
 	}
 
 	/**
@@ -40,8 +40,8 @@ class Kalpa_MMG_Checkout_Activator {
 	 * @since 1.0.0
 	 * @return void
 	 */
-	private static function mmg_activate() {
-		self::add_rewrite_rules();
+	private static function kalpa_mmg_activate() {
+		self::kalpa_add_rewrite_rules();
 		flush_rewrite_rules();
 	}
 
@@ -51,7 +51,7 @@ class Kalpa_MMG_Checkout_Activator {
 	 * This function adds a rewrite rule to handle  MMG Checkout for WooCommerce callbacks
 	 * through a custom endpoint.
 	 */
-	private static function add_rewrite_rules() {
+	private static function kalpa_add_rewrite_rules() {
 		add_rewrite_rule(
 			'^wc-api/mmg-checkout/([^/]+)/?$',
 			'index.php?mmg-checkout=1&callback_key=$matches[1]',

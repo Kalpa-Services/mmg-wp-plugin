@@ -34,7 +34,7 @@ class Kalpa_MMG_Checkout_Gateway extends WC_Payment_Gateway {
 		);
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'receipt_page' ) );
+		add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'kalpa_receipt_page' ) );
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Kalpa_MMG_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @param int $order_id Order ID.
 	 * @return array
 	 */
-	public function process_payment( $order_id ) {
+	public function kalpa_process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 		return array(
 			'result'   => 'success',
@@ -83,7 +83,7 @@ class Kalpa_MMG_Checkout_Gateway extends WC_Payment_Gateway {
 	 *
 	 * @param int $order_id Order ID.
 	 */
-	public function receipt_page( $order_id ) {
+	public function kalpa_receipt_page( $order_id ) {
 		$order = wc_get_order( $order_id );
 		echo '<div id="mmg-checkout-container" style="width: 100%;">';
 		echo '<button id="mmg-checkout-button" class="button alt checkout-btn" data-order-id="' . esc_attr( $order_id ) . '">';
