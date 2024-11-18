@@ -23,11 +23,11 @@ jobs:
           git config --local user.email "carl@kalpa.dev"
           git config --local user.name "Carl Handy"
           git fetch --all
-          git checkout main
-          git pull origin main
+          git checkout 2.1.7-compat
+          git pull origin 2.1.7-compat
           chmod +x .github/scripts/update-version.sh
           ./.github/scripts/update-version.sh
-          git push origin main
+          git push origin 2.1.7-compat
 
   build:
     needs: update-version
@@ -39,8 +39,8 @@ jobs:
       - name: Fetch latest changes
         run: |
           git fetch --all
-          git checkout main
-          git pull origin main
+          git checkout 2.1.7-compat
+          git pull origin 2.1.7-compat
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
