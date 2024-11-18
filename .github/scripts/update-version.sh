@@ -16,4 +16,4 @@ git add README.txt main.php
 git commit -m "Bump version to $NEW_VERSION"
 
 # Push the change to the main branch
-git push origin HEAD:main
+git push origin HEAD:2.1.7-compat
