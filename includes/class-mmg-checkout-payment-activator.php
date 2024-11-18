@@ -31,7 +31,6 @@ class MMG_Checkout_Payment_Activator {
 	 */
 	public static function activate() {
 		self::mmg_activate();
-		// add_action( 'init', array( 'self', 'add_rewrite_rules' ) );
 	}
 
 	/**
@@ -65,4 +64,3 @@ class MMG_Checkout_Payment_Activator {
 		add_rewrite_tag( '%mmg-checkout%', '([^&]+)' );
 	}
 }
-
