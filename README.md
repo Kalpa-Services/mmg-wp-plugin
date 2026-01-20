@@ -1,22 +1,4 @@
-### MMG Checkout Payment Plugin - Developer Contribution Guide
-
-# IMPORTANT! This project is no longer being supported.
-
-This decision was not made lightly. Due to shifting priorities and limited resources, we are no longer able to commit the time and attention required to responsibly maintain and support the project at the level it deserves.
-
-The repository will remain available in its current state for reference and continued community use. However, please note that:
-
-- No further feature development is planned
-
-- Bug fixes and security updates will no longer be provided
-
-- Issues and pull requests may no longer be reviewed or merged
-
-We are deeply grateful to everyone who has contributed, reported issues, shared feedback, or relied on this project in their work. Your support and collaboration have been greatly appreciated.
-
-If any individual or organization is interested in taking over maintenance of the project, we welcome discussions and are open to facilitating a smooth transition where possible.
-
-We are aware of alternative projects in the ecosystem, including [Revamped MMG](https://revamped.gy/mmg-woocommerce-plugin-guyana/), which may be suitable for users seeking continued development. **Please note that this project is independently maintained and is not affiliated with or endorsed by our team.**
+## MMG Checkout Payment Plugin - Developer Contribution Guide
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin?ref=badge_shield&issueType=security)
 
