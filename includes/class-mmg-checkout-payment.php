@@ -440,8 +440,8 @@ class MMG_Checkout_Payment {
 		}
 
 		$order_id       = $this->extract_order_id( $payment_data['merchantTransactionId'] );
-		$result_code    = isset( $payment_data['resultCode'] ) ? intval( $payment_data['resultCode'] ) : null;
-		$result_message = isset( $payment_data['resultMessage'] ) ? sanitize_text_field( $payment_data['resultMessage'] ) : '';
+		$result_code    = isset( $payment_data['ResultCode'] ) ? intval( $payment_data['ResultCode'] ) : null;
+		$result_message = isset( $payment_data['ResultMessage'] ) ? sanitize_text_field( $payment_data['ResultMessage'] ) : '';
 
 		$order = wc_get_order( $order_id );
 
@@ -543,11 +543,12 @@ class MMG_Checkout_Payment {
 		}
 
 		$option_name = 'mmg_' . $mode . '_checkout_url';
+		
 		$default_url = 'live' === $mode
-			? 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home'
-			: 'https://gtt-uat-checkout.qpass.com:8743/checkout-endpoint/home';
+			? 'https://mmgpg.mymmg.gy/mmg-pg/web/payments'
+			: 'https://mmgpg.mmgtest.net/mmg-pg/web/payments';
 
-			return get_option( $option_name, $default_url );
+		return get_option( $option_name, $default_url );
 	}
 
 	/**
