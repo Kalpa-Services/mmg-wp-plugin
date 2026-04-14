@@ -545,7 +545,7 @@ class MMG_Checkout_Payment {
 		$option_name = 'mmg_' . $mode . '_checkout_url';
 		
 		$default_url = 'live' === $mode
-			? 'https://gtt-checkout.qpass.com:8743/checkout-endpoint/home'
+			? 'https://mmgpg.mymmg.gy/mmg-pg/web/payments'
 			: 'https://mmgpg.mmgtest.net/mmg-pg/web/payments';
 
 		return get_option( $option_name, $default_url );
