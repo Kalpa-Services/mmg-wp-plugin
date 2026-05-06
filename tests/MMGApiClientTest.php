@@ -12,20 +12,20 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
     public function test_demo_base_url() {
         $GLOBALS['mmg_test_options']['mmg_mode'] = 'demo';
         $client = new MMG_API_Client();
-        $this->assertSame( 'https://mwallet.mmgtest.net', $client->get_base_url() );
+        $this->assertSame( 'https://mwallet.mmgtest.net/olive/publisher/v1', $client->get_base_url() );
     }
 
     public function test_live_base_url_uses_option() {
         $GLOBALS['mmg_test_options']['mmg_mode']             = 'live';
-        $GLOBALS['mmg_test_options']['mmg_live_mwallet_url'] = 'https://mwallet.mymmg.gy';
+        $GLOBALS['mmg_test_options']['mmg_live_mwallet_url'] = 'https://mwallet.mymmg.gy/olive/publisher/v1';
         $client = new MMG_API_Client();
-        $this->assertSame( 'https://mwallet.mymmg.gy', $client->get_base_url() );
+        $this->assertSame( 'https://mwallet.mymmg.gy/olive/publisher/v1', $client->get_base_url() );
     }
 
     public function test_live_base_url_defaults_when_option_missing() {
         $GLOBALS['mmg_test_options']['mmg_mode'] = 'live';
         $client = new MMG_API_Client();
-        $this->assertSame( 'https://mwallet.mmgtest.net', $client->get_base_url() );
+        $this->assertSame( 'https://mwallet.mymmg.gy/olive/publisher/v1', $client->get_base_url() );
     }
 
     public function test_ensure_token_skips_login_when_cached() {
@@ -51,25 +51,24 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
         $client->ensure_token_public();
     }
 
-    public function test_clear_tokens_removes_both_transients() {
-        $GLOBALS['mmg_test_options']['mmg_mode']                  = 'demo';
-        $GLOBALS['mmg_test_transients']['mmg_access_token_demo']  = 'a';
-        $GLOBALS['mmg_test_transients']['mmg_refresh_token_demo'] = 'r';
+    public function test_clear_tokens_removes_access_token() {
+        $GLOBALS['mmg_test_options']['mmg_mode']                 = 'demo';
+        $GLOBALS['mmg_test_transients']['mmg_access_token_demo'] = 'a';
 
         ( new MMG_API_Client() )->clear_tokens();
 
         $this->assertFalse( get_transient( 'mmg_access_token_demo' ) );
-        $this->assertFalse( get_transient( 'mmg_refresh_token_demo' ) );
     }
 
-    public function test_login_stores_tokens_on_success() {
+    public function test_login_stores_access_token_on_success() {
         $GLOBALS['mmg_test_options']['mmg_mode']             = 'demo';
         $GLOBALS['mmg_test_options']['mmg_demo_merchant_id'] = 'MID';
+        $GLOBALS['mmg_test_options']['mmg_demo_client_id']   = 'CID';
         $GLOBALS['mmg_test_options']['mmg_demo_secret_key']  = 'sk';
 
         $response = [
             'response' => ['code' => 200],
-            'body'     => json_encode(['access_token' => 'acc', 'refresh_token' => 'ref']),
+            'body'     => json_encode(['access_token' => 'acc', 'expires_in' => 120]),
         ];
 
         $client = $this->getMockBuilder( MMG_API_Client::class )
@@ -80,29 +79,30 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
         $client->do_login();
 
         $this->assertSame( 'acc', get_transient( 'mmg_access_token_demo' ) );
-        $this->assertSame( 'ref', get_transient( 'mmg_refresh_token_demo' ) );
     }
 
     public function test_login_throws_on_non_200() {
         $GLOBALS['mmg_test_options']['mmg_mode']             = 'demo';
         $GLOBALS['mmg_test_options']['mmg_demo_merchant_id'] = 'MID';
+        $GLOBALS['mmg_test_options']['mmg_demo_client_id']   = 'CID';
         $GLOBALS['mmg_test_options']['mmg_demo_secret_key']  = 'sk';
 
         $client = $this->getMockBuilder( MMG_API_Client::class )
             ->onlyMethods( ['http_post'] )
             ->getMock();
-        $client->method( 'http_post' )->willReturn( ['response' => ['code' => 401], 'body' => ''] );
+        $client->method( 'http_post' )->willReturn( ['response' => ['code' => 422], 'body' => '{}'] );
 
         $this->expectException( Exception::class );
-        $this->expectExceptionMessage( 'Login failed with HTTP 401' );
+        $this->expectExceptionMessage( 'Login failed with HTTP 422' );
         $client->do_login();
     }
 
     private function make_testable_client( $mode = 'demo' ) {
         $GLOBALS['mmg_test_options']['mmg_mode']               = $mode;
         $GLOBALS['mmg_test_options']["mmg_{$mode}_merchant_id"] = 'MID999';
-        $GLOBALS['mmg_test_transients']["mmg_access_token_{$mode}"]  = 'tok';
-        $GLOBALS['mmg_test_transients']["mmg_refresh_token_{$mode}"] = 'ref';
+        $GLOBALS['mmg_test_options']["mmg_{$mode}_client_id"]   = 'CID999';
+        $GLOBALS['mmg_test_options']["mmg_{$mode}_secret_key"]  = 'SK999';
+        $GLOBALS['mmg_test_transients']["mmg_access_token_{$mode}"] = 'tok';
 
         $ok = ['response' => ['code' => 200], 'body' => '{}'];
         $client = $this->getMockBuilder( MMG_API_Client::class )
@@ -168,17 +168,18 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
         $client->reversal( 'MID999', 'TXN-77' );
     }
 
-    public function test_all_authenticated_calls_inject_five_headers() {
+    public function test_all_authenticated_calls_inject_required_headers() {
         $client = $this->make_testable_client();
         $client->expects( $this->once() )->method( 'http_get' )
             ->with(
                 $this->anything(),
                 $this->logicalAnd(
-                    $this->arrayHasKey( 'X-ACCESS-TOKEN' ),
-                    $this->arrayHasKey( 'X-REFRESH-TOKEN' ),
-                    $this->arrayHasKey( 'X-CHANNEL' ),
-                    $this->arrayHasKey( 'X-MVNO-ID' ),
-                    $this->arrayHasKey( 'X-REQUEST-ID' )
+                    $this->arrayHasKey( 'x-wss-token' ),
+                    $this->arrayHasKey( 'x-wss-mid' ),
+                    $this->arrayHasKey( 'x-wss-mkey' ),
+                    $this->arrayHasKey( 'x-wss-msecret' ),
+                    $this->arrayHasKey( 'x-api-key' ),
+                    $this->arrayHasKey( 'x-wss-correlationid' )
                 )
             );
         $client->get_balance();

@@ -22,7 +22,7 @@ class MMG_API_Client {
 	private $mode;
 
 	/**
-	 * Base URL for the API
+	 * Base URL for the API (includes /olive/publisher/v1 path)
 	 *
 	 * @var string
 	 */
@@ -43,9 +43,9 @@ class MMG_API_Client {
 	 */
 	protected function resolve_base_url() {
 		if ( 'live' === $this->mode ) {
-			return rtrim( get_option( 'mmg_live_mwallet_url', 'https://mwallet.mmgtest.net' ), '/' );
+			return rtrim( get_option( 'mmg_live_mwallet_url', 'https://mwallet.mymmg.gy/olive/publisher/v1' ), '/' );
 		}
-		return 'https://mwallet.mmgtest.net';
+		return 'https://mwallet.mmgtest.net/olive/publisher/v1';
 	}
 
 	/**
@@ -54,7 +54,8 @@ class MMG_API_Client {
 	 * @return string
 	 */
 	public function get_mode() {
-		return $this->mode; }
+		return $this->mode;
+	}
 
 	/**
 	 * Get Base URL
@@ -62,7 +63,8 @@ class MMG_API_Client {
 	 * @return string
 	 */
 	public function get_base_url() {
-		return $this->base_url; }
+		return $this->base_url;
+	}
 
 	/**
 	 * Ensure Token Public
@@ -70,7 +72,8 @@ class MMG_API_Client {
 	 * @return void
 	 */
 	public function ensure_token_public() {
-		$this->ensure_token(); }
+		$this->ensure_token();
+	}
 
 	/**
 	 * Ensure Token
@@ -81,26 +84,30 @@ class MMG_API_Client {
 		if ( get_transient( 'mmg_access_token_' . $this->mode ) ) {
 			return;
 		}
-		if ( ! $this->refresh_token() ) {
-			$this->do_login();
-		}
+		$this->do_login();
 	}
 
 	/**
 	 * Do Login
+	 *
+	 * Authenticates with the MMG mwallet API using OAuth2 resource-owner password flow.
+	 * Token expires_in is 120 seconds; we cache for 100 to allow a buffer.
 	 *
 	 * @return void
 	 * @throws Exception If login fails.
 	 */
 	public function do_login() {
 		$merchant_id = get_option( "mmg_{$this->mode}_merchant_id" );
+		$client_id   = get_option( "mmg_{$this->mode}_client_id" );
 		$body        = http_build_query(
 			array(
-				'merchantId' => $merchant_id,
-				'secretKey'  => get_option( "mmg_{$this->mode}_secret_key" ),
+				'grant_type' => 'password',
+				'api_key'    => $client_id,
+				'username'   => $merchant_id,
+				'password'   => get_option( "mmg_{$this->mode}_secret_key" ),
 			)
 		);
-		$url      = $this->base_url . '/mwallet/v1/e-commerce-login/mer';
+		$url      = $this->base_url . '/e-commerce-login/mer';
 		$response = $this->http_post(
 			$url,
 			array( 'Content-Type' => 'application/x-www-form-urlencoded' ),
@@ -111,7 +118,7 @@ class MMG_API_Client {
 		$response_body = wp_remote_retrieve_body( $response );
 
 		// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( sprintf( '[MMG] login POST %s | merchantId=%s | body=%s', $url, $merchant_id, $body ) );
+		error_log( sprintf( '[MMG] login POST %s | username=%s | api_key=%s', $url, $merchant_id, $client_id ) );
 		error_log( sprintf( '[MMG] login response HTTP %d | body=%s', $code, $response_body ) );
 		// phpcs:enable
 
@@ -122,18 +129,8 @@ class MMG_API_Client {
 		if ( empty( $data['access_token'] ) ) {
 			throw new Exception( esc_html( 'Login response missing access_token' ) );
 		}
-		set_transient( 'mmg_access_token_' . $this->mode, $data['access_token'], 55 * MINUTE_IN_SECONDS );
-		set_transient( 'mmg_refresh_token_' . $this->mode, $data['refresh_token'] ?? '', DAY_IN_SECONDS );
-	}
-
-	/**
-	 * Refresh Token
-	 *
-	 * @return bool
-	 */
-	protected function refresh_token() {
-		// Refresh endpoint not yet documented by MMG; always fall back to full login.
-		return false;
+		// MMG tokens expire in 120 seconds; cache for 100 to allow a safe buffer.
+		set_transient( 'mmg_access_token_' . $this->mode, $data['access_token'], 100 );
 	}
 
 	/**
@@ -143,7 +140,6 @@ class MMG_API_Client {
 	 */
 	public function clear_tokens() {
 		delete_transient( 'mmg_access_token_' . $this->mode );
-		delete_transient( 'mmg_refresh_token_' . $this->mode );
 	}
 
 	/**
@@ -162,14 +158,17 @@ class MMG_API_Client {
 	 * @return array
 	 */
 	protected function get_auth_headers() {
-		$access_token  = get_transient( 'mmg_access_token_' . $this->mode );
-		$refresh_token = get_transient( 'mmg_refresh_token_' . $this->mode );
+		$access_token = get_transient( 'mmg_access_token_' . $this->mode );
+		$merchant_id  = get_option( "mmg_{$this->mode}_merchant_id" );
+		$client_id    = get_option( "mmg_{$this->mode}_client_id" );
+		$secret_key   = get_option( "mmg_{$this->mode}_secret_key" );
 		return array(
-			'X-REQUEST-ID'    => wp_generate_uuid4(),
-			'X-CHANNEL'       => 'ECommerce',
-			'X-MVNO-ID'       => '1',
-			'X-ACCESS-TOKEN'  => $access_token ? $access_token : '',
-			'X-REFRESH-TOKEN' => $refresh_token ? $refresh_token : '',
+			'x-wss-mid'           => $merchant_id,
+			'x-wss-mkey'          => $client_id,
+			'x-wss-msecret'       => $secret_key,
+			'x-api-key'           => $client_id,
+			'x-wss-correlationid' => wp_generate_uuid4(),
+			'x-wss-token'         => $access_token ? $access_token : '',
 		);
 	}
 
@@ -250,7 +249,7 @@ class MMG_API_Client {
 	public function get_balance() {
 		$mid = get_option( "mmg_{$this->mode}_merchant_id" );
 		return $this->authenticated_get(
-			'/mwallet/v1/e-merchant-initiated-transactions/balance?merchant_msisdn=' . rawurlencode( $mid )
+			'/e-merchant-initiated-transactions/balance?merchant_msisdn=' . rawurlencode( $mid )
 		);
 	}
 
@@ -264,7 +263,7 @@ class MMG_API_Client {
 		$mid   = get_option( "mmg_{$this->mode}_merchant_id" );
 		$query = http_build_query( array_merge( array( 'msisdn' => $mid ), $params ) );
 		return $this->authenticated_get(
-			'/mwallet/v1/e-merchant-initiated-transactions/txn-history?' . $query
+			'/e-merchant-initiated-transactions/txn-history?' . $query
 		);
 	}
 
@@ -276,7 +275,7 @@ class MMG_API_Client {
 	 */
 	public function lookup_transaction( $txn_id ) {
 		return $this->authenticated_get(
-			'/mwallet/v1/e-merchant-initiated-transactions/lookup?transactionId=' . rawurlencode( $txn_id )
+			'/e-merchant-initiated-transactions/lookup?transactionId=' . rawurlencode( $txn_id )
 		);
 	}
 
@@ -290,7 +289,7 @@ class MMG_API_Client {
 	public function reversal( $merchant_mid, $txn_id ) {
 		$query = 'merchant_msisdn=' . rawurlencode( $merchant_mid ) . '&transactionId=' . rawurlencode( $txn_id );
 		return $this->authenticated_post(
-			'/mwallet/v1/e-merchant-initiated-transactions/reversal?' . $query
+			'/e-merchant-initiated-transactions/reversal?' . $query
 		);
 	}
 }
