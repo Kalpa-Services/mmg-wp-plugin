@@ -96,7 +96,7 @@ class MMG_API_Client {
 		$body     = http_build_query(
 			array(
 				'merchantId' => get_option( "mmg_{$this->mode}_merchant_id" ),
-				'password'   => get_option( "mmg_{$this->mode}_secret_key" ),
+				'secretKey'  => get_option( "mmg_{$this->mode}_secret_key" ),
 			)
 		);
 		$response = $this->http_post(
