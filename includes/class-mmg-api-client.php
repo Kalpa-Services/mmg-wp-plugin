@@ -93,13 +93,17 @@ class MMG_API_Client {
 	 * @throws Exception If login fails.
 	 */
 	public function do_login() {
-		$body     = wp_json_encode(
+		$body     = http_build_query(
 			array(
 				'merchant_msisdn' => get_option( "mmg_{$this->mode}_merchant_id" ),
 				'password'        => get_option( "mmg_{$this->mode}_secret_key" ),
 			)
 		);
-		$response = $this->http_post( $this->base_url . '/mwallet/v1/e-commerce-login/mer', array(), $body );
+		$response = $this->http_post(
+			$this->base_url . '/mwallet/v1/e-commerce-login/mer',
+			array( 'Content-Type' => 'application/x-www-form-urlencoded' ),
+			$body
+		);
 
 		$code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $code ) {
