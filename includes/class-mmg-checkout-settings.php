@@ -178,13 +178,13 @@ class MMG_Checkout_Settings {
 				</div>
 			</div>
 			<div class="mmg-stat-card">
-				<div class="mmg-stat-icon <?php echo $has_token ? 'mmg-stat-icon-success' : 'mmg-stat-icon-danger'; ?>">
-					<span class="dashicons <?php echo $has_token ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
+				<div class="mmg-stat-icon <?php echo $has_token ? 'mmg-stat-icon-success' : 'mmg-stat-icon-danger'; ?>" id="mmg-auth-stat-icon-box">
+					<span class="dashicons <?php echo $has_token ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>" id="mmg-auth-stat-icon"></span>
 				</div>
 				<div class="mmg-stat-content">
 					<p class="mmg-stat-label">Auth Status</p>
 					<p class="mmg-stat-value">
-						<span class="mmg-status-inline <?php echo $has_token ? 'mmg-status-connected' : 'mmg-status-disconnected'; ?>">
+						<span class="mmg-status-inline <?php echo $has_token ? 'mmg-status-connected' : 'mmg-status-disconnected'; ?>" id="mmg-auth-status-pill">
 							<span class="mmg-status-dot"></span>
 							<span id="mmg-auth-status-text"><?php echo $has_token ? 'Connected' : 'Not Connected'; ?></span>
 						</span>
@@ -571,7 +571,7 @@ class MMG_Checkout_Settings {
 		}
 		wp_enqueue_script( 'jquery' );
 		wp_enqueue_style( 'dashicons' );
-		wp_enqueue_script( 'mmg-admin-script', plugin_dir_url( __FILE__ ) . '../admin/js/admin-script.js', array( 'jquery' ), '3.0.0', true );
+		wp_enqueue_script( 'mmg-admin-script', plugin_dir_url( __FILE__ ) . '../admin/js/admin-script.js', array( 'jquery' ), MMG_PLUGIN_VERSION, true );
 		wp_localize_script(
 			'mmg-admin-script',
 			'mmg_admin_params',
@@ -580,7 +580,7 @@ class MMG_Checkout_Settings {
 				'nonce'    => wp_create_nonce( 'mmg_admin_nonce' ),
 			)
 		);
-		wp_enqueue_style( 'mmg-admin-style', plugin_dir_url( __FILE__ ) . '../admin/css/admin-style.css', array(), '3.0.0' );
+		wp_enqueue_style( 'mmg-admin-style', plugin_dir_url( __FILE__ ) . '../admin/css/admin-style.css', array(), MMG_PLUGIN_VERSION );
 	}
 
 	/**

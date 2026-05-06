@@ -63,10 +63,15 @@ jQuery(document).ready(function ($) {
     }
   });
 
-  // Restore tab from URL hash on load.
-  var hash = window.location.hash.replace("#", "");
-  if (hash && $(".mmg-nav-link[data-tab='" + hash + "']").length) {
-    $(".mmg-nav-link[data-tab='" + hash + "']").trigger("click");
+  // After settings save, return to credentials tab so the user sees what changed.
+  if (window.location.search.indexOf("settings-updated=true") !== -1) {
+    $(".mmg-nav-link[data-tab='credentials']").trigger("click");
+  } else {
+    // Restore tab from URL hash on load.
+    var hash = window.location.hash.replace("#", "");
+    if (hash && $(".mmg-nav-link[data-tab='" + hash + "']").length) {
+      $(".mmg-nav-link[data-tab='" + hash + "']").trigger("click");
+    }
   }
 
   /* ---- Card Collapse / Expand ---- */
@@ -133,12 +138,17 @@ jQuery(document).ready(function ($) {
         if (r.success) {
           mmgShowToast(r.data.message, "success");
           $msg.text(r.data.message).css("color", "var(--mmg-success)").show();
+          $("#mmg-auth-stat-icon-box").removeClass("mmg-stat-icon-danger").addClass("mmg-stat-icon-success");
+          $("#mmg-auth-stat-icon").removeClass("dashicons-warning").addClass("dashicons-yes-alt");
+          $("#mmg-auth-status-pill").removeClass("mmg-status-disconnected").addClass("mmg-status-connected");
+          $("#mmg-auth-status-text").text("Connected");
         } else {
           mmgShowToast(r.data.message || "Failed.", "error");
-          $msg
-            .text(r.data.message || "Failed.")
-            .css("color", "var(--mmg-danger)")
-            .show();
+          $msg.text(r.data.message || "Failed.").css("color", "var(--mmg-danger)").show();
+          $("#mmg-auth-stat-icon-box").removeClass("mmg-stat-icon-success").addClass("mmg-stat-icon-danger");
+          $("#mmg-auth-stat-icon").removeClass("dashicons-yes-alt").addClass("dashicons-warning");
+          $("#mmg-auth-status-pill").removeClass("mmg-status-connected").addClass("mmg-status-disconnected");
+          $("#mmg-auth-status-text").text("Not Connected");
         }
       })
       .fail(function () {

@@ -256,12 +256,12 @@
 
 /* Tab panels */
 .mmg-tab-panel {
-  display: none;
+  display: none !important;
   animation: mmg-fadeIn .3s ease-out;
 }
 
 .mmg-tab-panel.mmg-tab-active {
-  display: block;
+  display: block !important;
 }
 
 /* ---------- Section Headers ---------- */
