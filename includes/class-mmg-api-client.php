@@ -122,7 +122,8 @@ class MMG_API_Client {
 		$response_body = wp_remote_retrieve_body( $response );
 
 		// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( sprintf( '[MMG] login POST %s | username=%s | api_key=%s', $url, $merchant_id, $api_key ) );
+		$masked_password = strlen( $password ) > 3 ? substr( $password, 0, 3 ) . str_repeat( '*', strlen( $password ) - 3 ) : '***';
+		error_log( sprintf( '[MMG] login POST %s | grant_type=password | username=%s | api_key=%s | password=%s', $url, $merchant_id, $api_key, $masked_password ) );
 		error_log( sprintf( '[MMG] login response HTTP %d | body=%s', $code, $response_body ) );
 		// phpcs:enable
 

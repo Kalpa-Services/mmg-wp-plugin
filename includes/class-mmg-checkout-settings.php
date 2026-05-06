@@ -33,7 +33,15 @@ class MMG_Checkout_Settings {
 	 * Add admin menu.
 	 */
 	public function add_admin_menu() {
-		add_options_page( 'MMG Checkout Settings', 'MMG Checkout', 'manage_options', 'mmg-checkout-settings', array( $this, 'settings_page' ) );
+		add_menu_page(
+			'MMG Checkout',
+			'MMG Checkout',
+			'manage_options',
+			'mmg-checkout-settings',
+			array( $this, 'settings_page' ),
+			'dashicons-money-alt',
+			58
+		);
 	}
 
 	/**
@@ -72,141 +80,332 @@ class MMG_Checkout_Settings {
 	 */
 	public function settings_page() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$current_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'settings';
-		$page_url    = admin_url( 'options-general.php?page=mmg-checkout-settings' );
+		$current_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'dashboard';
+		$mode        = get_option( 'mmg_mode', 'demo' );
+		$has_token   = (bool) get_transient( 'mmg_access_token_' . $mode );
+		$logo_url    = plugin_dir_url( __FILE__ ) . '../public/images/mmg-logo-white.png';
+
+		$tabs = array(
+			'dashboard'    => array( 'label' => 'Dashboard',    'icon' => 'dashicons-dashboard' ),
+			'credentials'  => array( 'label' => 'Credentials',  'icon' => 'dashicons-lock' ),
+			'balance'      => array( 'label' => 'Balance',      'icon' => 'dashicons-chart-area' ),
+			'transactions' => array( 'label' => 'Transactions', 'icon' => 'dashicons-list-view' ),
+		);
 		?>
-		<div class="wrap">
-			<h1>MMG Checkout Settings</h1>
-			<nav class="nav-tab-wrapper">
-				<a href="<?php echo esc_url( $page_url . '&tab=settings' ); ?>"
-					class="nav-tab <?php echo 'settings' === $current_tab ? 'nav-tab-active' : ''; ?>">Settings</a>
-				<a href="<?php echo esc_url( $page_url . '&tab=balance' ); ?>"
-					class="nav-tab <?php echo 'balance' === $current_tab ? 'nav-tab-active' : ''; ?>">Balance</a>
-				<a href="<?php echo esc_url( $page_url . '&tab=transactions' ); ?>"
-					class="nav-tab <?php echo 'transactions' === $current_tab ? 'nav-tab-active' : ''; ?>">Transactions</a>
-			</nav>
-			<?php
-			if ( 'balance' === $current_tab ) {
-				$this->render_balance_tab(); } elseif ( 'transactions' === $current_tab ) {
-				$this->render_transactions_tab(); } else {
-					$this->render_settings_tab(); }
-				?>
+		<div class="mmg-dashboard-wrap">
+			<!-- Header -->
+			<div class="mmg-header">
+				<div class="mmg-header-left">
+					<img src="<?php echo esc_url( $logo_url ); ?>" alt="MMG" class="mmg-header-logo" />
+					<div>
+						<h1 class="mmg-header-title">MMG Checkout</h1>
+						<div class="mmg-header-subtitle">Payment Gateway Control Panel</div>
+					</div>
+				</div>
+				<div class="mmg-header-right">
+					<span class="mmg-badge mmg-badge-version">v<?php echo esc_html( MMG_PLUGIN_VERSION ); ?></span>
+					<?php if ( 'live' === $mode ) : ?>
+						<span class="mmg-badge mmg-badge-live"><span class="mmg-badge-dot"></span> Live</span>
+					<?php else : ?>
+						<span class="mmg-badge mmg-badge-sandbox"><span class="mmg-badge-dot"></span> Sandbox</span>
+					<?php endif; ?>
+				</div>
+			</div>
+
+			<!-- Body -->
+			<div class="mmg-body">
+				<!-- Sidebar -->
+				<nav class="mmg-sidebar">
+					<ul class="mmg-nav">
+						<?php foreach ( $tabs as $slug => $tab ) : ?>
+							<li>
+								<a href="#<?php echo esc_attr( $slug ); ?>"
+									class="mmg-nav-link <?php echo $slug === $current_tab ? 'mmg-nav-active' : ''; ?>"
+									data-tab="<?php echo esc_attr( $slug ); ?>">
+									<span class="mmg-nav-icon"><span class="dashicons <?php echo esc_attr( $tab['icon'] ); ?>"></span></span>
+									<?php echo esc_html( $tab['label'] ); ?>
+								</a>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+				</nav>
+
+				<!-- Content -->
+				<div class="mmg-content">
+					<div id="mmg-panel-dashboard" class="mmg-tab-panel <?php echo 'dashboard' === $current_tab ? 'mmg-tab-active' : ''; ?>">
+						<?php $this->render_dashboard_tab( $mode, $has_token ); ?>
+					</div>
+					<div id="mmg-panel-credentials" class="mmg-tab-panel <?php echo 'credentials' === $current_tab ? 'mmg-tab-active' : ''; ?>">
+						<?php $this->render_credentials_tab( $mode ); ?>
+					</div>
+					<div id="mmg-panel-balance" class="mmg-tab-panel <?php echo 'balance' === $current_tab ? 'mmg-tab-active' : ''; ?>">
+						<?php $this->render_balance_tab(); ?>
+					</div>
+					<div id="mmg-panel-transactions" class="mmg-tab-panel <?php echo 'transactions' === $current_tab ? 'mmg-tab-active' : ''; ?>">
+						<?php $this->render_transactions_tab(); ?>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Toast container -->
+		<div id="mmg-toast" class="mmg-toast"></div>
+		<?php
+	}
+
+	/**
+	 * Render the Dashboard tab.
+	 *
+	 * @param string $mode       Current mode (live or demo).
+	 * @param bool   $has_token  Whether a valid token exists.
+	 */
+	private function render_dashboard_tab( $mode, $has_token ) {
+		$cb = esc_url( $this->get_callback_url() );
+		?>
+		<h2 class="mmg-section-title">Overview</h2>
+		<p class="mmg-section-desc">Quick view of your MMG Checkout integration status and configuration.</p>
+
+		<div class="mmg-alert mmg-alert-warning">
+			<span class="mmg-alert-icon dashicons dashicons-shield"></span>
+			<div><strong>Security Notice:</strong> Never share your private keys with anyone. MMG will never ask for your private keys.</div>
+		</div>
+
+		<div class="mmg-stats-grid">
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-accent"><span class="dashicons dashicons-admin-settings"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Mode</p>
+					<p class="mmg-stat-value"><?php echo 'live' === $mode ? 'Live' : 'Sandbox'; ?></p>
+				</div>
+			</div>
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon <?php echo $has_token ? 'mmg-stat-icon-success' : 'mmg-stat-icon-danger'; ?>">
+					<span class="dashicons <?php echo $has_token ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>"></span>
+				</div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Auth Status</p>
+					<p class="mmg-stat-value">
+						<span class="mmg-status-inline <?php echo $has_token ? 'mmg-status-connected' : 'mmg-status-disconnected'; ?>">
+							<span class="mmg-status-dot"></span>
+							<span id="mmg-auth-status-text"><?php echo $has_token ? 'Connected' : 'Not Connected'; ?></span>
+						</span>
+					</p>
+				</div>
+			</div>
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-accent"><span class="dashicons dashicons-store"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Merchant</p>
+					<p class="mmg-stat-value mmg-stat-value-sm"><?php echo esc_html( get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ) ); ?></p>
+				</div>
+			</div>
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-accent"><span class="dashicons dashicons-admin-users"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Merchant ID</p>
+					<p class="mmg-stat-value mmg-stat-value-sm"><?php echo esc_html( get_option( "mmg_{$mode}_merchant_id", '—' ) ); ?></p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Quick Actions -->
+		<div class="mmg-card">
+			<div class="mmg-card-body">
+				<div class="mmg-form-grid">
+					<div class="mmg-form-row">
+						<div class="mmg-form-label">Callback URL</div>
+						<div class="mmg-form-control">
+							<div class="mmg-input-group">
+								<input type="text" value="<?php echo esc_attr( $cb ); ?>" readonly style="background:var(--mmg-surface-alt);" />
+								<button type="button" class="mmg-btn mmg-btn-secondary mmg-btn-sm" onclick="mmgCopyToClipboard('<?php echo esc_js( $cb ); ?>')">
+									<span class="dashicons dashicons-clipboard" style="font-size:14px;width:14px;height:14px;"></span> Copy
+								</button>
+							</div>
+							<p class="mmg-form-hint">Provide this URL to MMG for payment callbacks.</p>
+						</div>
+					</div>
+					<div class="mmg-form-row">
+						<div class="mmg-form-label">Authentication</div>
+						<div class="mmg-form-control">
+							<button type="button" id="mmg-reauthenticate" class="mmg-btn mmg-btn-secondary mmg-btn-sm">
+								<span class="dashicons dashicons-update" style="font-size:14px;width:14px;height:14px;"></span> Re-authenticate
+							</button>
+							<span id="mmg-reauth-message" class="mmg-form-hint" style="display:none;margin-left:8px;"></span>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 		<?php
 	}
 
 	/**
-	 * Render the Settings tab.
+	 * Render the Credentials tab.
+	 *
+	 * @param string $mode Current mode (live or demo).
 	 */
-	private function render_settings_tab() {
-		$mode      = get_option( 'mmg_mode', 'demo' );
-		$has_token = (bool) get_transient( 'mmg_access_token_' . $mode );
+	private function render_credentials_tab( $mode ) {
 		?>
-		<p style="font-size: 14px;">This plugin requires a merchant account with MMG. If you don't have one, please contact MMG to get started.</p>
-		<div class="notice notice-warning">
-			<p><strong>Warning:</strong> Never share your private keys with anyone. MMG will never ask for your private keys.</p>
-		</div>
+		<h2 class="mmg-section-title">API Credentials</h2>
+		<p class="mmg-section-desc">Configure your MMG merchant credentials for live and sandbox environments.</p>
+
 		<form method="post" action="options.php" id="mmg-checkout-settings-form">
-			<?php
-			settings_fields( 'mmg_checkout_settings' );
-			do_settings_sections( 'mmg_checkout_settings' );
-			?>
-			<table class="form-table">
-				<tr valign="top">
-					<th scope="row">Mode</th>
-					<td>
-						<select name="mmg_mode" id="mmg_mode">
-							<option value="live" <?php selected( get_option( 'mmg_mode' ), 'live' ); ?>>Live</option>
-							<option value="demo" <?php selected( get_option( 'mmg_mode' ), 'demo' ); ?>>Sandbox</option>
-						</select>
-						<span id="live-mode-indicator" style="display:none;margin-left:10px;"><span class="blinking-dot"></span> Live Mode</span>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">Callback URL</th>
-					<td>
-						<?php
-						$cb = esc_url( $this->get_callback_url() );
-						echo esc_html( $cb );
-						?>
-						<button type="button" class="button" onclick="copyToClipboard('<?php echo esc_js( $cb ); ?>')">Copy</button>
-						<span id="copy-success" style="color:green;display:none;margin-left:10px;">Copied!</span>
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">Merchant Name</th>
-					<td><input type="text" name="mmg_merchant_name" value="<?php echo esc_attr( get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ) ); ?>" /></td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">Authentication Status</th>
-					<td>
-						<span id="mmg-auth-status">
-							<?php if ( $has_token ) : ?>
-								<span style="color:green;">&#10003; Valid token cached (<?php echo esc_html( $mode ); ?> mode)</span>
-							<?php else : ?>
-								<span style="color:#c00;">&#10007; No token &mdash; login required</span>
-							<?php endif; ?>
-						</span>
-						&nbsp;<button type="button" id="mmg-reauthenticate" class="button">Re-authenticate</button>
-						<span id="mmg-reauth-message" style="margin-left:10px;display:none;"></span>
-					</td>
-				</tr>
-			</table>
+			<?php settings_fields( 'mmg_checkout_settings' ); ?>
 
-			<h2>Live Credentials</h2>
-			<table class="form-table">
-				<tr valign="top"><th>Live Merchant ID</th><td><input type="text" name="mmg_live_merchant_id" value="<?php echo esc_attr( get_option( 'mmg_live_merchant_id' ) ); ?>" /></td></tr>
-				<tr valign="top"><th>Live API Key</th><td>
-					<input type="text" name="mmg_live_api_key" value="<?php echo esc_attr( get_option( 'mmg_live_api_key' ) ); ?>" style="width:350px;" />
-					<p class="description">MMG-issued API key used for authentication.</p>
-				</td></tr>
-				<tr valign="top"><th>Live MMG Password</th><td>
-					<input type="password" id="mmg_live_mmg_password" name="mmg_live_mmg_password" value="" placeholder="<?php echo get_option( 'mmg_live_mmg_password' ) ? esc_attr( 'Password saved — enter new to change' ) : esc_attr( 'Enter MMG account password' ); ?>" autocomplete="new-password" />
-					<p class="description">Your MMG account login password. Stored encrypted — leave blank to keep existing.</p>
-				</td></tr>
-				<tr valign="top"><th>Live Client ID</th><td>
-					<input type="text" name="mmg_live_client_id" value="<?php echo esc_attr( get_option( 'mmg_live_client_id' ) ); ?>" />
-					<p class="description">Used in the checkout payment URL (X-Client-ID).</p>
-				</td></tr>
-				<tr valign="top"><th>Live Secret Key</th><td>
-					<input type="password" id="mmg_live_secret_key" name="mmg_live_secret_key" value="<?php echo esc_attr( get_option( 'mmg_live_secret_key' ) ); ?>" />
-					<button type="button" class="toggle-secret-key" data-target="mmg_live_secret_key">Show</button>
-					<p class="description">Included in the encrypted checkout token payload.</p>
-				</td></tr>
-				<tr valign="top"><th>Live RSA Public Key (MMG)</th><td><textarea name="mmg_live_rsa_public_key"><?php echo esc_textarea( get_option( 'mmg_live_rsa_public_key' ) ); ?></textarea></td></tr>
-				<tr valign="top"><th>Live RSA Private Key (Merchant)</th><td><textarea name="mmg_live_rsa_private_key"><?php echo esc_textarea( get_option( 'mmg_live_rsa_private_key' ) ); ?></textarea></td></tr>
-				<tr valign="top"><th>Live Checkout URL</th><td><input type="text" name="mmg_live_checkout_url" value="<?php echo esc_attr( get_option( 'mmg_live_checkout_url', 'https://mmgpg.mymmg.gy/mmg-pg/web/payments' ) ); ?>" /></td></tr>
-				<tr valign="top"><th>Live mwallet Base URL</th><td>
-					<input type="text" name="mmg_live_mwallet_url" value="<?php echo esc_attr( get_option( 'mmg_live_mwallet_url', 'https://mwallet.mymmg.gy/olive/publisher/v1' ) ); ?>" style="width:350px;" />
-					<p class="description">Full base URL including path. Leave as default unless MMG provides a different one.</p>
-				</td></tr>
-			</table>
+			<!-- Common Settings -->
+			<div class="mmg-card" style="margin-bottom:20px;">
+				<div class="mmg-card-header" data-collapse="mmg-common">
+					<h3 class="mmg-card-header-title"><span class="dashicons dashicons-admin-generic"></span> General Settings</h3>
+					<span class="mmg-card-chevron dashicons dashicons-arrow-down-alt2"></span>
+				</div>
+				<div class="mmg-card-body" id="mmg-common">
+					<div class="mmg-form-grid">
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">Mode</div>
+							<div class="mmg-form-control">
+								<select name="mmg_mode" id="mmg_mode">
+									<option value="live" <?php selected( $mode, 'live' ); ?>>Live</option>
+									<option value="demo" <?php selected( $mode, 'demo' ); ?>>Sandbox</option>
+								</select>
+							</div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">Merchant Name</div>
+							<div class="mmg-form-control">
+								<input type="text" name="mmg_merchant_name" value="<?php echo esc_attr( get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ) ); ?>" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-			<h2>Sandbox Credentials</h2>
-			<table class="form-table">
-				<tr valign="top"><th>Sandbox Merchant ID</th><td><input type="text" name="mmg_demo_merchant_id" value="<?php echo esc_attr( get_option( 'mmg_demo_merchant_id' ) ); ?>" /></td></tr>
-				<tr valign="top"><th>Sandbox API Key</th><td>
-					<input type="text" name="mmg_demo_api_key" value="<?php echo esc_attr( get_option( 'mmg_demo_api_key' ) ); ?>" style="width:350px;" />
-					<p class="description">MMG-issued API key used for authentication.</p>
-				</td></tr>
-				<tr valign="top"><th>Sandbox MMG Password</th><td>
-					<input type="password" id="mmg_demo_mmg_password" name="mmg_demo_mmg_password" value="" placeholder="<?php echo get_option( 'mmg_demo_mmg_password' ) ? esc_attr( 'Password saved — enter new to change' ) : esc_attr( 'Enter MMG account password' ); ?>" autocomplete="new-password" />
-					<p class="description">Your MMG account login password. Stored encrypted — leave blank to keep existing.</p>
-				</td></tr>
-				<tr valign="top"><th>Sandbox Client ID</th><td>
-					<input type="text" name="mmg_demo_client_id" value="<?php echo esc_attr( get_option( 'mmg_demo_client_id' ) ); ?>" />
-					<p class="description">Used in the checkout payment URL (X-Client-ID).</p>
-				</td></tr>
-				<tr valign="top"><th>Sandbox Secret Key</th><td>
-					<input type="password" id="mmg_demo_secret_key" name="mmg_demo_secret_key" value="<?php echo esc_attr( get_option( 'mmg_demo_secret_key' ) ); ?>" />
-					<button type="button" class="toggle-secret-key" data-target="mmg_demo_secret_key">Show</button>
-					<p class="description">Included in the encrypted checkout token payload.</p>
-				</td></tr>
-				<tr valign="top"><th>Sandbox RSA Public Key (MMG)</th><td><textarea name="mmg_demo_rsa_public_key"><?php echo esc_textarea( get_option( 'mmg_demo_rsa_public_key' ) ); ?></textarea></td></tr>
-				<tr valign="top"><th>Sandbox RSA Private Key (Merchant)</th><td><textarea name="mmg_demo_rsa_private_key"><?php echo esc_textarea( get_option( 'mmg_demo_rsa_private_key' ) ); ?></textarea></td></tr>
-				<tr valign="top"><th>Sandbox Checkout URL</th><td><input type="text" name="mmg_demo_checkout_url" value="<?php echo esc_attr( get_option( 'mmg_demo_checkout_url', 'https://mmgpg.mmgtest.net/mmg-pg/web/payments' ) ); ?>" /></td></tr>
-			</table>
-			<?php submit_button(); ?>
+			<!-- Live Credentials -->
+			<div class="mmg-card" style="margin-bottom:20px;">
+				<div class="mmg-card-header" data-collapse="mmg-live-creds">
+					<h3 class="mmg-card-header-title"><span class="dashicons dashicons-lock"></span> Live Credentials</h3>
+					<span class="mmg-card-chevron dashicons dashicons-arrow-down-alt2"></span>
+				</div>
+				<div class="mmg-card-body" id="mmg-live-creds">
+					<div class="mmg-form-grid">
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">Merchant ID</div>
+							<div class="mmg-form-control"><input type="text" name="mmg_live_merchant_id" value="<?php echo esc_attr( get_option( 'mmg_live_merchant_id' ) ); ?>" /></div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">API Key</div>
+							<div class="mmg-form-control">
+								<input type="text" name="mmg_live_api_key" value="<?php echo esc_attr( get_option( 'mmg_live_api_key' ) ); ?>" />
+								<p class="mmg-form-hint">MMG-issued API key used for authentication.</p>
+							</div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">MMG Password</div>
+							<div class="mmg-form-control">
+								<input type="password" id="mmg_live_mmg_password" name="mmg_live_mmg_password" value="" placeholder="<?php echo get_option( 'mmg_live_mmg_password' ) ? esc_attr( 'Password saved — enter new to change' ) : esc_attr( 'Enter MMG account password' ); ?>" autocomplete="new-password" />
+								<p class="mmg-form-hint">Stored encrypted — leave blank to keep existing.</p>
+							</div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">Client ID</div>
+							<div class="mmg-form-control">
+								<input type="text" name="mmg_live_client_id" value="<?php echo esc_attr( get_option( 'mmg_live_client_id' ) ); ?>" />
+								<p class="mmg-form-hint">Used in the checkout payment URL (X-Client-ID).</p>
+							</div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">Secret Key</div>
+							<div class="mmg-form-control">
+								<div class="mmg-input-group">
+									<input type="password" id="mmg_live_secret_key" name="mmg_live_secret_key" value="<?php echo esc_attr( get_option( 'mmg_live_secret_key' ) ); ?>" />
+									<button type="button" class="mmg-btn mmg-btn-secondary mmg-btn-sm toggle-secret-key" data-target="mmg_live_secret_key">Show</button>
+								</div>
+								<p class="mmg-form-hint">Included in the encrypted checkout token payload.</p>
+							</div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">RSA Public Key <span class="mmg-label-hint">(MMG)</span></div>
+							<div class="mmg-form-control"><textarea name="mmg_live_rsa_public_key"><?php echo esc_textarea( get_option( 'mmg_live_rsa_public_key' ) ); ?></textarea></div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">RSA Private Key <span class="mmg-label-hint">(Merchant)</span></div>
+							<div class="mmg-form-control"><textarea name="mmg_live_rsa_private_key"><?php echo esc_textarea( get_option( 'mmg_live_rsa_private_key' ) ); ?></textarea></div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">Checkout URL</div>
+							<div class="mmg-form-control"><input type="text" name="mmg_live_checkout_url" value="<?php echo esc_attr( get_option( 'mmg_live_checkout_url', 'https://mmgpg.mymmg.gy/mmg-pg/web/payments' ) ); ?>" /></div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">mWallet Base URL</div>
+							<div class="mmg-form-control">
+								<input type="text" name="mmg_live_mwallet_url" value="<?php echo esc_attr( get_option( 'mmg_live_mwallet_url', 'https://mwallet.mymmg.gy/olive/publisher/v1' ) ); ?>" />
+								<p class="mmg-form-hint">Leave as default unless MMG provides a different one.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Sandbox Credentials -->
+			<div class="mmg-card">
+				<div class="mmg-card-header" data-collapse="mmg-sandbox-creds">
+					<h3 class="mmg-card-header-title"><span class="dashicons dashicons-visibility"></span> Sandbox Credentials</h3>
+					<span class="mmg-card-chevron dashicons dashicons-arrow-down-alt2"></span>
+				</div>
+				<div class="mmg-card-body" id="mmg-sandbox-creds">
+					<div class="mmg-form-grid">
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">Merchant ID</div>
+							<div class="mmg-form-control"><input type="text" name="mmg_demo_merchant_id" value="<?php echo esc_attr( get_option( 'mmg_demo_merchant_id' ) ); ?>" /></div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">API Key</div>
+							<div class="mmg-form-control">
+								<input type="text" name="mmg_demo_api_key" value="<?php echo esc_attr( get_option( 'mmg_demo_api_key' ) ); ?>" />
+								<p class="mmg-form-hint">MMG-issued API key used for authentication.</p>
+							</div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">MMG Password</div>
+							<div class="mmg-form-control">
+								<input type="password" id="mmg_demo_mmg_password" name="mmg_demo_mmg_password" value="" placeholder="<?php echo get_option( 'mmg_demo_mmg_password' ) ? esc_attr( 'Password saved — enter new to change' ) : esc_attr( 'Enter MMG account password' ); ?>" autocomplete="new-password" />
+								<p class="mmg-form-hint">Stored encrypted — leave blank to keep existing.</p>
+							</div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">Client ID</div>
+							<div class="mmg-form-control">
+								<input type="text" name="mmg_demo_client_id" value="<?php echo esc_attr( get_option( 'mmg_demo_client_id' ) ); ?>" />
+								<p class="mmg-form-hint">Used in the checkout payment URL (X-Client-ID).</p>
+							</div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">Secret Key</div>
+							<div class="mmg-form-control">
+								<div class="mmg-input-group">
+									<input type="password" id="mmg_demo_secret_key" name="mmg_demo_secret_key" value="<?php echo esc_attr( get_option( 'mmg_demo_secret_key' ) ); ?>" />
+									<button type="button" class="mmg-btn mmg-btn-secondary mmg-btn-sm toggle-secret-key" data-target="mmg_demo_secret_key">Show</button>
+								</div>
+								<p class="mmg-form-hint">Included in the encrypted checkout token payload.</p>
+							</div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">RSA Public Key <span class="mmg-label-hint">(MMG)</span></div>
+							<div class="mmg-form-control"><textarea name="mmg_demo_rsa_public_key"><?php echo esc_textarea( get_option( 'mmg_demo_rsa_public_key' ) ); ?></textarea></div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">RSA Private Key <span class="mmg-label-hint">(Merchant)</span></div>
+							<div class="mmg-form-control"><textarea name="mmg_demo_rsa_private_key"><?php echo esc_textarea( get_option( 'mmg_demo_rsa_private_key' ) ); ?></textarea></div>
+						</div>
+						<div class="mmg-form-row">
+							<div class="mmg-form-label">Checkout URL</div>
+							<div class="mmg-form-control"><input type="text" name="mmg_demo_checkout_url" value="<?php echo esc_attr( get_option( 'mmg_demo_checkout_url', 'https://mmgpg.mmgtest.net/mmg-pg/web/payments' ) ); ?>" /></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<button type="submit" class="mmg-btn mmg-btn-primary mmg-btn-save">
+				<span class="dashicons dashicons-saved" style="font-size:16px;width:16px;height:16px;"></span> Save Changes
+			</button>
 		</form>
 		<?php
 	}
@@ -217,22 +416,31 @@ class MMG_Checkout_Settings {
 	private function render_balance_tab() {
 		$mode = get_option( 'mmg_mode', 'demo' );
 		?>
-		<h2>Account Balance</h2>
-		<table class="form-table">
-			<tr valign="top">
-				<th>Merchant ID</th>
-				<td><?php echo esc_html( get_option( "mmg_{$mode}_merchant_id", '—' ) ); ?></td>
-			</tr>
-			<tr valign="top">
-				<th>Available Balance</th>
-				<td>
-					<span id="mmg-balance-result">—</span> &nbsp;
-					<button type="button" id="mmg-check-balance" class="button">Check Balance</button>
-					<span id="mmg-balance-spinner" class="spinner" style="float:none;display:none;"></span>
-					<p id="mmg-balance-error" style="color:#c00;display:none;"></p>
-				</td>
-			</tr>
-		</table>
+		<h2 class="mmg-section-title">Account Balance</h2>
+		<p class="mmg-section-desc">Check your current MMG merchant account balance.</p>
+
+		<div class="mmg-stats-grid">
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-accent"><span class="dashicons dashicons-admin-users"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Merchant ID</p>
+					<p class="mmg-stat-value mmg-stat-value-sm"><?php echo esc_html( get_option( "mmg_{$mode}_merchant_id", '—' ) ); ?></p>
+				</div>
+			</div>
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-success"><span class="dashicons dashicons-money-alt"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Available Balance</p>
+					<p class="mmg-stat-value" id="mmg-balance-result">—</p>
+				</div>
+			</div>
+		</div>
+
+		<button type="button" id="mmg-check-balance" class="mmg-btn mmg-btn-primary">
+			<span class="dashicons dashicons-update" style="font-size:14px;width:14px;height:14px;"></span> Check Balance
+		</button>
+		<span id="mmg-balance-spinner" class="spinner" style="float:none;display:none;"></span>
+		<p id="mmg-balance-error" class="mmg-error-text"></p>
 		<?php
 	}
 
@@ -241,44 +449,43 @@ class MMG_Checkout_Settings {
 	 */
 	private function render_transactions_tab() {
 		?>
-		<h2>Transaction History</h2>
-		<table class="form-table">
-			<tr valign="top">
-				<th>Date Range</th>
-				<td>
-					<label>From: <input type="date" id="mmg-start-date" /></label> &nbsp;
-					<label>To: <input type="date" id="mmg-end-date" /></label> &nbsp;
-					<button type="button" id="mmg-fetch-transactions" class="button">Fetch</button>
+		<h2 class="mmg-section-title">Transaction History</h2>
+		<p class="mmg-section-desc">View and search your MMG payment transactions.</p>
+
+		<div class="mmg-card" style="margin-bottom:24px;">
+			<div class="mmg-card-header">
+				<h3 class="mmg-card-header-title"><span class="dashicons dashicons-calendar-alt"></span> Date Range Query</h3>
+			</div>
+			<div class="mmg-card-body">
+				<div class="mmg-date-range">
+					<label>From: <input type="date" id="mmg-start-date" /></label>
+					<label>To: <input type="date" id="mmg-end-date" /></label>
+					<button type="button" id="mmg-fetch-transactions" class="mmg-btn mmg-btn-primary mmg-btn-sm">
+						<span class="dashicons dashicons-search" style="font-size:14px;width:14px;height:14px;"></span> Fetch
+					</button>
 					<span id="mmg-txn-spinner" class="spinner" style="float:none;display:none;"></span>
-				</td>
-			</tr>
-			<tr valign="top">
-				<th>Results</th>
-				<td>
-					<p id="mmg-txn-error" style="color:#c00;display:none;"></p>
-					<div id="mmg-txn-results"></div>
-				</td>
-			</tr>
-		</table>
-		<hr />
-		<h2>Transaction Lookup</h2>
-		<table class="form-table">
-			<tr valign="top">
-				<th>Transaction ID</th>
-				<td>
-					<input type="text" id="mmg-lookup-txn-id" placeholder="Enter transaction ID" style="width:300px;" /> &nbsp;
-					<button type="button" id="mmg-lookup-txn" class="button">Lookup</button>
+				</div>
+				<p id="mmg-txn-error" class="mmg-error-text"></p>
+				<div id="mmg-txn-results"></div>
+			</div>
+		</div>
+
+		<div class="mmg-card">
+			<div class="mmg-card-header">
+				<h3 class="mmg-card-header-title"><span class="dashicons dashicons-search"></span> Transaction Lookup</h3>
+			</div>
+			<div class="mmg-card-body">
+				<div class="mmg-lookup-row">
+					<input type="text" id="mmg-lookup-txn-id" placeholder="Enter transaction ID" />
+					<button type="button" id="mmg-lookup-txn" class="mmg-btn mmg-btn-primary mmg-btn-sm">
+						<span class="dashicons dashicons-visibility" style="font-size:14px;width:14px;height:14px;"></span> Lookup
+					</button>
 					<span id="mmg-lookup-spinner" class="spinner" style="float:none;display:none;"></span>
-				</td>
-			</tr>
-			<tr valign="top">
-				<th>Result</th>
-				<td>
-					<p id="mmg-lookup-error" style="color:#c00;display:none;"></p>
-					<pre id="mmg-lookup-result" style="background:#f6f7f7;padding:10px;display:none;white-space:pre-wrap;"></pre>
-				</td>
-			</tr>
-		</table>
+				</div>
+				<p id="mmg-lookup-error" class="mmg-error-text"></p>
+				<pre id="mmg-lookup-result" class="mmg-lookup-result"></pre>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -359,11 +566,12 @@ class MMG_Checkout_Settings {
 	 * @param string $hook The current admin page.
 	 */
 	public function enqueue_admin_scripts( $hook ) {
-		if ( 'settings_page_mmg-checkout-settings' !== $hook ) {
+		if ( 'toplevel_page_mmg-checkout-settings' !== $hook ) {
 			return;
 		}
 		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( 'mmg-admin-script', plugin_dir_url( __FILE__ ) . '../admin/js/admin-script.js', array( 'jquery' ), '2.0.0', true );
+		wp_enqueue_style( 'dashicons' );
+		wp_enqueue_script( 'mmg-admin-script', plugin_dir_url( __FILE__ ) . '../admin/js/admin-script.js', array( 'jquery' ), '3.0.0', true );
 		wp_localize_script(
 			'mmg-admin-script',
 			'mmg_admin_params',
@@ -372,7 +580,7 @@ class MMG_Checkout_Settings {
 				'nonce'    => wp_create_nonce( 'mmg_admin_nonce' ),
 			)
 		);
-		wp_enqueue_style( 'mmg-admin-style', plugin_dir_url( __FILE__ ) . '../admin/css/admin-style.css', array(), '1.0.0' );
+		wp_enqueue_style( 'mmg-admin-style', plugin_dir_url( __FILE__ ) . '../admin/css/admin-style.css', array(), '3.0.0' );
 	}
 
 	/**
@@ -488,6 +696,16 @@ class MMG_Checkout_Settings {
 		$iv  = substr( $raw, 0, 16 );
 		$enc = substr( $raw, 16 );
 		$dec = openssl_decrypt( $enc, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv );
-		return false !== $dec ? $dec : '';
+		if ( false === $dec ) {
+			return '';
+		}
+		// A non-printable character indicates the key has changed (e.g. salt rotation or DB migration).
+		// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		if ( ! preg_match( '/^[\x20-\x7E]+$/', $dec ) ) {
+			error_log( '[MMG] decrypt_value: decrypted value contains non-printable characters — password was likely encrypted with a different WordPress auth salt. Re-save the password in MMG Checkout Settings.' );
+			return '';
+		}
+		// phpcs:enable
+		return $dec;
 	}
 }
