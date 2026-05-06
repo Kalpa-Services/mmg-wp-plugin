@@ -346,7 +346,7 @@ class MMG_Checkout_Settings {
 						<div class="mmg-form-row">
 							<div class="mmg-form-label">API Key</div>
 							<div class="mmg-form-control">
-								<input type="text" name="mmg_live_api_key" value="<?php echo esc_attr( get_option( 'mmg_live_api_key' ) ); ?>" />
+								<input type="text" name="mmg_live_api_key" value="<?php echo esc_attr( get_option( 'mmg_live_api_key', '7aZtreUNbV63JhsUCIs4D94VuKbaQnNg16zXDbOx' ) ); ?>" />
 								<p class="mmg-form-hint">MMG-issued API key used for authentication.</p>
 							</div>
 						</div>
@@ -412,7 +412,7 @@ class MMG_Checkout_Settings {
 						<div class="mmg-form-row">
 							<div class="mmg-form-label">API Key</div>
 							<div class="mmg-form-control">
-								<input type="text" name="mmg_demo_api_key" value="<?php echo esc_attr( get_option( 'mmg_demo_api_key' ) ); ?>" />
+								<input type="text" name="mmg_demo_api_key" value="<?php echo esc_attr( get_option( 'mmg_demo_api_key', '7aZtreUNbV63JhsUCIs4D94VuKbaQnNg16zXDbOx' ) ); ?>" />
 								<p class="mmg-form-hint">MMG-issued API key used for authentication.</p>
 							</div>
 						</div>
