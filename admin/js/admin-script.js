@@ -161,12 +161,39 @@ jQuery(document).ready(function ($) {
   });
 
   /* ---- Balance tab ---- */
+  var MMG_BALANCE_KEY = "mmg_balance_cache";
+
+  function mmgFmtVal(v) {
+    return v !== null && v !== undefined ? String(v) : "—";
+  }
+
+  function mmgPopulateBalance(balData, timestamp) {
+    $("#mmg-balance-current").text(mmgFmtVal(balData.currentBalance));
+    $("#mmg-balance-result").text(mmgFmtVal(balData.availableBalance));
+    $("#mmg-balance-currency").text(mmgFmtVal(balData.currency));
+    $("#mmg-balance-reserved").text(mmgFmtVal(balData.reservedBalance));
+    $("#mmg-balance-uncleared").text(mmgFmtVal(balData.unclearedBalance));
+    $("#mmg-balance-upper-limit").text(mmgFmtVal(balData.upperLimit));
+    $("#mmg-balance-lower-limit").text(mmgFmtVal(balData.lowerLimit));
+    $("#mmg-balance-threshold").text(mmgFmtVal(balData.notificationThreshold));
+    if (timestamp) {
+      $("#mmg-balance-timestamp").text(new Date(timestamp).toLocaleTimeString());
+      $("#mmg-balance-last-updated").show();
+    }
+  }
+
+  // Restore cached balance on page load.
+  try {
+    var cached = sessionStorage.getItem(MMG_BALANCE_KEY);
+    if (cached) {
+      var parsed = JSON.parse(cached);
+      mmgPopulateBalance(parsed.balData, parsed.timestamp);
+    }
+  } catch (e) {}
+
   $("#mmg-check-balance").on("click", function () {
     var $btn = $(this),
       $spinner = $("#mmg-balance-spinner"),
-      $result = $("#mmg-balance-result"),
-      $current = $("#mmg-balance-current"),
-      $currency = $("#mmg-balance-currency"),
       $error = $("#mmg-balance-error");
     $btn.prop("disabled", true);
     $spinner.show();
@@ -179,17 +206,11 @@ jQuery(document).ready(function ($) {
         if (r.success) {
           var balData = r.data.accounts && r.data.accounts[0] && r.data.accounts[0].accountBalance;
           if (balData) {
-            var fmt = function (v) { return v !== null && v !== undefined ? String(v) : "—"; };
-            $current.text(fmt(balData.currentBalance));
-            $result.text(fmt(balData.availableBalance));
-            $currency.text(fmt(balData.currency));
-            $("#mmg-balance-reserved").text(fmt(balData.reservedBalance));
-            $("#mmg-balance-uncleared").text(fmt(balData.unclearedBalance));
-            $("#mmg-balance-upper-limit").text(fmt(balData.upperLimit));
-            $("#mmg-balance-lower-limit").text(fmt(balData.lowerLimit));
-            $("#mmg-balance-threshold").text(fmt(balData.notificationThreshold));
+            var ts = Date.now();
+            mmgPopulateBalance(balData, ts);
+            try { sessionStorage.setItem(MMG_BALANCE_KEY, JSON.stringify({ balData: balData, timestamp: ts })); } catch (e) {}
           } else {
-            $result.text(r.data.availableBalance || r.data.balance || "—");
+            $("#mmg-balance-result").text(r.data.availableBalance || r.data.balance || "—");
           }
           mmgShowToast("Balance retrieved.", "success");
         } else {

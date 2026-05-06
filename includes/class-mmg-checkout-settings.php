@@ -494,10 +494,16 @@ class MMG_Checkout_Settings {
 			</div>
 		</div>
 
-		<button type="button" id="mmg-check-balance" class="mmg-btn mmg-btn-primary">
-			<span class="dashicons dashicons-update" style="font-size:14px;width:14px;height:14px;"></span> Check Balance
-		</button>
-		<span id="mmg-balance-spinner" class="spinner" style="float:none;display:none;"></span>
+		<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+			<button type="button" id="mmg-check-balance" class="mmg-btn mmg-btn-primary">
+				<span class="dashicons dashicons-update" style="font-size:14px;width:14px;height:14px;"></span> Refresh Balance
+			</button>
+			<span id="mmg-balance-spinner" class="spinner" style="float:none;display:none;"></span>
+			<span id="mmg-balance-last-updated" style="font-size:12px;color:var(--mmg-text-muted);display:none;">
+				<span class="dashicons dashicons-backup" style="font-size:13px;width:13px;height:13px;vertical-align:middle;"></span>
+				Last updated: <span id="mmg-balance-timestamp"></span>
+			</span>
+		</div>
 		<p id="mmg-balance-error" class="mmg-error-text"></p>
 		<?php
 	}
