@@ -97,14 +97,18 @@ class MMG_API_Client {
 	 * @throws Exception If login fails.
 	 */
 	public function do_login() {
+		if ( ! class_exists( 'MMG_Checkout_Settings' ) ) {
+			require_once __DIR__ . '/class-mmg-checkout-settings.php';
+		}
 		$merchant_id = get_option( "mmg_{$this->mode}_merchant_id" );
-		$client_id   = get_option( "mmg_{$this->mode}_client_id" );
+		$api_key     = get_option( "mmg_{$this->mode}_api_key" );
+		$password    = MMG_Checkout_Settings::decrypt_value( get_option( "mmg_{$this->mode}_mmg_password", '' ) );
 		$body        = http_build_query(
 			array(
 				'grant_type' => 'password',
-				'api_key'    => $client_id,
+				'api_key'    => $api_key,
 				'username'   => $merchant_id,
-				'password'   => get_option( "mmg_{$this->mode}_secret_key" ),
+				'password'   => $password,
 			)
 		);
 		$url      = $this->base_url . '/e-commerce-login/mer';
@@ -118,7 +122,7 @@ class MMG_API_Client {
 		$response_body = wp_remote_retrieve_body( $response );
 
 		// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( sprintf( '[MMG] login POST %s | username=%s | api_key=%s', $url, $merchant_id, $client_id ) );
+		error_log( sprintf( '[MMG] login POST %s | username=%s | api_key=%s', $url, $merchant_id, $api_key ) );
 		error_log( sprintf( '[MMG] login response HTTP %d | body=%s', $code, $response_body ) );
 		// phpcs:enable
 
@@ -162,13 +166,13 @@ class MMG_API_Client {
 	protected function get_auth_headers() {
 		$access_token = get_transient( 'mmg_access_token_' . $this->mode );
 		$merchant_id  = get_option( "mmg_{$this->mode}_merchant_id" );
-		$client_id    = get_option( "mmg_{$this->mode}_client_id" );
+		$api_key      = get_option( "mmg_{$this->mode}_api_key" );
 		$secret_key   = get_option( "mmg_{$this->mode}_secret_key" );
 		return array(
 			'x-wss-mid'           => $merchant_id,
-			'x-wss-mkey'          => $client_id,
+			'x-wss-mkey'          => $api_key,
 			'x-wss-msecret'       => $secret_key,
-			'x-api-key'           => $client_id,
+			'x-api-key'           => $api_key,
 			'x-wss-correlationid' => wp_generate_uuid4(),
 			'x-wss-token'         => $access_token ? $access_token : '',
 		);

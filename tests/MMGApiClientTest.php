@@ -61,10 +61,10 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
     }
 
     public function test_login_stores_access_token_on_success() {
-        $GLOBALS['mmg_test_options']['mmg_mode']             = 'demo';
-        $GLOBALS['mmg_test_options']['mmg_demo_merchant_id'] = 'MID';
-        $GLOBALS['mmg_test_options']['mmg_demo_client_id']   = 'CID';
-        $GLOBALS['mmg_test_options']['mmg_demo_secret_key']  = 'sk';
+        $GLOBALS['mmg_test_options']['mmg_mode']              = 'demo';
+        $GLOBALS['mmg_test_options']['mmg_demo_merchant_id']  = 'MID';
+        $GLOBALS['mmg_test_options']['mmg_demo_api_key']      = 'APIKEY';
+        $GLOBALS['mmg_test_options']['mmg_demo_mmg_password'] = '';
 
         $response = [
             'response' => ['code' => 200],
@@ -82,10 +82,10 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
     }
 
     public function test_login_throws_on_non_200() {
-        $GLOBALS['mmg_test_options']['mmg_mode']             = 'demo';
-        $GLOBALS['mmg_test_options']['mmg_demo_merchant_id'] = 'MID';
-        $GLOBALS['mmg_test_options']['mmg_demo_client_id']   = 'CID';
-        $GLOBALS['mmg_test_options']['mmg_demo_secret_key']  = 'sk';
+        $GLOBALS['mmg_test_options']['mmg_mode']              = 'demo';
+        $GLOBALS['mmg_test_options']['mmg_demo_merchant_id']  = 'MID';
+        $GLOBALS['mmg_test_options']['mmg_demo_api_key']      = 'APIKEY';
+        $GLOBALS['mmg_test_options']['mmg_demo_mmg_password'] = '';
 
         $client = $this->getMockBuilder( MMG_API_Client::class )
             ->onlyMethods( ['http_post'] )
@@ -100,8 +100,8 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
     private function make_testable_client( $mode = 'demo' ) {
         $GLOBALS['mmg_test_options']['mmg_mode']               = $mode;
         $GLOBALS['mmg_test_options']["mmg_{$mode}_merchant_id"] = 'MID999';
-        $GLOBALS['mmg_test_options']["mmg_{$mode}_client_id"]   = 'CID999';
-        $GLOBALS['mmg_test_options']["mmg_{$mode}_secret_key"]  = 'SK999';
+        $GLOBALS['mmg_test_options']["mmg_{$mode}_api_key"]    = 'APIKEY999';
+        $GLOBALS['mmg_test_options']["mmg_{$mode}_secret_key"] = 'SK999';
         $GLOBALS['mmg_test_transients']["mmg_access_token_{$mode}"] = 'tok';
 
         $ok = ['response' => ['code' => 200], 'body' => '{}'];

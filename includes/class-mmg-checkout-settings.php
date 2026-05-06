@@ -46,6 +46,8 @@ class MMG_Checkout_Settings {
 		register_setting( 'mmg_checkout_settings', 'mmg_live_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_live_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_live_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmg_checkout_settings', 'mmg_live_api_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmg_checkout_settings', 'mmg_live_mmg_password', array( 'sanitize_callback' => array( $this, 'sanitize_live_password' ) ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_live_rsa_public_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_live_rsa_private_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_live_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
@@ -54,13 +56,15 @@ class MMG_Checkout_Settings {
 		register_setting( 'mmg_checkout_settings', 'mmg_demo_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_demo_merchant_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_demo_secret_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmg_checkout_settings', 'mmg_demo_api_key', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmg_checkout_settings', 'mmg_demo_mmg_password', array( 'sanitize_callback' => array( $this, 'sanitize_demo_password' ) ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_demo_rsa_public_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_demo_rsa_private_key', array( 'sanitize_callback' => array( $this, 'sanitize_multiline_field' ) ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_demo_checkout_url', array( 'sanitize_callback' => 'esc_url' ) );
 
 		// Common settings.
 		register_setting( 'mmg_checkout_settings', 'mmg_merchant_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_live_mwallet_url', array( 'sanitize_callback' => 'esc_url' ) );
+		register_setting( 'mmg_checkout_settings', 'mmg_live_mwallet_url', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 	}
 
 	/**
@@ -151,28 +155,52 @@ class MMG_Checkout_Settings {
 
 			<h2>Live Credentials</h2>
 			<table class="form-table">
-				<tr valign="top"><th>Live Client ID</th><td><input type="text" name="mmg_live_client_id" value="<?php echo esc_attr( get_option( 'mmg_live_client_id' ) ); ?>" /></td></tr>
 				<tr valign="top"><th>Live Merchant ID</th><td><input type="text" name="mmg_live_merchant_id" value="<?php echo esc_attr( get_option( 'mmg_live_merchant_id' ) ); ?>" /></td></tr>
+				<tr valign="top"><th>Live API Key</th><td>
+					<input type="text" name="mmg_live_api_key" value="<?php echo esc_attr( get_option( 'mmg_live_api_key' ) ); ?>" style="width:350px;" />
+					<p class="description">MMG-issued API key used for authentication.</p>
+				</td></tr>
+				<tr valign="top"><th>Live MMG Password</th><td>
+					<input type="password" id="mmg_live_mmg_password" name="mmg_live_mmg_password" value="" placeholder="<?php echo get_option( 'mmg_live_mmg_password' ) ? esc_attr( 'Password saved — enter new to change' ) : esc_attr( 'Enter MMG account password' ); ?>" autocomplete="new-password" />
+					<p class="description">Your MMG account login password. Stored encrypted — leave blank to keep existing.</p>
+				</td></tr>
+				<tr valign="top"><th>Live Client ID</th><td>
+					<input type="text" name="mmg_live_client_id" value="<?php echo esc_attr( get_option( 'mmg_live_client_id' ) ); ?>" />
+					<p class="description">Used in the checkout payment URL (X-Client-ID).</p>
+				</td></tr>
 				<tr valign="top"><th>Live Secret Key</th><td>
 					<input type="password" id="mmg_live_secret_key" name="mmg_live_secret_key" value="<?php echo esc_attr( get_option( 'mmg_live_secret_key' ) ); ?>" />
 					<button type="button" class="toggle-secret-key" data-target="mmg_live_secret_key">Show</button>
+					<p class="description">Included in the encrypted checkout token payload.</p>
 				</td></tr>
 				<tr valign="top"><th>Live RSA Public Key (MMG)</th><td><textarea name="mmg_live_rsa_public_key"><?php echo esc_textarea( get_option( 'mmg_live_rsa_public_key' ) ); ?></textarea></td></tr>
 				<tr valign="top"><th>Live RSA Private Key (Merchant)</th><td><textarea name="mmg_live_rsa_private_key"><?php echo esc_textarea( get_option( 'mmg_live_rsa_private_key' ) ); ?></textarea></td></tr>
 				<tr valign="top"><th>Live Checkout URL</th><td><input type="text" name="mmg_live_checkout_url" value="<?php echo esc_attr( get_option( 'mmg_live_checkout_url', 'https://mmgpg.mymmg.gy/mmg-pg/web/payments' ) ); ?>" /></td></tr>
 				<tr valign="top"><th>Live mwallet Base URL</th><td>
-					<input type="text" name="mmg_live_mwallet_url" value="<?php echo esc_attr( get_option( 'mmg_live_mwallet_url', 'https://mwallet.mmgtest.net' ) ); ?>" />
-					<p class="description">Production mwallet URL — leave as default until provided by MMG.</p>
+					<input type="text" name="mmg_live_mwallet_url" value="<?php echo esc_attr( get_option( 'mmg_live_mwallet_url', 'https://mwallet.mymmg.gy/olive/publisher/v1' ) ); ?>" style="width:350px;" />
+					<p class="description">Full base URL including path. Leave as default unless MMG provides a different one.</p>
 				</td></tr>
 			</table>
 
 			<h2>Sandbox Credentials</h2>
 			<table class="form-table">
-				<tr valign="top"><th>Sandbox Client ID</th><td><input type="text" name="mmg_demo_client_id" value="<?php echo esc_attr( get_option( 'mmg_demo_client_id' ) ); ?>" /></td></tr>
 				<tr valign="top"><th>Sandbox Merchant ID</th><td><input type="text" name="mmg_demo_merchant_id" value="<?php echo esc_attr( get_option( 'mmg_demo_merchant_id' ) ); ?>" /></td></tr>
+				<tr valign="top"><th>Sandbox API Key</th><td>
+					<input type="text" name="mmg_demo_api_key" value="<?php echo esc_attr( get_option( 'mmg_demo_api_key' ) ); ?>" style="width:350px;" />
+					<p class="description">MMG-issued API key used for authentication.</p>
+				</td></tr>
+				<tr valign="top"><th>Sandbox MMG Password</th><td>
+					<input type="password" id="mmg_demo_mmg_password" name="mmg_demo_mmg_password" value="" placeholder="<?php echo get_option( 'mmg_demo_mmg_password' ) ? esc_attr( 'Password saved — enter new to change' ) : esc_attr( 'Enter MMG account password' ); ?>" autocomplete="new-password" />
+					<p class="description">Your MMG account login password. Stored encrypted — leave blank to keep existing.</p>
+				</td></tr>
+				<tr valign="top"><th>Sandbox Client ID</th><td>
+					<input type="text" name="mmg_demo_client_id" value="<?php echo esc_attr( get_option( 'mmg_demo_client_id' ) ); ?>" />
+					<p class="description">Used in the checkout payment URL (X-Client-ID).</p>
+				</td></tr>
 				<tr valign="top"><th>Sandbox Secret Key</th><td>
 					<input type="password" id="mmg_demo_secret_key" name="mmg_demo_secret_key" value="<?php echo esc_attr( get_option( 'mmg_demo_secret_key' ) ); ?>" />
 					<button type="button" class="toggle-secret-key" data-target="mmg_demo_secret_key">Show</button>
+					<p class="description">Included in the encrypted checkout token payload.</p>
 				</td></tr>
 				<tr valign="top"><th>Sandbox RSA Public Key (MMG)</th><td><textarea name="mmg_demo_rsa_public_key"><?php echo esc_textarea( get_option( 'mmg_demo_rsa_public_key' ) ); ?></textarea></td></tr>
 				<tr valign="top"><th>Sandbox RSA Private Key (Merchant)</th><td><textarea name="mmg_demo_rsa_private_key"><?php echo esc_textarea( get_option( 'mmg_demo_rsa_private_key' ) ); ?></textarea></td></tr>
@@ -387,5 +415,79 @@ class MMG_Checkout_Settings {
 	 */
 	public function sanitize_multiline_field( $input ) {
 		return implode( "\n", array_map( 'sanitize_text_field', explode( "\n", $input ) ) );
+	}
+
+	/**
+	 * Sanitize live MMG password — encrypt if provided, keep existing if blank.
+	 *
+	 * @param string $input The input to sanitize.
+	 * @return string
+	 */
+	public function sanitize_live_password( $input ) {
+		return $this->sanitize_encrypted_password( $input, 'mmg_live_mmg_password' );
+	}
+
+	/**
+	 * Sanitize demo MMG password — encrypt if provided, keep existing if blank.
+	 *
+	 * @param string $input The input to sanitize.
+	 * @return string
+	 */
+	public function sanitize_demo_password( $input ) {
+		return $this->sanitize_encrypted_password( $input, 'mmg_demo_mmg_password' );
+	}
+
+	/**
+	 * Encrypt and save a password field, or retain the existing value if blank.
+	 *
+	 * @param string $input       New value from the form.
+	 * @param string $option_name WP option name for the stored (encrypted) value.
+	 * @return string Encrypted value to persist.
+	 */
+	private function sanitize_encrypted_password( $input, $option_name ) {
+		if ( '' === trim( $input ) ) {
+			return get_option( $option_name, '' );
+		}
+		return self::encrypt_value( sanitize_text_field( $input ) );
+	}
+
+	/**
+	 * Encrypt a string using AES-256-CBC with a key derived from WP auth salts.
+	 *
+	 * @param string $value Plain-text value to encrypt.
+	 * @return string Base64-encoded IV + ciphertext, or empty string on failure.
+	 */
+	public static function encrypt_value( $value ) {
+		if ( '' === $value ) {
+			return '';
+		}
+		$key = hash( 'sha256', wp_salt( 'auth' ), true );
+		$iv  = openssl_random_pseudo_bytes( 16 );
+		$enc = openssl_encrypt( $value, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv );
+		if ( false === $enc ) {
+			return '';
+		}
+		return base64_encode( $iv . $enc ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+	}
+
+	/**
+	 * Decrypt a value encrypted by encrypt_value().
+	 *
+	 * @param string $stored Encrypted (base64-encoded) value from the database.
+	 * @return string Decrypted plain-text, or empty string on failure.
+	 */
+	public static function decrypt_value( $stored ) {
+		if ( '' === $stored ) {
+			return '';
+		}
+		$raw = base64_decode( $stored, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+		if ( false === $raw || strlen( $raw ) <= 16 ) {
+			return '';
+		}
+		$key = hash( 'sha256', wp_salt( 'auth' ), true );
+		$iv  = substr( $raw, 0, 16 );
+		$enc = substr( $raw, 16 );
+		$dec = openssl_decrypt( $enc, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv );
+		return false !== $dec ? $dec : '';
 	}
 }
