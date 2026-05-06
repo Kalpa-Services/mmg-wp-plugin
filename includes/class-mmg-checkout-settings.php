@@ -419,7 +419,8 @@ class MMG_Checkout_Settings {
 		<h2 class="mmg-section-title">Account Balance</h2>
 		<p class="mmg-section-desc">Check your current MMG merchant account balance.</p>
 
-		<div class="mmg-stats-grid">
+		<p class="mmg-section-label" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--mmg-text-muted);margin:0 0 10px;">Account Info</p>
+		<div class="mmg-stats-grid" style="margin-bottom:24px;">
 			<div class="mmg-stat-card">
 				<div class="mmg-stat-icon mmg-stat-icon-accent"><span class="dashicons dashicons-admin-users"></span></div>
 				<div class="mmg-stat-content">
@@ -428,10 +429,67 @@ class MMG_Checkout_Settings {
 				</div>
 			</div>
 			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-warning"><span class="dashicons dashicons-tickets-alt"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Currency</p>
+					<p class="mmg-stat-value" id="mmg-balance-currency">—</p>
+				</div>
+			</div>
+		</div>
+
+		<p class="mmg-section-label" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--mmg-text-muted);margin:0 0 10px;">Balances</p>
+		<div class="mmg-stats-grid" style="margin-bottom:24px;">
+			<div class="mmg-stat-card">
 				<div class="mmg-stat-icon mmg-stat-icon-success"><span class="dashicons dashicons-money-alt"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Current Balance</p>
+					<p class="mmg-stat-value" id="mmg-balance-current">—</p>
+				</div>
+			</div>
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-accent"><span class="dashicons dashicons-chart-area"></span></div>
 				<div class="mmg-stat-content">
 					<p class="mmg-stat-label">Available Balance</p>
 					<p class="mmg-stat-value" id="mmg-balance-result">—</p>
+				</div>
+			</div>
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-warning"><span class="dashicons dashicons-lock"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Reserved Balance</p>
+					<p class="mmg-stat-value" id="mmg-balance-reserved">—</p>
+				</div>
+			</div>
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-warning"><span class="dashicons dashicons-clock"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Uncleared Balance</p>
+					<p class="mmg-stat-value" id="mmg-balance-uncleared">—</p>
+				</div>
+			</div>
+		</div>
+
+		<p class="mmg-section-label" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--mmg-text-muted);margin:0 0 10px;">Limits</p>
+		<div class="mmg-stats-grid" style="margin-bottom:24px;">
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-danger"><span class="dashicons dashicons-arrow-up-alt"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Upper Limit</p>
+					<p class="mmg-stat-value" id="mmg-balance-upper-limit">—</p>
+				</div>
+			</div>
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-danger"><span class="dashicons dashicons-arrow-down-alt"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Lower Limit</p>
+					<p class="mmg-stat-value" id="mmg-balance-lower-limit">—</p>
+				</div>
+			</div>
+			<div class="mmg-stat-card">
+				<div class="mmg-stat-icon mmg-stat-icon-accent"><span class="dashicons dashicons-bell"></span></div>
+				<div class="mmg-stat-content">
+					<p class="mmg-stat-label">Notification Threshold</p>
+					<p class="mmg-stat-value" id="mmg-balance-threshold">—</p>
 				</div>
 			</div>
 		</div>

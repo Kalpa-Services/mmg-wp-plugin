@@ -167,11 +167,13 @@ class MMG_API_Client {
 	protected function get_auth_headers() {
 		$access_token = get_transient( 'mmg_access_token_' . $this->mode );
 		$merchant_id  = get_option( "mmg_{$this->mode}_merchant_id" );
+		$client_id    = get_option( "mmg_{$this->mode}_client_id" );
 		$api_key      = get_option( "mmg_{$this->mode}_api_key" );
 		$secret_key   = get_option( "mmg_{$this->mode}_secret_key" );
 		return array(
+			'Content-Type'        => 'application/json',
 			'x-wss-mid'           => $merchant_id,
-			'x-wss-mkey'          => $api_key,
+			'x-wss-mkey'          => $client_id,
 			'x-wss-msecret'       => $secret_key,
 			'x-api-key'           => $api_key,
 			'x-wss-correlationid' => wp_generate_uuid4(),

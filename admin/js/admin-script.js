@@ -165,6 +165,8 @@ jQuery(document).ready(function ($) {
     var $btn = $(this),
       $spinner = $("#mmg-balance-spinner"),
       $result = $("#mmg-balance-result"),
+      $current = $("#mmg-balance-current"),
+      $currency = $("#mmg-balance-currency"),
       $error = $("#mmg-balance-error");
     $btn.prop("disabled", true);
     $spinner.show();
@@ -175,11 +177,20 @@ jQuery(document).ready(function ($) {
     })
       .done(function (r) {
         if (r.success) {
-          var bal =
-            r.data.balance ??
-            r.data.availableBalance ??
-            JSON.stringify(r.data);
-          $result.text(bal);
+          var balData = r.data.accounts && r.data.accounts[0] && r.data.accounts[0].accountBalance;
+          if (balData) {
+            var fmt = function (v) { return v !== null && v !== undefined ? String(v) : "—"; };
+            $current.text(fmt(balData.currentBalance));
+            $result.text(fmt(balData.availableBalance));
+            $currency.text(fmt(balData.currency));
+            $("#mmg-balance-reserved").text(fmt(balData.reservedBalance));
+            $("#mmg-balance-uncleared").text(fmt(balData.unclearedBalance));
+            $("#mmg-balance-upper-limit").text(fmt(balData.upperLimit));
+            $("#mmg-balance-lower-limit").text(fmt(balData.lowerLimit));
+            $("#mmg-balance-threshold").text(fmt(balData.notificationThreshold));
+          } else {
+            $result.text(r.data.availableBalance || r.data.balance || "—");
+          }
           mmgShowToast("Balance retrieved.", "success");
         } else {
           $error.text(r.data.message || "Request failed.").show();
