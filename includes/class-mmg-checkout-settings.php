@@ -30,6 +30,7 @@ class MMG_Checkout_Settings {
 		add_action( 'wp_ajax_mmg_check_balance', array( $this, 'ajax_check_balance' ) );
 		add_action( 'wp_ajax_mmg_get_transactions', array( $this, 'ajax_get_transactions' ) );
 		add_action( 'wp_ajax_mmg_lookup_transaction', array( $this, 'ajax_lookup_transaction' ) );
+		add_action( 'wp_ajax_mmg_clear_logs', array( $this, 'ajax_clear_logs' ) );
 	}
 
 	/**
@@ -133,6 +134,10 @@ class MMG_Checkout_Settings {
 				'label' => 'Transactions',
 				'icon'  => 'dashicons-list-view',
 			),
+			'logs'         => array(
+				'label' => 'Logs',
+				'icon'  => 'dashicons-warning',
+			),
 		);
 		?>
 		<div class="mmg-dashboard-wrap">
@@ -186,6 +191,9 @@ class MMG_Checkout_Settings {
 					</div>
 					<div id="mmg-panel-transactions" class="mmg-tab-panel <?php echo 'transactions' === $current_tab ? 'mmg-tab-active' : ''; ?>">
 						<?php $this->render_transactions_tab(); ?>
+					</div>
+					<div id="mmg-panel-logs" class="mmg-tab-panel <?php echo 'logs' === $current_tab ? 'mmg-tab-active' : ''; ?>">
+						<?php $this->render_logs_tab(); ?>
 					</div>
 				</div>
 			</div>
@@ -618,7 +626,26 @@ class MMG_Checkout_Settings {
 		if ( ! $mmg_update_checker ) {
 			wp_send_json_error( array( 'message' => 'Update checker not available.' ) );
 		}
+
+		// Collect any GitHub API errors so we can surface them instead of a silent "no update".
+		$api_errors    = array();
+		$error_handler = function ( $error ) use ( &$api_errors ) {
+			if ( is_wp_error( $error ) ) {
+				$api_errors[] = $error->get_error_message();
+			}
+		};
+		add_action( 'puc_api_error', $error_handler );
+
 		$update = $mmg_update_checker->checkForUpdates();
+
+		remove_action( 'puc_api_error', $error_handler );
+
+		if ( ! empty( $api_errors ) ) {
+			wp_send_json_error(
+				array( 'message' => 'GitHub API error — ' . implode( '; ', $api_errors ) )
+			);
+		}
+
 		if ( $update ) {
 			wp_send_json_success(
 				array(
@@ -641,8 +668,10 @@ class MMG_Checkout_Settings {
 		require_once __DIR__ . '/class-mmg-api-client.php';
 		try {
 			( new MMG_API_Client() )->reauthenticate();
+			MMG_Logger::info( 'Re-authentication successful.' );
 			wp_send_json_success( array( 'message' => 'Authentication successful.' ) );
 		} catch ( Exception $e ) {
+			MMG_Logger::error( 'Re-authentication failed: ' . $e->getMessage() );
 			wp_send_json_error( array( 'message' => 'Authentication failed: ' . esc_html( $e->getMessage() ) ) );
 		}
 	}
@@ -658,6 +687,7 @@ class MMG_Checkout_Settings {
 		try {
 			wp_send_json_success( ( new MMG_API_Client() )->get_balance() );
 		} catch ( Exception $e ) {
+			MMG_Logger::error( 'Balance check failed: ' . $e->getMessage() );
 			wp_send_json_error( array( 'message' => esc_html( $e->getMessage() ) ) );
 		}
 	}
@@ -680,6 +710,7 @@ class MMG_Checkout_Settings {
 		try {
 			wp_send_json_success( ( new MMG_API_Client() )->get_transaction_history( $params ) );
 		} catch ( Exception $e ) {
+			MMG_Logger::error( 'Transaction history failed: ' . $e->getMessage() );
 			wp_send_json_error( array( 'message' => esc_html( $e->getMessage() ) ) );
 		}
 	}
@@ -698,8 +729,87 @@ class MMG_Checkout_Settings {
 		try {
 			wp_send_json_success( ( new MMG_API_Client() )->lookup_transaction( $txn_id ) );
 		} catch ( Exception $e ) {
+			MMG_Logger::error( 'Transaction lookup failed: ' . $e->getMessage() );
 			wp_send_json_error( array( 'message' => esc_html( $e->getMessage() ) ) );
 		}
+	}
+
+	/**
+	 * AJAX handler: Clear all plugin logs.
+	 */
+	public function ajax_clear_logs() {
+		check_ajax_referer( 'mmg_admin_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+		MMG_Logger::clear();
+		wp_send_json_success( array( 'message' => 'Logs cleared.' ) );
+	}
+
+	/**
+	 * Render the Logs tab.
+	 */
+	private function render_logs_tab() {
+		$logs   = MMG_Logger::get_logs();
+		$counts = MMG_Logger::count_by_level();
+		$total  = count( $logs );
+		?>
+		<div class="mmg-logs-header">
+			<div>
+				<h2 class="mmg-section-title">Plugin Logs</h2>
+				<p class="mmg-section-desc">Activity and error log for MMG Checkout. The last <?php echo esc_html( MMG_Logger::MAX_ENTRIES ); ?> entries are retained.</p>
+			</div>
+			<div class="mmg-logs-actions">
+				<button type="button" id="mmg-download-logs" class="mmg-btn mmg-btn-secondary mmg-btn-sm"<?php echo empty( $logs ) ? ' disabled' : ''; ?>>
+					<span class="dashicons dashicons-download" style="font-size:14px;width:14px;height:14px;"></span> Export
+				</button>
+				<button type="button" id="mmg-clear-logs" class="mmg-btn mmg-btn-danger mmg-btn-sm"<?php echo empty( $logs ) ? ' disabled' : ''; ?>>
+					<span class="dashicons dashicons-trash" style="font-size:14px;width:14px;height:14px;"></span> Clear Logs
+				</button>
+				<span id="mmg-clear-logs-spinner" class="spinner" style="float:none;display:none;"></span>
+			</div>
+		</div>
+
+		<div class="mmg-log-filters">
+			<button type="button" class="mmg-log-filter mmg-log-filter-all mmg-log-filter-active" data-filter="all">
+				All <span class="mmg-log-count"><?php echo esc_html( $total ); ?></span>
+			</button>
+			<button type="button" class="mmg-log-filter mmg-log-filter-error" data-filter="error">
+				Error <span class="mmg-log-count"><?php echo esc_html( $counts['error'] ); ?></span>
+			</button>
+			<button type="button" class="mmg-log-filter mmg-log-filter-warning" data-filter="warning">
+				Warning <span class="mmg-log-count"><?php echo esc_html( $counts['warning'] ); ?></span>
+			</button>
+			<button type="button" class="mmg-log-filter mmg-log-filter-info" data-filter="info">
+				Info <span class="mmg-log-count"><?php echo esc_html( $counts['info'] ); ?></span>
+			</button>
+		</div>
+
+		<?php if ( empty( $logs ) ) : ?>
+		<div class="mmg-logs-empty">
+			<span class="dashicons dashicons-yes-alt"></span>
+			<p>No log entries yet. Events will appear here as the plugin operates.</p>
+		</div>
+		<?php else : ?>
+		<div class="mmg-log-list" id="mmg-log-list">
+			<?php foreach ( $logs as $entry ) :
+				$lvl = isset( $entry['lvl'] ) ? $entry['lvl'] : 'info';
+				$ts  = isset( $entry['ts'] ) ? (int) $entry['ts'] : 0;
+				$msg = isset( $entry['msg'] ) ? $entry['msg'] : '';
+				$dt  = $ts ? wp_date( 'Y-m-d H:i:s', $ts ) : '—';
+			?>
+			<div class="mmg-log-entry" data-level="<?php echo esc_attr( $lvl ); ?>">
+				<span class="mmg-log-badge mmg-log-badge-<?php echo esc_attr( $lvl ); ?>"><?php echo esc_html( strtoupper( $lvl ) ); ?></span>
+				<span class="mmg-log-time"><?php echo esc_html( $dt ); ?></span>
+				<span class="mmg-log-msg"><?php echo esc_html( $msg ); ?></span>
+				<button type="button" class="mmg-log-copy" title="Copy" onclick="mmgCopyToClipboard(<?php echo esc_attr( wp_json_encode( '[' . strtoupper( $lvl ) . '] ' . $dt . ' | ' . $msg ) ); ?>)">
+					<span class="dashicons dashicons-clipboard"></span>
+				</button>
+			</div>
+			<?php endforeach; ?>
+		</div>
+		<?php endif; ?>
+		<?php
 	}
 
 	/**
@@ -842,12 +952,10 @@ class MMG_Checkout_Settings {
 			return '';
 		}
 		// A non-printable character indicates the key has changed (e.g. salt rotation or DB migration).
-		// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		if ( ! preg_match( '/^[\x20-\x7E]+$/', $dec ) ) {
-			error_log( '[MMG] decrypt_value: decrypted value contains non-printable characters — password was likely encrypted with a different WordPress auth salt. Re-save the password in MMG Checkout Settings.' );
+			MMG_Logger::warning( 'decrypt_value: result contains non-printable characters — password was likely encrypted with a different WordPress auth salt. Re-save the password in MMG Checkout Settings.' );
 			return '';
 		}
-		// phpcs:enable
 		return $dec;
 	}
 }

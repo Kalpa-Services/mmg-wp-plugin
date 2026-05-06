@@ -30,6 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $mmg_plugin_data = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
 define( 'MMG_PLUGIN_VERSION', $mmg_plugin_data['Version'] );
 require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-logger.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-activator.php';
@@ -46,6 +47,17 @@ $mmg_update_checker = PucFactory::buildUpdateChecker(
 	'mmg-checkout-payment'
 );
 $mmg_update_checker->getVcsApi()->enableReleaseAssets();
+
+// Raise the GitHub API timeout from PUC's 3-second default to 15 seconds so
+// admin-triggered checks don't fail silently on slow connections to api.github.com.
+$mmg_update_checker->getVcsApi()->setHttpFilterName( 'mmg_puc_github_http_options' );
+add_filter(
+	'mmg_puc_github_http_options',
+	function ( $options ) {
+		$options['timeout'] = 15;
+		return $options;
+	}
+);
 
 MMG_Checkout_Payment_Rewrites::init();
 

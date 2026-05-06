@@ -264,6 +264,71 @@ jQuery(document).ready(function ($) {
       });
   });
 
+  /* ---- Logs tab ---- */
+  $(".mmg-log-filter").on("click", function () {
+    var filter = $(this).data("filter");
+    $(".mmg-log-filter").removeClass("mmg-log-filter-active");
+    $(this).addClass("mmg-log-filter-active");
+    if (filter === "all") {
+      $(".mmg-log-entry").show();
+    } else {
+      $(".mmg-log-entry").hide();
+      $('.mmg-log-entry[data-level="' + filter + '"]').show();
+    }
+  });
+
+  $("#mmg-clear-logs").on("click", function () {
+    if (!confirm("Clear all logs? This cannot be undone.")) return;
+    var $btn = $(this);
+    var $spinner = $("#mmg-clear-logs-spinner");
+    $btn.prop("disabled", true);
+    $spinner.show();
+    $.post(mmg_admin_params.ajax_url, {
+      action: "mmg_clear_logs",
+      nonce: mmg_admin_params.nonce,
+    })
+      .done(function (r) {
+        if (r.success) {
+          $("#mmg-log-list").replaceWith(
+            '<div class="mmg-logs-empty">' +
+              '<span class="dashicons dashicons-yes-alt mmg-logs-empty-icon"></span>' +
+              "<p>No log entries yet. Events will appear here as the plugin operates.</p>" +
+              "</div>"
+          );
+          $(".mmg-log-count").text("0");
+          $("#mmg-download-logs, #mmg-clear-logs").prop("disabled", true);
+          mmgShowToast("Logs cleared.", "success");
+        }
+      })
+      .fail(function () {
+        mmgShowToast("Failed to clear logs.", "error");
+      })
+      .always(function () {
+        $btn.prop("disabled", false);
+        $spinner.hide();
+      });
+  });
+
+  $("#mmg-download-logs").on("click", function () {
+    var lines = [];
+    $(".mmg-log-entry").each(function () {
+      var lvl  = $(this).find(".mmg-log-badge").text().trim();
+      var time = $(this).find(".mmg-log-time").text().trim();
+      var msg  = $(this).find(".mmg-log-msg").text().trim();
+      lines.push("[" + lvl + "] " + time + " | " + msg);
+    });
+    if (!lines.length) return;
+    var blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement("a");
+    a.href     = url;
+    a.download = "mmg-checkout-logs-" + new Date().toISOString().slice(0, 10) + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
   /* ---- Transactions tab — history ---- */
   $("#mmg-fetch-transactions").on("click", function () {
     var $btn = $(this),

@@ -9,6 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! class_exists( 'MMG_Logger' ) ) {
+	require_once __DIR__ . '/class-mmg-logger.php';
+}
+
 /**
  * MMG API Client Class
  */
@@ -121,21 +125,21 @@ class MMG_API_Client {
 		$code          = wp_remote_retrieve_response_code( $response );
 		$response_body = wp_remote_retrieve_body( $response );
 
-		// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		$masked_password = strlen( $password ) > 3 ? substr( $password, 0, 3 ) . str_repeat( '*', strlen( $password ) - 3 ) : '***';
-		error_log( sprintf( '[MMG] login POST %s | grant_type=password | username=%s | api_key=%s | password=%s', $url, $merchant_id, $api_key, $masked_password ) );
-		error_log( sprintf( '[MMG] login response HTTP %d | body=%s', $code, $response_body ) );
-		// phpcs:enable
+		MMG_Logger::info( sprintf( 'Login attempt: POST %s | username=%s | api_key=%s | password=%s', $url, $merchant_id, $api_key, $masked_password ) );
 
 		$data = json_decode( $response_body, true );
 		if ( 200 !== $code ) {
 			$msg = ! empty( $data['message'] ) ? $data['message'] : sprintf( 'HTTP %d', $code );
+			MMG_Logger::error( sprintf( 'Login failed (HTTP %d): %s', $code, $msg ) );
 			throw new Exception( esc_html( sprintf( 'Login failed: %s', $msg ) ) );
 		}
 		if ( empty( $data['access_token'] ) ) {
 			$msg = ! empty( $data['message'] ) ? $data['message'] : 'missing access_token';
+			MMG_Logger::error( sprintf( 'Login failed (no token): %s', $msg ) );
 			throw new Exception( esc_html( sprintf( 'Login failed: %s', $msg ) ) );
 		}
+		MMG_Logger::info( sprintf( 'Login successful (HTTP 200) for username=%s', $merchant_id ) );
 		// MMG tokens expire in 120 seconds; cache for 100 to allow a safe buffer.
 		set_transient( 'mmg_access_token_' . $this->mode, $data['access_token'], 100 );
 	}

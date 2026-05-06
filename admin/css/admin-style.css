@@ -895,6 +895,294 @@
   }
 }
 
+/* ---------- Danger Button ---------- */
+.mmg-dashboard-wrap .mmg-btn-danger {
+  background: var(--mmg-danger) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: var(--mmg-shadow-sm);
+}
+.mmg-dashboard-wrap .mmg-btn-danger:hover {
+  background: #dc2626 !important;
+  color: #fff !important;
+  box-shadow: var(--mmg-shadow);
+  transform: translateY(-1px);
+}
+.mmg-dashboard-wrap .mmg-btn-danger:active {
+  transform: translateY(0);
+}
+.mmg-dashboard-wrap .mmg-btn-danger:disabled,
+.mmg-dashboard-wrap .mmg-btn-danger[disabled] {
+  background: #fca5a5 !important;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Reinforce shared button rules with parent scope so WP admin resets can't win */
+.mmg-dashboard-wrap .mmg-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 9px 18px !important;
+  border-radius: var(--mmg-radius) !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all var(--mmg-transition) !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  line-height: 1.2 !important;
+  box-sizing: border-box !important;
+}
+.mmg-dashboard-wrap .mmg-btn-sm {
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+}
+.mmg-dashboard-wrap .mmg-btn-secondary {
+  background: var(--mmg-surface) !important;
+  color: var(--mmg-text) !important;
+  border: 1px solid var(--mmg-border) !important;
+  box-shadow: var(--mmg-shadow-sm);
+}
+.mmg-dashboard-wrap .mmg-btn-secondary:hover {
+  background: var(--mmg-surface-alt) !important;
+  border-color: var(--mmg-accent) !important;
+  color: var(--mmg-accent) !important;
+}
+.mmg-dashboard-wrap .mmg-btn-secondary:disabled,
+.mmg-dashboard-wrap .mmg-btn-secondary[disabled] {
+  opacity: .45 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ---------- Logs Tab ---------- */
+.mmg-logs-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.mmg-logs-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+
+.mmg-log-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  margin-bottom: 16px;
+}
+
+/* ---- Base pill (WP admin reset beaten via parent + !important) ---- */
+.mmg-dashboard-wrap .mmg-log-filter {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 14px !important;
+  border-radius: 20px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all var(--mmg-transition) !important;
+  font-family: inherit !important;
+  line-height: 1.4 !important;
+  text-decoration: none !important;
+  /* default neutral */
+  border: 1.5px solid var(--mmg-border) !important;
+  background: var(--mmg-surface) !important;
+  color: var(--mmg-text-secondary) !important;
+  box-shadow: none !important;
+}
+
+/* ---- Inactive colour identity ---- */
+.mmg-dashboard-wrap .mmg-log-filter-all {
+  border-color: var(--mmg-border) !important;
+  background: var(--mmg-surface-alt) !important;
+  color: var(--mmg-text-secondary) !important;
+}
+.mmg-dashboard-wrap .mmg-log-filter-error {
+  border-color: rgba(239,68,68,.35) !important;
+  background: var(--mmg-danger-bg) !important;
+  color: var(--mmg-danger) !important;
+}
+.mmg-dashboard-wrap .mmg-log-filter-warning {
+  border-color: rgba(245,158,11,.35) !important;
+  background: var(--mmg-warning-bg) !important;
+  color: var(--mmg-warning) !important;
+}
+.mmg-dashboard-wrap .mmg-log-filter-info {
+  border-color: rgba(15,155,142,.35) !important;
+  background: var(--mmg-accent-subtle) !important;
+  color: var(--mmg-accent) !important;
+}
+
+/* ---- Hover (un-active) ---- */
+.mmg-dashboard-wrap .mmg-log-filter-all:not(.mmg-log-filter-active):hover {
+  border-color: var(--mmg-text-secondary) !important;
+  background: #eef0f4 !important;
+}
+.mmg-dashboard-wrap .mmg-log-filter-error:not(.mmg-log-filter-active):hover {
+  border-color: var(--mmg-danger) !important;
+  background: #fee2e2 !important;
+}
+.mmg-dashboard-wrap .mmg-log-filter-warning:not(.mmg-log-filter-active):hover {
+  border-color: var(--mmg-warning) !important;
+  background: #fef3c7 !important;
+}
+.mmg-dashboard-wrap .mmg-log-filter-info:not(.mmg-log-filter-active):hover {
+  border-color: var(--mmg-accent) !important;
+  background: rgba(15,155,142,.14) !important;
+}
+
+/* ---- Active state: solid fill, white text ---- */
+.mmg-dashboard-wrap .mmg-log-filter.mmg-log-filter-active {
+  color: #fff !important;
+  box-shadow: var(--mmg-shadow-sm) !important;
+}
+.mmg-dashboard-wrap .mmg-log-filter-all.mmg-log-filter-active {
+  background: var(--mmg-primary) !important;
+  border-color: var(--mmg-primary) !important;
+}
+.mmg-dashboard-wrap .mmg-log-filter-error.mmg-log-filter-active {
+  background: var(--mmg-danger) !important;
+  border-color: var(--mmg-danger) !important;
+}
+.mmg-dashboard-wrap .mmg-log-filter-warning.mmg-log-filter-active {
+  background: var(--mmg-warning) !important;
+  border-color: var(--mmg-warning) !important;
+}
+.mmg-dashboard-wrap .mmg-log-filter-info.mmg-log-filter-active {
+  background: var(--mmg-accent) !important;
+  border-color: var(--mmg-accent) !important;
+}
+
+/* ---- Count badges ---- */
+.mmg-log-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  /* default */
+  background: var(--mmg-border);
+  color: var(--mmg-text-muted);
+}
+/* inactive per-level badge tints */
+.mmg-dashboard-wrap .mmg-log-filter-error:not(.mmg-log-filter-active)   .mmg-log-count { background: rgba(239,68,68,.15)  !important; color: var(--mmg-danger)  !important; }
+.mmg-dashboard-wrap .mmg-log-filter-warning:not(.mmg-log-filter-active) .mmg-log-count { background: rgba(245,158,11,.15) !important; color: var(--mmg-warning) !important; }
+.mmg-dashboard-wrap .mmg-log-filter-info:not(.mmg-log-filter-active)    .mmg-log-count { background: rgba(15,155,142,.15)  !important; color: var(--mmg-accent)  !important; }
+/* active: white on semi-transparent */
+.mmg-dashboard-wrap .mmg-log-filter.mmg-log-filter-active .mmg-log-count {
+  background: rgba(255,255,255,.25) !important;
+  color: #fff !important;
+}
+
+.mmg-log-list {
+  border: 1px solid var(--mmg-border);
+  border-radius: var(--mmg-radius);
+  overflow: hidden;
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.mmg-log-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--mmg-border-light);
+  font-size: 13px;
+  transition: background var(--mmg-transition);
+}
+.mmg-log-entry:last-child  { border-bottom: none; }
+.mmg-log-entry:hover       { background: var(--mmg-surface-alt); }
+.mmg-log-entry[data-level="error"]   { border-left: 3px solid var(--mmg-danger); }
+.mmg-log-entry[data-level="warning"] { border-left: 3px solid var(--mmg-warning); }
+.mmg-log-entry[data-level="info"]    { border-left: 3px solid transparent; }
+
+.mmg-log-badge {
+  flex-shrink: 0;
+  display: inline-block !important;
+  padding: 2px 7px !important;
+  border-radius: 4px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  line-height: 1.6 !important;
+}
+.mmg-log-badge-error   { background: var(--mmg-danger-bg)  !important; color: var(--mmg-danger)  !important; }
+.mmg-log-badge-warning { background: var(--mmg-warning-bg) !important; color: var(--mmg-warning) !important; }
+.mmg-log-badge-info    { background: var(--mmg-accent-subtle) !important; color: var(--mmg-accent) !important; }
+
+.mmg-log-time {
+  flex-shrink: 0;
+  color: var(--mmg-text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mmg-log-msg {
+  flex: 1;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 12px;
+  color: var(--mmg-text);
+  word-break: break-all;
+}
+
+.mmg-dashboard-wrap .mmg-log-copy {
+  flex-shrink: 0;
+  opacity: 0;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  color: var(--mmg-text-muted);
+  padding: 2px !important;
+  transition: opacity var(--mmg-transition), color var(--mmg-transition);
+  line-height: 1;
+}
+.mmg-log-copy .dashicons      { font-size: 14px; width: 14px; height: 14px; }
+.mmg-log-entry:hover .mmg-log-copy { opacity: 1; }
+.mmg-dashboard-wrap .mmg-log-copy:hover { color: var(--mmg-accent) !important; }
+
+.mmg-logs-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--mmg-text-muted);
+}
+.mmg-logs-empty .dashicons {
+  font-size: 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  color: var(--mmg-success);
+  display: block;
+  margin: 0 auto 16px;
+}
+.mmg-logs-empty p {
+  font-size: 14px;
+  margin: 0;
+}
+
 /* ---------- WP Admin Overrides ---------- */
 .mmg-dashboard-wrap h1,
 .mmg-dashboard-wrap h2 {
