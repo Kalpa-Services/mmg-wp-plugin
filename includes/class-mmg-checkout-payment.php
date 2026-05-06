@@ -14,6 +14,23 @@ if ( ! defined( 'ABSPATH' ) ) {
  * MMG_Checkout_Payment class.
  */
 class MMG_Checkout_Payment {
+
+	/**
+	 * Singleton instance for access by WC_MMG_Gateway.
+	 *
+	 * @var self|null
+	 */
+	private static $instance = null;
+
+	/**
+	 * Return the active instance (set during construction).
+	 *
+	 * @return self|null
+	 */
+	public static function get_instance() {
+		return self::$instance;
+	}
+
 	/**
 	 * Client ID.
 	 *
@@ -74,6 +91,8 @@ class MMG_Checkout_Payment {
 	 * Constructor.
 	 */
 	public function __construct() {
+		self::$instance = $this;
+
 		// Initialize plugin.
 		$this->mode = get_option( 'mmg_mode', 'demo' ); // Default mode set to 'demo'.
 
@@ -113,18 +132,6 @@ class MMG_Checkout_Payment {
 		 * Enqueue scripts and styles.
 		 */
 	public function enqueue_scripts() {
-		if ( is_checkout_pay_page() ) {
-			wp_enqueue_script( 'mmg-checkout', plugin_dir_url( __DIR__ ) . 'admin/js/mmg-checkout.js', array( 'jquery' ), '3.0', true );
-			wp_localize_script(
-				'mmg-checkout',
-				'mmg_checkout_params',
-				array(
-					'ajax_url' => admin_url( 'admin-ajax.php' ),
-					'nonce'    => wp_create_nonce( 'mmg_checkout_nonce' ),
-				)
-			);
-		}
-
 		// For blocks support.
 		$gateway_settings = get_option( 'woocommerce_mmg_checkout_settings', array() );
 		$description      = isset( $gateway_settings['description'] ) ? $gateway_settings['description'] : 'Use your MMG account to pay for your order.';
@@ -152,14 +159,58 @@ class MMG_Checkout_Payment {
 	 *
 	 * @throws Exception If there's an error generating the checkout URL.
 	 */
+	/**
+	 * Build the MMG hosted-checkout URL for an order.
+	 *
+	 * Shared by process_payment (direct redirect) and the legacy AJAX handler.
+	 *
+	 * @param WC_Order $order The WooCommerce order.
+	 * @return string The fully-qualified MMG checkout URL.
+	 * @throws Exception If the RSA key is invalid or encryption fails.
+	 */
+	public function build_mmg_checkout_url( WC_Order $order ) {
+		if ( ! $this->validate_public_key() ) {
+			throw new Exception( 'Invalid RSA public key' );
+		}
+
+		$attempt_number = $order->get_meta( '_mmg_payment_attempt', true );
+		$attempt_number = $attempt_number ? intval( $attempt_number ) + 1 : 1;
+		$order->update_meta_data( '_mmg_payment_attempt', $attempt_number );
+		$order->save();
+
+		$token_data = array(
+			'secretKey'             => get_option( "mmg_{$this->mode}_secret_key" ),
+			'amount'                => $order->get_total(),
+			'merchantId'            => get_option( "mmg_{$this->mode}_merchant_id" ),
+			'merchantTransactionId' => $order->get_id() . '-' . $attempt_number,
+			'productDescription'    => 'Order #' . $order->get_order_number(),
+			'requestInitiationTime' => time(),
+			'merchantName'          => get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ),
+		);
+
+		$encoded      = $this->url_safe_base64_encode( $this->encrypt( $token_data ) );
+		$checkout_url = add_query_arg(
+			array(
+				'token'       => $encoded,
+				'merchantId'  => get_option( "mmg_{$this->mode}_merchant_id" ),
+				'X-Client-ID' => get_option( "mmg_{$this->mode}_client_id" ),
+			),
+			$this->get_checkout_url()
+		);
+
+		$order->update_meta_data( '_mmg_transaction_id', $token_data['merchantTransactionId'] );
+		$order->save();
+
+		return $checkout_url;
+	}
+
+	/**
+	 * AJAX handler — kept for any legacy or fallback callers.
+	 */
 	public function generate_checkout_url() {
 		try {
-			// Ensure 'nonce' is present in the request.
 			if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_key( $_REQUEST['nonce'] ), 'mmg_checkout_nonce' ) ) {
 				throw new Exception( 'Invalid security token' );
-			}
-			if ( ! $this->validate_public_key() ) {
-				throw new Exception( 'Invalid RSA public key' );
 			}
 
 			$order_id = isset( $_POST['order_id'] ) ? intval( $_POST['order_id'] ) : 0;
@@ -169,41 +220,7 @@ class MMG_Checkout_Payment {
 				wp_send_json_error( 'Invalid order' );
 			}
 
-			// Get the current attempt number and increment it.
-			$attempt_number = $order->get_meta( '_mmg_payment_attempt', true );
-			$attempt_number = $attempt_number ? intval( $attempt_number ) + 1 : 1;
-			$order->update_meta_data( '_mmg_payment_attempt', $attempt_number );
-			$order->save();
-
-			$amount      = $order->get_total();
-			$description = 'Order #' . $order->get_order_number();
-
-			$timestamp  = time();
-			$token_data = array(
-				'secretKey'             => get_option( "mmg_{$this->mode}_secret_key" ),
-				'amount'                => $amount,
-				'merchantId'            => get_option( "mmg_{$this->mode}_merchant_id" ),
-				'merchantTransactionId' => $order->get_id() . '-' . $attempt_number,
-				'productDescription'    => $description,
-				'requestInitiationTime' => $timestamp,
-				'merchantName'          => get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ),
-			);
-
-			$encrypted    = $this->encrypt( $token_data );
-			$encoded      = $this->url_safe_base64_encode( $encrypted );
-			$checkout_url = add_query_arg(
-				array(
-					'token'       => $encoded,
-					'merchantId'  => get_option( "mmg_{$this->mode}_merchant_id" ),
-					'X-Client-ID' => get_option( "mmg_{$this->mode}_client_id" ),
-				),
-				$this->get_checkout_url()
-			);
-
-			$order->update_meta_data( '_mmg_transaction_id', $token_data['merchantTransactionId'] );
-			$order->save();
-
-			wp_send_json_success( array( 'checkout_url' => $checkout_url ) );
+			wp_send_json_success( array( 'checkout_url' => $this->build_mmg_checkout_url( $order ) ) );
 		} catch ( Exception $e ) {
 			wp_send_json_error( 'Error generating checkout URL: ' . esc_html( $e->getMessage() ) );
 		}

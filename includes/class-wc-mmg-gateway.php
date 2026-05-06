@@ -34,7 +34,6 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		);
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'receipt_page' ) );
 	}
 
 	/**
@@ -72,24 +71,19 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
-		return array(
-			'result'   => 'success',
-			'redirect' => $order->get_checkout_payment_url( true ),
-		);
-	}
 
-	/**
-	 * Output for the order received page.
-	 *
-	 * @param int $order_id Order ID.
-	 */
-	public function receipt_page( $order_id ) {
-		$order = wc_get_order( $order_id );
-		echo '<div id="mmg-checkout-container" style="width: 100%;">';
-		echo '<button id="mmg-checkout-button" class="button alt checkout-btn" data-order-id="' . esc_attr( $order_id ) . '">';
-		echo '<img class="logo-img" src="' . esc_url( plugins_url( 'public/images/mmg-logo-white.png', __DIR__ ) ) . '" alt="MMG Logo">';
-		echo 'Pay with MMG</button>';
-		echo '</div>';
+		try {
+			$mmg          = MMG_Checkout_Payment::get_instance();
+			$checkout_url = $mmg->build_mmg_checkout_url( $order );
+
+			return array(
+				'result'   => 'success',
+				'redirect' => $checkout_url,
+			);
+		} catch ( Exception $e ) {
+			wc_add_notice( __( 'Payment error: ', 'mmg-checkout-payment' ) . esc_html( $e->getMessage() ), 'error' );
+			return array( 'result' => 'failure' );
+		}
 	}
 
 	/**
