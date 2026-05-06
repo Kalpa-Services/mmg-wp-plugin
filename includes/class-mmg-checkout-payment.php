@@ -90,6 +90,7 @@ class MMG_Checkout_Payment {
 		add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateway_class' ) );
 		add_action( 'plugins_loaded', array( $this, 'init_gateway_class' ), 11 );
 		add_action( 'parse_request', array( $this, 'parse_api_request' ) );
+		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 
 		$this->live_checkout_url = $this->get_checkout_url( 'live' );
 		$this->demo_checkout_url = $this->get_checkout_url( 'demo' );
@@ -303,7 +304,7 @@ class MMG_Checkout_Payment {
 	 * @return array
 	 * @throws Exception If decryption fails.
 	 */
-	private function decrypt( $encrypted_data ) {
+	protected function decrypt( $encrypted_data ) {
 		// Load the private key.
 		try {
 			$private_key = \phpseclib3\Crypt\PublicKeyLoader::load( get_option( 'mmg_' . $this->mode . '_rsa_private_key' ) );
@@ -339,7 +340,7 @@ class MMG_Checkout_Payment {
 	 * @return string
 	 * @throws InvalidArgumentException If input is invalid.
 	 */
-	private function url_safe_base64_decode( $data ) {
+	protected function url_safe_base64_decode( $data ) {
 		// Validate input.
 		if ( ! is_string( $data ) ) {
 			throw new InvalidArgumentException( 'Input must be a string' );
@@ -367,8 +368,12 @@ class MMG_Checkout_Payment {
 	public function parse_api_request() {
 		global $wp;
 		if ( isset( $wp->query_vars['mmg-checkout'] ) ) {
+			$method    = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : 'GET';
 			$path_info = isset( $_SERVER['PATH_INFO'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PATH_INFO'] ) ) : '';
-			if ( strpos( $path_info, '/errorpayment' ) !== false ) {
+
+			if ( 'POST' === $method ) {
+				$this->handle_webhook_notification();
+			} elseif ( strpos( $path_info, '/errorpayment' ) !== false ) {
 				$this->handle_error_payment();
 			} else {
 				$this->handle_payment_confirmation();
@@ -503,7 +508,7 @@ class MMG_Checkout_Payment {
 	 *
 	 * @return bool
 	 */
-	private function verify_callback_key() {
+	protected function verify_callback_key() {
 		$parsed_url = isset( $_SERVER['REQUEST_URI'] ) ? wp_parse_url( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) : array();
 		$path       = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '';
 		$uri_parts  = explode( '/', trim( $path, '/' ) );
@@ -557,8 +562,140 @@ class MMG_Checkout_Payment {
 	 * @param string $merchant_transaction_id The merchantTransactionId from the payment data.
 	 * @return int The original order ID.
 	 */
-	private function extract_order_id( $merchant_transaction_id ) {
+	protected function extract_order_id( $merchant_transaction_id ) {
 		$parts = explode( '-', $merchant_transaction_id );
 		return intval( $parts[0] );
+	}
+
+    public function register_rest_routes() {
+        require_once __DIR__ . '/class-mmg-api-client.php';
+        $auth = function() { return current_user_can( 'manage_woocommerce' ); };
+
+        register_rest_route( 'mmg/v1', '/balance', [
+            'methods'             => 'GET',
+            'callback'            => array( $this, 'rest_get_balance' ),
+            'permission_callback' => $auth,
+        ] );
+        register_rest_route( 'mmg/v1', '/transactions', [
+            'methods'             => 'GET',
+            'callback'            => array( $this, 'rest_get_transactions' ),
+            'permission_callback' => $auth,
+        ] );
+        register_rest_route( 'mmg/v1', '/transactions/(?P<id>[a-zA-Z0-9_\-]+)', [
+            'methods'             => 'GET',
+            'callback'            => array( $this, 'rest_lookup_transaction' ),
+            'permission_callback' => $auth,
+        ] );
+        register_rest_route( 'mmg/v1', '/transactions/(?P<id>[a-zA-Z0-9_\-]+)/reversal', [
+            'methods'             => 'POST',
+            'callback'            => array( $this, 'rest_reversal' ),
+            'permission_callback' => $auth,
+        ] );
+    }
+
+    public function rest_get_balance( $request ) {
+        try {
+            return new WP_REST_Response( ( new MMG_API_Client() )->get_balance(), 200 );
+        } catch ( Exception $e ) {
+            return new WP_Error( 'mmg_error', $e->getMessage(), ['status' => $e->getCode() === 401 ? 401 : 502] );
+        }
+    }
+
+    public function rest_get_transactions( $request ) {
+        try {
+            $params = $request->get_query_params();
+            unset( $params['_locale'] );
+            return new WP_REST_Response( ( new MMG_API_Client() )->get_transaction_history( $params ), 200 );
+        } catch ( Exception $e ) {
+            return new WP_Error( 'mmg_error', $e->getMessage(), ['status' => $e->getCode() === 401 ? 401 : 502] );
+        }
+    }
+
+    public function rest_lookup_transaction( $request ) {
+        try {
+            return new WP_REST_Response( ( new MMG_API_Client() )->lookup_transaction( $request['id'] ), 200 );
+        } catch ( Exception $e ) {
+            return new WP_Error( 'mmg_error', $e->getMessage(), ['status' => $e->getCode() === 401 ? 401 : 502] );
+        }
+    }
+
+    public function rest_reversal( $request ) {
+        try {
+            $mode = get_option( 'mmg_mode', 'demo' );
+            $mid  = get_option( "mmg_{$mode}_merchant_id" );
+            return new WP_REST_Response( ( new MMG_API_Client() )->reversal( $mid, $request['id'] ), 200 );
+        } catch ( Exception $e ) {
+            return new WP_Error( 'mmg_error', $e->getMessage(), ['status' => $e->getCode() === 401 ? 401 : 502] );
+        }
+    }
+
+	/**
+	 * Public proxy for handle_webhook_notification — used in tests.
+	 */
+	public function handle_webhook_notification_public() {
+		$this->handle_webhook_notification();
+	}
+
+	/**
+	 * Get raw POST body.
+	 *
+	 * @return string
+	 */
+	protected function get_raw_post_body() {
+		return file_get_contents( 'php://input' );
+	}
+
+	/**
+	 * Handle webhook notification from MMG on payment completion.
+	 */
+	private function handle_webhook_notification() {
+		if ( ! $this->verify_callback_key() ) {
+			wp_send_json_error( 'Invalid callback', 403 );
+			return;
+		}
+
+		$raw  = $this->get_raw_post_body();
+		$json = json_decode( $raw, true );
+
+		if ( ! empty( $json['token'] ) ) {
+			$token = sanitize_text_field( $json['token'] );
+		} elseif ( ! empty( $_POST['token'] ) ) {
+			$token = sanitize_text_field( wp_unslash( $_POST['token'] ) );
+		} else {
+			wc_get_logger()->error( 'MMG webhook: missing token', ['source' => 'mmg-checkout'] );
+			wp_send_json_success();
+			return;
+		}
+
+		try {
+			$decoded      = $this->url_safe_base64_decode( $token );
+			$payment_data = $this->decrypt( $decoded );
+		} catch ( Exception $e ) {
+			wc_get_logger()->error( 'MMG webhook decrypt error: ' . $e->getMessage(), ['source' => 'mmg-checkout'] );
+			wp_send_json_success(); // 200 to prevent MMG retries.
+			return;
+		}
+
+		if ( empty( $payment_data['merchantTransactionId'] ) ) {
+			wc_get_logger()->error( 'MMG webhook: missing merchantTransactionId', ['source' => 'mmg-checkout'] );
+			wp_send_json_success();
+			return;
+		}
+
+		$order_id = $this->extract_order_id( $payment_data['merchantTransactionId'] );
+		$order    = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			wc_get_logger()->error( "MMG webhook: order {$order_id} not found", ['source' => 'mmg-checkout'] );
+			wp_send_json_success();
+			return;
+		}
+
+		if ( ! $order->is_paid() && isset( $payment_data['ResultCode'] ) && 0 === intval( $payment_data['ResultCode'] ) ) {
+			$order->payment_complete();
+			$order->add_order_note( 'Payment completed via MMG webhook. Transaction ID: ' . esc_html( $payment_data['transactionId'] ?? 'unknown' ) );
+		}
+
+		wp_send_json_success();
 	}
 }
