@@ -93,7 +93,7 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
         $client->method( 'http_post' )->willReturn( ['response' => ['code' => 422], 'body' => '{}'] );
 
         $this->expectException( Exception::class );
-        $this->expectExceptionMessage( 'Login failed with HTTP 422' );
+        $this->expectExceptionMessage( 'Login failed: HTTP 422' );
         $client->do_login();
     }
 

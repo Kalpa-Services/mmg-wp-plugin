@@ -122,12 +122,14 @@ class MMG_API_Client {
 		error_log( sprintf( '[MMG] login response HTTP %d | body=%s', $code, $response_body ) );
 		// phpcs:enable
 
-		if ( 200 !== $code ) {
-			throw new Exception( esc_html( sprintf( 'Login failed with HTTP %d', $code ) ) );
-		}
 		$data = json_decode( $response_body, true );
+		if ( 200 !== $code ) {
+			$msg = ! empty( $data['message'] ) ? $data['message'] : sprintf( 'HTTP %d', $code );
+			throw new Exception( esc_html( sprintf( 'Login failed: %s', $msg ) ) );
+		}
 		if ( empty( $data['access_token'] ) ) {
-			throw new Exception( esc_html( 'Login response missing access_token' ) );
+			$msg = ! empty( $data['message'] ) ? $data['message'] : 'missing access_token';
+			throw new Exception( esc_html( sprintf( 'Login failed: %s', $msg ) ) );
 		}
 		// MMG tokens expire in 120 seconds; cache for 100 to allow a safe buffer.
 		set_transient( 'mmg_access_token_' . $this->mode, $data['access_token'], 100 );
