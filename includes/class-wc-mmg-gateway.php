@@ -116,8 +116,8 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		if ( empty( $txn_id ) ) {
 			return new WP_Error( 'mmg_refund_error', 'No MMG transaction ID found for this order.' );
 		}
-		$mode   = get_option( 'mmg_mode', 'demo' );
-		$mid    = get_option( "mmg_{$mode}_merchant_id" );
+		$mode = get_option( 'mmg_mode', 'demo' );
+		$mid  = get_option( "mmg_{$mode}_merchant_id" );
 		try {
 			$this->make_api_client()->reversal( $mid, $txn_id );
 			return true;

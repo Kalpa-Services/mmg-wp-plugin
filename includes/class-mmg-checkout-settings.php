@@ -23,9 +23,9 @@ class MMG_Checkout_Settings {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
-		add_action( 'wp_ajax_mmg_reauthenticate',     array( $this, 'ajax_reauthenticate' ) );
-		add_action( 'wp_ajax_mmg_check_balance',      array( $this, 'ajax_check_balance' ) );
-		add_action( 'wp_ajax_mmg_get_transactions',   array( $this, 'ajax_get_transactions' ) );
+		add_action( 'wp_ajax_mmg_reauthenticate', array( $this, 'ajax_reauthenticate' ) );
+		add_action( 'wp_ajax_mmg_check_balance', array( $this, 'ajax_check_balance' ) );
+		add_action( 'wp_ajax_mmg_get_transactions', array( $this, 'ajax_get_transactions' ) );
 		add_action( 'wp_ajax_mmg_lookup_transaction', array( $this, 'ajax_lookup_transaction' ) );
 	}
 
@@ -67,24 +67,26 @@ class MMG_Checkout_Settings {
 	 * Render settings page.
 	 */
 	public function settings_page() {
-		$current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'settings';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$current_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'settings';
 		$page_url    = admin_url( 'options-general.php?page=mmg-checkout-settings' );
 		?>
 		<div class="wrap">
 			<h1>MMG Checkout Settings</h1>
 			<nav class="nav-tab-wrapper">
 				<a href="<?php echo esc_url( $page_url . '&tab=settings' ); ?>"
-				   class="nav-tab <?php echo 'settings' === $current_tab ? 'nav-tab-active' : ''; ?>">Settings</a>
+					class="nav-tab <?php echo 'settings' === $current_tab ? 'nav-tab-active' : ''; ?>">Settings</a>
 				<a href="<?php echo esc_url( $page_url . '&tab=balance' ); ?>"
-				   class="nav-tab <?php echo 'balance' === $current_tab ? 'nav-tab-active' : ''; ?>">Balance</a>
+					class="nav-tab <?php echo 'balance' === $current_tab ? 'nav-tab-active' : ''; ?>">Balance</a>
 				<a href="<?php echo esc_url( $page_url . '&tab=transactions' ); ?>"
-				   class="nav-tab <?php echo 'transactions' === $current_tab ? 'nav-tab-active' : ''; ?>">Transactions</a>
+					class="nav-tab <?php echo 'transactions' === $current_tab ? 'nav-tab-active' : ''; ?>">Transactions</a>
 			</nav>
 			<?php
-			if ( 'balance' === $current_tab )           { $this->render_balance_tab(); }
-			elseif ( 'transactions' === $current_tab )  { $this->render_transactions_tab(); }
-			else                                        { $this->render_settings_tab(); }
-			?>
+			if ( 'balance' === $current_tab ) {
+				$this->render_balance_tab(); } elseif ( 'transactions' === $current_tab ) {
+				$this->render_transactions_tab(); } else {
+					$this->render_settings_tab(); }
+				?>
 		</div>
 		<?php
 	}
@@ -101,7 +103,10 @@ class MMG_Checkout_Settings {
 			<p><strong>Warning:</strong> Never share your private keys with anyone. MMG will never ask for your private keys.</p>
 		</div>
 		<form method="post" action="options.php" id="mmg-checkout-settings-form">
-			<?php settings_fields( 'mmg_checkout_settings' ); do_settings_sections( 'mmg_checkout_settings' ); ?>
+			<?php
+			settings_fields( 'mmg_checkout_settings' );
+			do_settings_sections( 'mmg_checkout_settings' );
+			?>
 			<table class="form-table">
 				<tr valign="top">
 					<th scope="row">Mode</th>
@@ -116,7 +121,10 @@ class MMG_Checkout_Settings {
 				<tr valign="top">
 					<th scope="row">Callback URL</th>
 					<td>
-						<?php $cb = esc_url( $this->get_callback_url() ); echo esc_html( $cb ); ?>
+						<?php
+						$cb = esc_url( $this->get_callback_url() );
+						echo esc_html( $cb );
+						?>
 						<button type="button" class="button" onclick="copyToClipboard('<?php echo esc_js( $cb ); ?>')">Copy</button>
 						<span id="copy-success" style="color:green;display:none;margin-left:10px;">Copied!</span>
 					</td>
@@ -251,7 +259,8 @@ class MMG_Checkout_Settings {
 	 */
 	public function ajax_reauthenticate() {
 		check_ajax_referer( 'mmg_admin_nonce', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Unauthorized', 403 ); }
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 ); }
 		require_once __DIR__ . '/class-mmg-api-client.php';
 		try {
 			( new MMG_API_Client() )->reauthenticate();
@@ -266,7 +275,8 @@ class MMG_Checkout_Settings {
 	 */
 	public function ajax_check_balance() {
 		check_ajax_referer( 'mmg_admin_nonce', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Unauthorized', 403 ); }
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 ); }
 		require_once __DIR__ . '/class-mmg-api-client.php';
 		try {
 			wp_send_json_success( ( new MMG_API_Client() )->get_balance() );
@@ -280,10 +290,15 @@ class MMG_Checkout_Settings {
 	 */
 	public function ajax_get_transactions() {
 		check_ajax_referer( 'mmg_admin_nonce', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Unauthorized', 403 ); }
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 ); }
 		$params = array();
-		if ( ! empty( $_POST['start_date'] ) ) $params['start_date'] = sanitize_text_field( wp_unslash( $_POST['start_date'] ) );
-		if ( ! empty( $_POST['end_date'] ) )   $params['end_date']   = sanitize_text_field( wp_unslash( $_POST['end_date'] ) );
+		if ( ! empty( $_POST['start_date'] ) ) {
+			$params['start_date'] = sanitize_text_field( wp_unslash( $_POST['start_date'] ) );
+		}
+		if ( ! empty( $_POST['end_date'] ) ) {
+			$params['end_date'] = sanitize_text_field( wp_unslash( $_POST['end_date'] ) );
+		}
 		require_once __DIR__ . '/class-mmg-api-client.php';
 		try {
 			wp_send_json_success( ( new MMG_API_Client() )->get_transaction_history( $params ) );
@@ -297,9 +312,11 @@ class MMG_Checkout_Settings {
 	 */
 	public function ajax_lookup_transaction() {
 		check_ajax_referer( 'mmg_admin_nonce', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( 'Unauthorized', 403 ); }
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 ); }
 		$txn_id = isset( $_POST['txn_id'] ) ? sanitize_text_field( wp_unslash( $_POST['txn_id'] ) ) : '';
-		if ( empty( $txn_id ) ) { wp_send_json_error( array( 'message' => 'Transaction ID is required.' ) ); }
+		if ( empty( $txn_id ) ) {
+			wp_send_json_error( array( 'message' => 'Transaction ID is required.' ) ); }
 		require_once __DIR__ . '/class-mmg-api-client.php';
 		try {
 			wp_send_json_success( ( new MMG_API_Client() )->lookup_transaction( $txn_id ) );
@@ -314,13 +331,19 @@ class MMG_Checkout_Settings {
 	 * @param string $hook The current admin page.
 	 */
 	public function enqueue_admin_scripts( $hook ) {
-		if ( 'settings_page_mmg-checkout-settings' !== $hook ) return;
+		if ( 'settings_page_mmg-checkout-settings' !== $hook ) {
+			return;
+		}
 		wp_enqueue_script( 'jquery' );
 		wp_enqueue_script( 'mmg-admin-script', plugin_dir_url( __FILE__ ) . '../admin/js/admin-script.js', array( 'jquery' ), '2.0.0', true );
-		wp_localize_script( 'mmg-admin-script', 'mmg_admin_params', array(
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-			'nonce'    => wp_create_nonce( 'mmg_admin_nonce' ),
-		) );
+		wp_localize_script(
+			'mmg-admin-script',
+			'mmg_admin_params',
+			array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( 'mmg_admin_nonce' ),
+			)
+		);
 		wp_enqueue_style( 'mmg-admin-style', plugin_dir_url( __FILE__ ) . '../admin/css/admin-style.css', array(), '1.0.0' );
 	}
 

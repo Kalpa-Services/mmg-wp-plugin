@@ -12,6 +12,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class MMG_Checkout_Payment_Rewrites
+ *
+ * Handles rewrite rules for MMG Checkout payment callbacks.
+ *
+ * @package MMG_Checkout
+ * @since 1.0.0
+ */
 class MMG_Checkout_Payment_Rewrites {
 	/**
 	 * Initialize the rewrite rules.
