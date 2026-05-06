@@ -93,23 +93,32 @@ class MMG_API_Client {
 	 * @throws Exception If login fails.
 	 */
 	public function do_login() {
-		$body     = http_build_query(
+		$merchant_id = get_option( "mmg_{$this->mode}_merchant_id" );
+		$body        = http_build_query(
 			array(
-				'merchantId' => get_option( "mmg_{$this->mode}_merchant_id" ),
+				'merchantId' => $merchant_id,
 				'secretKey'  => get_option( "mmg_{$this->mode}_secret_key" ),
 			)
 		);
+		$url      = $this->base_url . '/mwallet/v1/e-commerce-login/mer';
 		$response = $this->http_post(
-			$this->base_url . '/mwallet/v1/e-commerce-login/mer',
+			$url,
 			array( 'Content-Type' => 'application/x-www-form-urlencoded' ),
 			$body
 		);
 
-		$code = wp_remote_retrieve_response_code( $response );
+		$code          = wp_remote_retrieve_response_code( $response );
+		$response_body = wp_remote_retrieve_body( $response );
+
+		// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( sprintf( '[MMG] login POST %s | merchantId=%s | body=%s', $url, $merchant_id, $body ) );
+		error_log( sprintf( '[MMG] login response HTTP %d | body=%s', $code, $response_body ) );
+		// phpcs:enable
+
 		if ( 200 !== $code ) {
 			throw new Exception( esc_html( sprintf( 'Login failed with HTTP %d', $code ) ) );
 		}
-		$data = json_decode( wp_remote_retrieve_body( $response ), true );
+		$data = json_decode( $response_body, true );
 		if ( empty( $data['access_token'] ) ) {
 			throw new Exception( esc_html( 'Login response missing access_token' ) );
 		}
