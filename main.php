@@ -26,7 +26,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'MMG_PLUGIN_VERSION', '2.3.0' );
+// Single source of truth: read version from the plugin header above.
+$mmg_plugin_data = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
+define( 'MMG_PLUGIN_VERSION', $mmg_plugin_data['Version'] );
 require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
