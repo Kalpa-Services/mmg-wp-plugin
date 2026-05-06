@@ -160,6 +160,44 @@ jQuery(document).ready(function ($) {
       });
   });
 
+  /* ---- Check for Updates (Dashboard tab) ---- */
+  $("#mmg-check-for-updates").on("click", function () {
+    var $btn = $(this);
+    var $spinner = $("#mmg-update-spinner");
+    var $msg = $("#mmg-update-message");
+    $btn.prop("disabled", true);
+    $spinner.show();
+    $msg.hide();
+    $.post(mmg_admin_params.ajax_url, {
+      action: "mmg_check_for_updates",
+      nonce: mmg_admin_params.nonce,
+    })
+      .done(function (r) {
+        if (r.success) {
+          if (r.data.update_available) {
+            var text = "Update available: v" + r.data.new_version + " — go to Dashboard > Updates to install.";
+            $msg.text(text).css("color", "var(--mmg-success)").show();
+            mmgShowToast(text, "success");
+          } else {
+            $msg.text("You are on the latest version.").css("color", "var(--mmg-text-muted)").show();
+            mmgShowToast("You are on the latest version.", "success");
+          }
+        } else {
+          var errText = (r.data && r.data.message) ? r.data.message : "Update check failed.";
+          $msg.text(errText).css("color", "var(--mmg-danger)").show();
+          mmgShowToast(errText, "error");
+        }
+      })
+      .fail(function () {
+        $msg.text("Server error.").css("color", "var(--mmg-danger)").show();
+        mmgShowToast("Server error.", "error");
+      })
+      .always(function () {
+        $btn.prop("disabled", false);
+        $spinner.hide();
+      });
+  });
+
   /* ---- Balance tab ---- */
   var MMG_BALANCE_KEY = "mmg_balance_cache";
 

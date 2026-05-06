@@ -23,6 +23,7 @@ class MMG_Checkout_Settings {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_action( 'wp_ajax_mmg_check_for_updates', array( $this, 'ajax_check_for_updates' ) );
 		add_action( 'wp_ajax_mmg_reauthenticate', array( $this, 'ajax_reauthenticate' ) );
 		add_action( 'wp_ajax_mmg_check_balance', array( $this, 'ajax_check_balance' ) );
 		add_action( 'wp_ajax_mmg_get_transactions', array( $this, 'ajax_get_transactions' ) );
@@ -242,6 +243,16 @@ class MMG_Checkout_Settings {
 								<span class="dashicons dashicons-update" style="font-size:14px;width:14px;height:14px;"></span> Re-authenticate
 							</button>
 							<span id="mmg-reauth-message" class="mmg-form-hint" style="display:none;margin-left:8px;"></span>
+						</div>
+					</div>
+					<div class="mmg-form-row">
+						<div class="mmg-form-label">Plugin Updates</div>
+						<div class="mmg-form-control">
+							<button type="button" id="mmg-check-for-updates" class="mmg-btn mmg-btn-secondary mmg-btn-sm">
+								<span class="dashicons dashicons-update" style="font-size:14px;width:14px;height:14px;"></span> Check for Updates
+							</button>
+							<span id="mmg-update-spinner" class="spinner" style="float:none;display:none;"></span>
+							<span id="mmg-update-message" class="mmg-form-hint" style="display:none;margin-left:8px;"></span>
 						</div>
 					</div>
 				</div>
@@ -563,6 +574,31 @@ class MMG_Checkout_Settings {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * AJAX handler: Check for plugin updates via PUC/GitHub.
+	 */
+	public function ajax_check_for_updates() {
+		check_ajax_referer( 'mmg_admin_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+		global $mmg_update_checker;
+		if ( ! $mmg_update_checker ) {
+			wp_send_json_error( array( 'message' => 'Update checker not available.' ) );
+		}
+		$update = $mmg_update_checker->checkForUpdates();
+		if ( $update ) {
+			wp_send_json_success(
+				array(
+					'update_available' => true,
+					'new_version'      => $update->version,
+				)
+			);
+		} else {
+			wp_send_json_success( array( 'update_available' => false ) );
+		}
 	}
 
 	/**
