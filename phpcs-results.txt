@@ -1,50 +1,13 @@
-.....WE.E.. 11 / 11 (100%)
+.....W...... 12 / 12 (100%)
 
-
-
-FILE: ...rlhandy/Documents/projects/mmg-wp-plugin/includes/class-mmg-api-client.php
---------------------------------------------------------------------------------
-FOUND 0 ERRORS AND 2 WARNINGS AFFECTING 2 LINES
---------------------------------------------------------------------------------
- 114 | WARNING | [x] Equals sign not aligned with surrounding assignments;
-     |         |     expected 9 spaces but found 6 spaces
- 115 | WARNING | [x] Equals sign not aligned with surrounding assignments;
-     |         |     expected 4 spaces but found 1 space
---------------------------------------------------------------------------------
-PHPCBF CAN FIX THE 2 MARKED SNIFF VIOLATIONS AUTOMATICALLY
---------------------------------------------------------------------------------
-
-
-FILE: .../Documents/projects/mmg-wp-plugin/includes/class-mmg-checkout-settings.php
---------------------------------------------------------------------------------
-FOUND 7 ERRORS AFFECTING 4 LINES
---------------------------------------------------------------------------------
- 89 | ERROR | [x] Expected 1 space between the comma and "'icon'". Found: 4
-    |       |     spaces
- 89 | ERROR | [x] When a multi-item array uses associative keys, each value
-    |       |     should start on a new line.
- 90 | ERROR | [x] Expected 1 space between the comma and "'icon'". Found: 2
-    |       |     spaces
- 90 | ERROR | [x] When a multi-item array uses associative keys, each value
-    |       |     should start on a new line.
- 91 | ERROR | [x] Expected 1 space between the comma and "'icon'". Found: 6
-    |       |     spaces
- 91 | ERROR | [x] When a multi-item array uses associative keys, each value
-    |       |     should start on a new line.
- 92 | ERROR | [x] When a multi-item array uses associative keys, each value
-    |       |     should start on a new line.
---------------------------------------------------------------------------------
-PHPCBF CAN FIX THE 7 MARKED SNIFF VIOLATIONS AUTOMATICALLY
---------------------------------------------------------------------------------
 
 
 FILE: ...y/Documents/projects/mmg-wp-plugin/includes/class-mmg-checkout-payment.php
 --------------------------------------------------------------------------------
-FOUND 1 ERROR AND 1 WARNING AFFECTING 2 LINES
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
 --------------------------------------------------------------------------------
- 209 | ERROR   | Missing @throws tag in function comment
- 647 | WARNING | The method parameter $request is never used
+ 649 | WARNING | The method parameter $request is never used
 --------------------------------------------------------------------------------
 
-Time: 443ms; Memory: 22MB
+Time: 465ms; Memory: 20MB
 

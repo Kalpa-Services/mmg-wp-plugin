@@ -792,12 +792,13 @@ class MMG_Checkout_Settings {
 		</div>
 		<?php else : ?>
 		<div class="mmg-log-list" id="mmg-log-list">
-			<?php foreach ( $logs as $entry ) :
+			<?php
+			foreach ( $logs as $entry ) :
 				$lvl = isset( $entry['lvl'] ) ? $entry['lvl'] : 'info';
 				$ts  = isset( $entry['ts'] ) ? (int) $entry['ts'] : 0;
 				$msg = isset( $entry['msg'] ) ? $entry['msg'] : '';
 				$dt  = $ts ? wp_date( 'Y-m-d H:i:s', $ts ) : '—';
-			?>
+				?>
 			<div class="mmg-log-entry" data-level="<?php echo esc_attr( $lvl ); ?>">
 				<span class="mmg-log-badge mmg-log-badge-<?php echo esc_attr( $lvl ); ?>"><?php echo esc_html( strtoupper( $lvl ) ); ?></span>
 				<span class="mmg-log-time"><?php echo esc_html( $dt ); ?></span>
