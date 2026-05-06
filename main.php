@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'MMG_PLUGIN_VERSION', '2.0.0' );
+define( 'MMG_PLUGIN_VERSION', '2.2.0' );
 require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-dependency-checker.php';
