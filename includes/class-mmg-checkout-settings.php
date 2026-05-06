@@ -86,10 +86,22 @@ class MMG_Checkout_Settings {
 		$logo_url    = plugin_dir_url( __FILE__ ) . '../public/images/mmg-logo-white.png';
 
 		$tabs = array(
-			'dashboard'    => array( 'label' => 'Dashboard',    'icon' => 'dashicons-dashboard' ),
-			'credentials'  => array( 'label' => 'Credentials',  'icon' => 'dashicons-lock' ),
-			'balance'      => array( 'label' => 'Balance',      'icon' => 'dashicons-chart-area' ),
-			'transactions' => array( 'label' => 'Transactions', 'icon' => 'dashicons-list-view' ),
+			'dashboard'    => array(
+				'label' => 'Dashboard',
+				'icon'  => 'dashicons-dashboard',
+			),
+			'credentials'  => array(
+				'label' => 'Credentials',
+				'icon'  => 'dashicons-lock',
+			),
+			'balance'      => array(
+				'label' => 'Balance',
+				'icon'  => 'dashicons-chart-area',
+			),
+			'transactions' => array(
+				'label' => 'Transactions',
+				'icon'  => 'dashicons-list-view',
+			),
 		);
 		?>
 		<div class="mmg-dashboard-wrap">

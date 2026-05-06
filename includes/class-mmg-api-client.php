@@ -111,8 +111,8 @@ class MMG_API_Client {
 				'password'   => $password,
 			)
 		);
-		$url      = $this->base_url . '/e-commerce-login/mer';
-		$response = $this->http_post(
+		$url         = $this->base_url . '/e-commerce-login/mer';
+		$response    = $this->http_post(
 			$url,
 			array( 'Content-Type' => 'application/x-www-form-urlencoded' ),
 			$body

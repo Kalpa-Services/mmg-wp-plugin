@@ -206,6 +206,8 @@ class MMG_Checkout_Payment {
 
 	/**
 	 * AJAX handler — kept for any legacy or fallback callers.
+	 *
+	 * @throws Exception If nonce verification fails or URL generation fails.
 	 */
 	public function generate_checkout_url() {
 		try {
