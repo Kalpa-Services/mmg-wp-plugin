@@ -34,7 +34,7 @@ jQuery(document).ready(function ($) {
 function isValidUrl(url) {
   try {
     const parsedUrl = new URL(url);
-    const allowedHosts = ["qpass.com"];
+    const allowedHosts = ["mmgtest.net", "mymmg.gy"];
     const hostnameWithoutPort = parsedUrl.hostname.split(":")[0]; // Remove port number if present
     const isValid =
       ["https:", "http:"].includes(parsedUrl.protocol) &&

@@ -91,4 +91,38 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		echo 'Pay with MMG</button>';
 		echo '</div>';
 	}
+
+	/**
+	 * Create and return an MMG API client instance.
+	 *
+	 * @return MMG_API_Client
+	 */
+	protected function make_api_client() {
+		require_once __DIR__ . '/class-mmg-api-client.php';
+		return new MMG_API_Client();
+	}
+
+	/**
+	 * Process a refund via the MMG reversal API.
+	 *
+	 * @param int    $order_id Order ID.
+	 * @param float  $amount   Refund amount (unused — full reversal only).
+	 * @param string $reason   Refund reason (unused).
+	 * @return true|WP_Error
+	 */
+	public function process_refund( $order_id, $amount = null, $reason = '' ) {
+		$order  = wc_get_order( $order_id );
+		$txn_id = $order->get_meta( '_mmg_transaction_id' );
+		if ( empty( $txn_id ) ) {
+			return new WP_Error( 'mmg_refund_error', 'No MMG transaction ID found for this order.' );
+		}
+		$mode = get_option( 'mmg_mode', 'demo' );
+		$mid  = get_option( "mmg_{$mode}_merchant_id" );
+		try {
+			$this->make_api_client()->reversal( $mid, $txn_id );
+			return true;
+		} catch ( Exception $e ) {
+			return new WP_Error( 'mmg_refund_error', $e->getMessage() );
+		}
+	}
 }
