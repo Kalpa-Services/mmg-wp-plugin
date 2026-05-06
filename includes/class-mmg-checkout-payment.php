@@ -178,14 +178,14 @@ class MMG_Checkout_Payment {
 			$amount      = $order->get_total();
 			$description = 'Order #' . $order->get_order_number();
 
-			$timestamp  = round( microtime( true ) * 1000 ); // Use milliseconds.
+			$timestamp  = time();
 			$token_data = array(
 				'secretKey'             => get_option( "mmg_{$this->mode}_secret_key" ),
 				'amount'                => $amount,
 				'merchantId'            => get_option( "mmg_{$this->mode}_merchant_id" ),
 				'merchantTransactionId' => $order->get_id() . '-' . $attempt_number,
 				'productDescription'    => $description,
-				'requestInitiationTime' => (string) $timestamp,
+				'requestInitiationTime' => $timestamp,
 				'merchantName'          => get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ),
 			);
 
