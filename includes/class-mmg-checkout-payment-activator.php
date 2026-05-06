@@ -42,6 +42,12 @@ class MMG_Checkout_Payment_Activator {
 	private static function mmg_activate() {
 		self::add_rewrite_rules();
 		flush_rewrite_rules();
+		// Signal admin_init to redirect to the settings page on next load.
+		// Skipped during bulk activation (WordPress won't redirect in that case anyway,
+		// but we guard here so the transient is not consumed on the wrong request).
+		if ( ! isset( $_GET['activate-multi'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			set_transient( 'mmg_activation_redirect', true, 30 );
+		}
 	}
 
 	/**

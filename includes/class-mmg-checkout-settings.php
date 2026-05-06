@@ -22,12 +22,42 @@ class MMG_Checkout_Settings {
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'admin_init', array( $this, 'maybe_redirect_after_activation' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
+		add_filter( 'plugin_action_links_mmg-checkout-payment/main.php', array( $this, 'add_plugin_action_links' ) );
 		add_action( 'wp_ajax_mmg_check_for_updates', array( $this, 'ajax_check_for_updates' ) );
 		add_action( 'wp_ajax_mmg_reauthenticate', array( $this, 'ajax_reauthenticate' ) );
 		add_action( 'wp_ajax_mmg_check_balance', array( $this, 'ajax_check_balance' ) );
 		add_action( 'wp_ajax_mmg_get_transactions', array( $this, 'ajax_get_transactions' ) );
 		add_action( 'wp_ajax_mmg_lookup_transaction', array( $this, 'ajax_lookup_transaction' ) );
+	}
+
+	/**
+	 * Redirect to settings page once after plugin activation.
+	 */
+	public function maybe_redirect_after_activation() {
+		if ( ! get_transient( 'mmg_activation_redirect' ) ) {
+			return;
+		}
+		delete_transient( 'mmg_activation_redirect' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		wp_safe_redirect( admin_url( 'admin.php?page=mmg-checkout-settings' ) );
+		exit;
+	}
+
+	/**
+	 * Add "Settings" and "Documentation" links to the plugin action links on the Plugins screen.
+	 *
+	 * @param array $links Existing action links.
+	 * @return array
+	 */
+	public function add_plugin_action_links( $links ) {
+		$action_links = array(
+			'settings' => '<a href="' . esc_url( admin_url( 'admin.php?page=mmg-checkout-settings' ) ) . '">' . esc_html__( 'Settings', 'mmg-checkout-payment' ) . '</a>',
+		);
+		return array_merge( $action_links, $links );
 	}
 
 	/**
