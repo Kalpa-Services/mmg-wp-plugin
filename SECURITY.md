@@ -8,7 +8,7 @@ If you believe you have found a security vulnerability in this or any of our pub
 
 Please do not report security vulnerabilities through public GitHub issues, discussions, or pull requests.
 
-Instead, please send an email to security[@]kalpa.dev
+Instead, please send an email to carl[@]handy.gy
 
 Please include as much of the information listed below as you can to help us better understand and resolve the issue:
 
