@@ -296,9 +296,15 @@ class MMG_API_Client {
 		}
 
 		$query = http_build_query( $query_args );
-		return $this->authenticated_get(
-			'/e-merchant-initiated-transactions/txn-history?' . $query
-		);
+		$path  = '/e-merchant-initiated-transactions/txn-history?' . $query;
+		MMG_Logger::info( 'Transaction history request: GET ' . $this->base_url . $path );
+
+		$this->ensure_token();
+		$raw_response = $this->http_get( $this->base_url . $path, $this->get_auth_headers() );
+		$body         = wp_remote_retrieve_body( $raw_response );
+		MMG_Logger::info( 'Transaction history response (HTTP ' . wp_remote_retrieve_response_code( $raw_response ) . '): ' . $body );
+
+		return $this->parse_response( $raw_response );
 	}
 
 	/**
