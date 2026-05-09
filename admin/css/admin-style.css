@@ -742,7 +742,8 @@
   color: var(--mmg-text-secondary);
 }
 
-.mmg-date-range input[type="date"] {
+.mmg-date-range input[type="date"],
+.mmg-date-range input[type="number"] {
   padding: 8px 12px;
   border: 1px solid var(--mmg-border);
   border-radius: var(--mmg-radius);
@@ -753,7 +754,8 @@
   transition: all var(--mmg-transition);
 }
 
-.mmg-date-range input[type="date"]:focus {
+.mmg-date-range input[type="date"]:focus,
+.mmg-date-range input[type="number"]:focus {
   outline: none;
   border-color: var(--mmg-accent);
   box-shadow: 0 0 0 3px rgba(15,155,142,.15);
