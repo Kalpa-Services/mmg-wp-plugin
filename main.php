@@ -40,23 +40,10 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-
 // This is temporary until the plugin is uploaded to the WordPress repository.
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
-global $mmg_update_checker;
 $mmg_update_checker = PucFactory::buildUpdateChecker(
-	'https://github.com/Kalpa-Services/mmg-wp-plugin/',
+	'https://updates.kalpa.dev/info.json',
 	__FILE__,
 	'mmg-checkout-payment'
-);
-$mmg_update_checker->getVcsApi()->enableReleaseAssets();
-
-// Raise the GitHub API timeout from PUC's 3-second default to 15 seconds so
-// admin-triggered checks don't fail silently on slow connections to api.github.com.
-$mmg_update_checker->getVcsApi()->setHttpFilterName( 'mmg_puc_github_http_options' );
-add_filter(
-	'mmg_puc_github_http_options',
-	function ( $options ) {
-		$options['timeout'] = 15;
-		return $options;
-	}
 );
 
 MMG_Checkout_Payment_Rewrites::init();
