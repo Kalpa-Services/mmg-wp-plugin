@@ -273,11 +273,51 @@ class MMG_API_Client {
 	 * @return array
 	 */
 	public function get_transaction_history( array $params = array() ) {
-		$mid   = get_option( "mmg_{$this->mode}_merchant_id" );
-		$query = http_build_query( array_merge( array( 'msisdn' => $mid ), $params ) );
+		$mid = get_option( "mmg_{$this->mode}_merchant_id" );
+
+		// Build query with the parameter names the API expects.
+		$query_args = array(
+			'msisdn' => $mid,
+			'offset' => isset( $params['offset'] ) ? intval( $params['offset'] ) : 100,
+		);
+
+		// Convert start_date / fromdate to Unix timestamp.
+		if ( ! empty( $params['start_date'] ) ) {
+			$query_args['fromdate'] = $this->to_unix_timestamp( $params['start_date'] );
+		} elseif ( ! empty( $params['fromdate'] ) ) {
+			$query_args['fromdate'] = $this->to_unix_timestamp( $params['fromdate'] );
+		}
+
+		// Convert end_date / todate to Unix timestamp.
+		if ( ! empty( $params['end_date'] ) ) {
+			$query_args['todate'] = $this->to_unix_timestamp( $params['end_date'] );
+		} elseif ( ! empty( $params['todate'] ) ) {
+			$query_args['todate'] = $this->to_unix_timestamp( $params['todate'] );
+		}
+
+		$query = http_build_query( $query_args );
 		return $this->authenticated_get(
 			'/e-merchant-initiated-transactions/txn-history?' . $query
 		);
+	}
+
+	/**
+	 * Convert a date value to a Unix timestamp.
+	 *
+	 * Accepts Unix timestamps (numeric) or date strings (e.g. 2026-05-01).
+	 * For date strings without a time component, the start of day (00:00:00 UTC) is used.
+	 *
+	 * @param string|int $date Date value.
+	 * @return int Unix timestamp.
+	 */
+	private function to_unix_timestamp( $date ) {
+		// Already a Unix timestamp (numeric string or int).
+		if ( is_numeric( $date ) ) {
+			return intval( $date );
+		}
+		// Parse date string to timestamp.
+		$ts = strtotime( $date );
+		return false !== $ts ? $ts : 0;
 	}
 
 	/**

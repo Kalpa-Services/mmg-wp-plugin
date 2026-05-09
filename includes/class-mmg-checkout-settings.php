@@ -585,6 +585,7 @@ class MMG_Checkout_Settings {
 				<div class="mmg-date-range">
 					<label>From: <input type="date" id="mmg-start-date" /></label>
 					<label>To: <input type="date" id="mmg-end-date" /></label>
+					<label>Max Results: <input type="number" id="mmg-txn-offset" value="100" min="1" max="1000" style="width:80px;" /></label>
 					<button type="button" id="mmg-fetch-transactions" class="mmg-btn mmg-btn-primary mmg-btn-sm">
 						<span class="dashicons dashicons-search" style="font-size:14px;width:14px;height:14px;"></span> Fetch
 					</button>
