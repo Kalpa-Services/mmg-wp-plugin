@@ -46,6 +46,11 @@ class MMG_Checkout_Payment_Activator {
 		if ( ! wp_next_scheduled( 'mmg_send_telemetry' ) ) {
 			wp_schedule_event( time(), 'daily', 'mmg_send_telemetry' );
 		}
+
+		// Fire immediately upon activation so we don't have to wait for the first cron tick
+		if ( class_exists( 'MMG_Telemetry' ) ) {
+			MMG_Telemetry::send_telemetry();
+		}
 		// Signal admin_init to redirect to the settings page on next load.
 		// Skipped during bulk activation (WordPress won't redirect in that case anyway,
 		// but we guard here so the transient is not consumed on the wrong request).
