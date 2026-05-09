@@ -37,16 +37,18 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-rewrites.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-telemetry.php';
 // This is temporary until the plugin is uploaded to the WordPress repository.
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $mmg_update_checker = PucFactory::buildUpdateChecker(
-	'https://updates.kalpa.dev/info.json',
+	'https://updates.kalpa.dev/',
 	__FILE__,
 	'mmg-checkout-payment'
 );
 
 MMG_Checkout_Payment_Rewrites::init();
+MMG_Telemetry::init();
 
 if ( MMG_Dependency_Checker::check_dependencies() ) {
 	/**
