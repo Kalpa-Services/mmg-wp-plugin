@@ -32,9 +32,21 @@ class MMG_Telemetry {
 	 * Send the telemetry data via POST request.
 	 */
 	public static function send_telemetry() {
+		$gateway_settings = get_option( 'woocommerce_mmg_checkout_settings', array() );
+		$is_enabled       = isset( $gateway_settings['enabled'] ) && 'yes' === $gateway_settings['enabled'];
+		$mode             = get_option( 'mmg_mode', 'demo' );
+		$theme            = wp_get_theme();
+
 		$payload = array(
-			'site_url'       => home_url(),
-			'plugin_version' => MMG_PLUGIN_VERSION,
+			'site_url'         => home_url(),
+			'plugin_version'   => MMG_PLUGIN_VERSION,
+			'php_version'      => phpversion(),
+			'wp_version'       => get_bloginfo( 'version' ),
+			'wc_version'       => defined( 'WC_VERSION' ) ? WC_VERSION : ( class_exists( 'WooCommerce' ) ? WC()->version : 'Not Installed' ),
+			'gateway_enabled'  => $is_enabled,
+			'environment_mode' => $mode,
+			'site_language'    => get_locale(),
+			'active_theme'     => $theme->get( 'Name' ),
 		);
 
 		wp_remote_post(

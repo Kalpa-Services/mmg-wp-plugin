@@ -47,7 +47,7 @@ class MMG_Checkout_Payment_Activator {
 			wp_schedule_event( time(), 'daily', 'mmg_send_telemetry' );
 		}
 
-		// Fire immediately upon activation so we don't have to wait for the first cron tick
+		// Fire immediately upon activation so we don't have to wait for the first cron tick.
 		if ( class_exists( 'MMG_Telemetry' ) ) {
 			MMG_Telemetry::send_telemetry();
 		}
