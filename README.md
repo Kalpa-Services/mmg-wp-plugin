@@ -84,5 +84,3 @@ For questions or support, please open an issue on the GitHub repository or conta
 ## License
 
 This project is licensed under GPL v2 or later. Ensure all contributions comply with this license.
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FKalpa-Services%2Fmmg-wp-plugin?ref=badge_large)
