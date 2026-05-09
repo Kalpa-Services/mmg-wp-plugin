@@ -30,5 +30,6 @@ class MMG_Checkout_Payment_Deactivator {
 	 */
 	public static function deactivate() {
 		flush_rewrite_rules();
+		wp_clear_scheduled_hook( 'mmg_send_telemetry' );
 	}
 }
