@@ -707,6 +707,9 @@ class MMG_Checkout_Settings {
 		if ( ! empty( $_POST['end_date'] ) ) {
 			$params['end_date'] = sanitize_text_field( wp_unslash( $_POST['end_date'] ) );
 		}
+		if ( isset( $_POST['offset'] ) ) {
+			$params['offset'] = intval( $_POST['offset'] );
+		}
 		require_once __DIR__ . '/class-mmg-api-client.php';
 		try {
 			wp_send_json_success( ( new MMG_API_Client() )->get_transaction_history( $params ) );

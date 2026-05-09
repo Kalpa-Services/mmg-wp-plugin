@@ -344,6 +344,7 @@ jQuery(document).ready(function ($) {
       nonce: mmg_admin_params.nonce,
       start_date: $("#mmg-start-date").val(),
       end_date: $("#mmg-end-date").val(),
+      offset: $("#mmg-txn-offset").val(),
     })
       .done(function (r) {
         if (!r.success) {
