@@ -193,7 +193,7 @@ class MMG_API_Client {
 	 * @return array|WP_Error
 	 */
 	protected function http_get( $url, $headers = array() ) {
-		return wp_remote_get( $url, array( 'headers' => $headers ) );
+		return wp_remote_get( $url, array( 'headers' => $headers, 'timeout' => 30 ) );
 	}
 
 	/**
@@ -210,6 +210,7 @@ class MMG_API_Client {
 			array(
 				'headers' => array_merge( array( 'Content-Type' => 'application/json' ), $headers ),
 				'body'    => $body,
+				'timeout' => 30,
 			)
 		);
 	}
@@ -218,18 +219,26 @@ class MMG_API_Client {
 	 * Parse Response
 	 *
 	 * @param array|WP_Error $response Response.
+	 * @param string         $context  Optional label for log context (e.g. 'GET /path').
 	 * @return array
 	 * @throws Exception If API returns error.
 	 */
-	protected function parse_response( $response ) {
+	protected function parse_response( $response, $context = '' ) {
+		$ctx = $context ? " [$context]" : '';
 		if ( is_wp_error( $response ) ) {
-			throw new Exception( esc_html( $response->get_error_message() ) );
+			$msg = $response->get_error_message();
+			MMG_Logger::error( sprintf( 'HTTP transport error%s: %s', $ctx, $msg ) );
+			throw new Exception( esc_html( $msg ) );
 		}
 		$code = wp_remote_retrieve_response_code( $response );
+		$body = wp_remote_retrieve_body( $response );
 		if ( $code < 200 || $code >= 300 ) {
-			throw new Exception( esc_html( sprintf( 'API error: HTTP %d', $code ) ), (int) $code );
+			$data    = json_decode( $body, true );
+			$api_msg = ! empty( $data['message'] ) ? $data['message'] : ( $body ?: sprintf( 'HTTP %d', $code ) );
+			MMG_Logger::error( sprintf( 'API error%s (HTTP %d): %s', $ctx, $code, $api_msg ) );
+			throw new Exception( esc_html( sprintf( 'API error (HTTP %d): %s', $code, $api_msg ) ), (int) $code );
 		}
-		return json_decode( wp_remote_retrieve_body( $response ), true ) ?? array();
+		return json_decode( $body, true ) ?? array();
 	}
 
 	/**
@@ -239,8 +248,13 @@ class MMG_API_Client {
 	 * @return array
 	 */
 	protected function authenticated_get( $path ) {
+		$url = $this->base_url . $path;
 		$this->ensure_token();
-		return $this->parse_response( $this->http_get( $this->base_url . $path, $this->get_auth_headers() ) );
+		MMG_Logger::info( 'GET ' . $url );
+		$response = $this->http_get( $url, $this->get_auth_headers() );
+		$code     = is_wp_error( $response ) ? 'WP_Error' : wp_remote_retrieve_response_code( $response );
+		MMG_Logger::info( sprintf( 'GET %s -> HTTP %s', $url, $code ) );
+		return $this->parse_response( $response, 'GET ' . $path );
 	}
 
 	/**
@@ -250,8 +264,13 @@ class MMG_API_Client {
 	 * @return array
 	 */
 	protected function authenticated_post( $path ) {
+		$url = $this->base_url . $path;
 		$this->ensure_token();
-		return $this->parse_response( $this->http_post( $this->base_url . $path, $this->get_auth_headers() ) );
+		MMG_Logger::info( 'POST ' . $url );
+		$response = $this->http_post( $url, $this->get_auth_headers() );
+		$code     = is_wp_error( $response ) ? 'WP_Error' : wp_remote_retrieve_response_code( $response );
+		MMG_Logger::info( sprintf( 'POST %s -> HTTP %s', $url, $code ) );
+		return $this->parse_response( $response, 'POST ' . $path );
 	}
 
 	/**
