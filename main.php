@@ -47,6 +47,18 @@ $mmg_update_checker = PucFactory::buildUpdateChecker(
 	'mmg-checkout-payment'
 );
 
+$mmg_update_checker->addResultFilter(
+	function ( $info ) {
+		if ( isset( $info ) ) {
+			$info->icons = array(
+				'1x' => plugin_dir_url( __FILE__ ) . 'public/images/mmg-logo-colored.png',
+				'2x' => plugin_dir_url( __FILE__ ) . 'public/images/mmg-logo-colored.png',
+			);
+		}
+		return $info;
+	}
+);
+
 MMG_Checkout_Payment_Rewrites::init();
 MMG_Telemetry::init();
 
