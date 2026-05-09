@@ -405,7 +405,37 @@ jQuery(document).ready(function ($) {
     })
       .done(function (r) {
         if (r.success) {
-          $result.text(JSON.stringify(r.data, null, 2)).show();
+          var t = r.data;
+          var debitPartyVal = "—";
+          if (t.debitParty && t.debitParty.length > 0) {
+            debitPartyVal = t.debitParty[0].value;
+          }
+          var desc = t.descriptionText || "—";
+          if (desc === "—" && t.metadata) {
+            var metaDesc = t.metadata.find(function(m) { return m.key === 'description'; });
+            if (metaDesc && metaDesc.value) {
+                desc = metaDesc.value;
+            }
+          }
+          
+          var html = '<div class="mmg-table-wrap"><table class="mmg-table">';
+          html += "<tbody>";
+          html += "<tr><th>Amount</th><td>" + (t.currency || "") + " " + (t.amount || "—") + "</td></tr>";
+          html += "<tr><th>Status</th><td>" + (t.transactionStatus || "—") + "</td></tr>";
+          html += "<tr><th>Description</th><td>" + desc + "</td></tr>";
+          html += "<tr><th>Debit Party</th><td>" + debitPartyVal + "</td></tr>";
+          html += "</tbody></table></div>";
+          
+          if (t.transactionStatus && t.transactionStatus.toLowerCase() === 'successful') {
+             html += '<div style="margin-top:16px;">';
+             html += '<button type="button" class="mmg-btn mmg-btn-danger mmg-btn-sm mmg-refund-btn" data-txnid="' + txnId + '">';
+             html += '<span class="dashicons dashicons-undo" style="font-size:14px;width:14px;height:14px;"></span> Refund Transaction</button>';
+             html += '<span class="spinner mmg-refund-spinner" style="float:none;display:none;margin-left:8px;"></span>';
+             html += '<span class="mmg-refund-msg" style="margin-left:8px;font-size:13px;font-weight:500;"></span>';
+             html += '</div>';
+          }
+          
+          $result.html(html).show();
         } else {
           $error.text(r.data.message || "Lookup failed.").show();
         }
@@ -417,5 +447,41 @@ jQuery(document).ready(function ($) {
         $btn.prop("disabled", false);
         $spinner.hide();
       });
+  });
+
+  /* ---- Transactions tab — refund ---- */
+  $("#mmg-lookup-result").on("click", ".mmg-refund-btn", function() {
+    var $btn = $(this);
+    var txnId = $btn.data("txnid");
+    var $spinner = $btn.siblings(".mmg-refund-spinner");
+    var $msg = $btn.siblings(".mmg-refund-msg");
+    
+    if (!confirm("Are you sure you want to refund transaction " + txnId + "?")) {
+        return;
+    }
+    
+    $btn.prop("disabled", true);
+    $spinner.show();
+    $msg.text("").removeClass("mmg-error-text");
+    
+    $.post(mmg_admin_params.ajax_url, {
+      action: "mmg_reversal",
+      nonce: mmg_admin_params.nonce,
+      txn_id: txnId
+    }).done(function(r) {
+      if (r.success) {
+         $msg.text("Refund successful.").css("color", "var(--mmg-success)");
+         mmgShowToast("Transaction refunded.", "success");
+         $btn.hide();
+      } else {
+         $msg.addClass("mmg-error-text").text(r.data.message || "Refund failed.");
+         $btn.prop("disabled", false);
+      }
+    }).fail(function() {
+      $msg.addClass("mmg-error-text").text("Server error.");
+      $btn.prop("disabled", false);
+    }).always(function() {
+      $spinner.hide();
+    });
   });
 });

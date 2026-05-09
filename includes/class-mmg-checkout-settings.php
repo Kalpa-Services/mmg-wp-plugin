@@ -30,6 +30,7 @@ class MMG_Checkout_Settings {
 		add_action( 'wp_ajax_mmg_check_balance', array( $this, 'ajax_check_balance' ) );
 		add_action( 'wp_ajax_mmg_get_transactions', array( $this, 'ajax_get_transactions' ) );
 		add_action( 'wp_ajax_mmg_lookup_transaction', array( $this, 'ajax_lookup_transaction' ) );
+		add_action( 'wp_ajax_mmg_reversal', array( $this, 'ajax_reversal' ) );
 		add_action( 'wp_ajax_mmg_clear_logs', array( $this, 'ajax_clear_logs' ) );
 	}
 
@@ -609,7 +610,7 @@ class MMG_Checkout_Settings {
 					<span id="mmg-lookup-spinner" class="spinner" style="float:none;display:none;"></span>
 				</div>
 				<p id="mmg-lookup-error" class="mmg-error-text"></p>
-				<pre id="mmg-lookup-result" class="mmg-lookup-result"></pre>
+				<div id="mmg-lookup-result" class="mmg-lookup-result-container" style="display:none; margin-top:16px;"></div>
 			</div>
 		</div>
 		<?php
@@ -734,6 +735,27 @@ class MMG_Checkout_Settings {
 			wp_send_json_success( ( new MMG_API_Client() )->lookup_transaction( $txn_id ) );
 		} catch ( Exception $e ) {
 			MMG_Logger::error( 'Transaction lookup failed: ' . $e->getMessage() );
+			wp_send_json_error( array( 'message' => esc_html( $e->getMessage() ) ) );
+		}
+	}
+
+	/**
+	 * AJAX handler: Reversal transaction.
+	 */
+	public function ajax_reversal() {
+		check_ajax_referer( 'mmg_admin_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 ); }
+		$txn_id = isset( $_POST['txn_id'] ) ? sanitize_text_field( wp_unslash( $_POST['txn_id'] ) ) : '';
+		if ( empty( $txn_id ) ) {
+			wp_send_json_error( array( 'message' => 'Transaction ID is required.' ) ); }
+		require_once __DIR__ . '/class-mmg-api-client.php';
+		try {
+			$mode = get_option( 'mmg_mode', 'demo' );
+			$mid  = get_option( "mmg_{$mode}_merchant_id" );
+			wp_send_json_success( ( new MMG_API_Client() )->reversal( $mid, $txn_id ) );
+		} catch ( Exception $e ) {
+			MMG_Logger::error( 'Transaction reversal failed: ' . $e->getMessage() );
 			wp_send_json_error( array( 'message' => esc_html( $e->getMessage() ) ) );
 		}
 	}
