@@ -9,5 +9,5 @@ FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
  649 | WARNING | The method parameter $request is never used
 --------------------------------------------------------------------------------
 
-Time: 465ms; Memory: 20MB
+Time: 465ms; Memory: 22MB
 

@@ -193,7 +193,13 @@ class MMG_API_Client {
 	 * @return array|WP_Error
 	 */
 	protected function http_get( $url, $headers = array() ) {
-		return wp_remote_get( $url, array( 'headers' => $headers, 'timeout' => 30 ) );
+		return wp_remote_get(
+			$url,
+			array(
+				'headers' => $headers,
+				'timeout' => 30,
+			)
+		);
 	}
 
 	/**
@@ -234,7 +240,7 @@ class MMG_API_Client {
 		$body = wp_remote_retrieve_body( $response );
 		if ( $code < 200 || $code >= 300 ) {
 			$data    = json_decode( $body, true );
-			$api_msg = ! empty( $data['message'] ) ? $data['message'] : ( $body ?: sprintf( 'HTTP %d', $code ) );
+			$api_msg = ! empty( $data['message'] ) ? $data['message'] : ( $body ? $body : sprintf( 'HTTP %d', $code ) );
 			MMG_Logger::error( sprintf( 'API error%s (HTTP %d): %s', $ctx, $code, $api_msg ) );
 			throw new Exception( esc_html( sprintf( 'API error (HTTP %d): %s', $code, $api_msg ) ), (int) $code );
 		}
