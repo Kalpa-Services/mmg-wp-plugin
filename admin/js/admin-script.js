@@ -351,24 +351,35 @@ jQuery(document).ready(function ($) {
           $error.text(r.data.message || "Request failed.").show();
           return;
         }
-        var rows = Array.isArray(r.data)
-          ? r.data
-          : r.data.transactions || [];
+        var rows = r.data.TransactionList || r.data.transactions || (Array.isArray(r.data) ? r.data : []);
         if (!rows.length) {
           $results.html(
-            '<p style="color:var(--mmg-text-muted);">No transactions found.</p>'
+            '<p style="color:var(--mmg-text-muted); padding: 20px;">No transactions found.</p>'
           );
           return;
         }
         var html = '<div class="mmg-table-wrap"><table class="mmg-table">';
         html +=
-          "<thead><tr><th>ID</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody>";
+          "<thead><tr><th>ID</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody>";
         rows.forEach(function (t) {
+          var txnId = t.transactionReference || t.transactionReceipt || t.transactionId || t.id || "—";
+          var date = t.modificationDate || t.date || t.createdAt || "—";
+          var amount = (t.currency ? t.currency + " " : "") + (t.amount || "—");
+          var status = t.transactionStatus || t.status || "—";
+          var statusLower = status.toLowerCase();
+          var canRefund = (statusLower === 'completed' || statusLower === 'successful' || statusLower === 'success');
+
           html += "<tr>";
-          html += "<td>" + (t.transactionId || t.id || "—") + "</td>";
-          html += "<td>" + (t.date || t.createdAt || "—") + "</td>";
-          html += "<td>" + (t.amount || "—") + "</td>";
-          html += "<td>" + (t.status || "—") + "</td>";
+          html += '<td style="font-family:monospace; font-size:11px;">' + txnId + "</td>";
+          html += "<td>" + date + "</td>";
+          html += "<td><strong>" + amount + "</strong></td>";
+          html += "<td>" + status + "</td>";
+          html += "<td>";
+          if (canRefund) {
+              html += '<button type="button" class="mmg-btn mmg-btn-danger mmg-btn-sm mmg-refund-btn" data-txnid="' + txnId + '">';
+              html += '<span class="dashicons dashicons-undo" style="font-size:14px;width:14px;height:14px;"></span> Refund</button>';
+          }
+          html += "</td>";
           html += "</tr>";
         });
         html += "</tbody></table></div>";
@@ -426,7 +437,8 @@ jQuery(document).ready(function ($) {
           html += "<tr><th>Debit Party</th><td>" + debitPartyVal + "</td></tr>";
           html += "</tbody></table></div>";
           
-          if (t.transactionStatus && t.transactionStatus.toLowerCase() === 'successful') {
+          var statusLower = (t.transactionStatus || "").toLowerCase();
+          if (statusLower === 'successful' || statusLower === 'completed' || statusLower === 'success') {
              html += '<div style="margin-top:16px;">';
              html += '<button type="button" class="mmg-btn mmg-btn-danger mmg-btn-sm mmg-refund-btn" data-txnid="' + txnId + '">';
              html += '<span class="dashicons dashicons-undo" style="font-size:14px;width:14px;height:14px;"></span> Refund Transaction</button>';
@@ -450,7 +462,7 @@ jQuery(document).ready(function ($) {
   });
 
   /* ---- Transactions tab — refund ---- */
-  $("#mmg-lookup-result").on("click", ".mmg-refund-btn", function() {
+  $("#mmg-panel-transactions").on("click", ".mmg-refund-btn", function() {
     var $btn = $(this);
     var txnId = $btn.data("txnid");
     var $spinner = $btn.siblings(".mmg-refund-spinner");
@@ -461,8 +473,8 @@ jQuery(document).ready(function ($) {
     }
     
     $btn.prop("disabled", true);
-    $spinner.show();
-    $msg.text("").removeClass("mmg-error-text");
+    if ($spinner.length) $spinner.show();
+    if ($msg.length) $msg.text("").removeClass("mmg-error-text");
     
     $.post(mmg_admin_params.ajax_url, {
       action: "mmg_reversal",
@@ -470,18 +482,21 @@ jQuery(document).ready(function ($) {
       txn_id: txnId
     }).done(function(r) {
       if (r.success) {
-         $msg.text("Refund successful.").css("color", "var(--mmg-success)");
+         if ($msg.length) $msg.text("Refund successful.").css("color", "var(--mmg-success)");
          mmgShowToast("Transaction refunded.", "success");
          $btn.hide();
       } else {
-         $msg.addClass("mmg-error-text").text(r.data.message || "Refund failed.");
+         var err = r.data.message || "Refund failed.";
+         if ($msg.length) $msg.addClass("mmg-error-text").text(err);
+         mmgShowToast(err, "error");
          $btn.prop("disabled", false);
       }
     }).fail(function() {
-      $msg.addClass("mmg-error-text").text("Server error.");
+      mmgShowToast("Server error.", "error");
+      if ($msg.length) $msg.addClass("mmg-error-text").text("Server error.");
       $btn.prop("disabled", false);
     }).always(function() {
-      $spinner.hide();
+      if ($spinner.length) $spinner.hide();
     });
   });
   /* ---- Currency Conversion tab ---- */
