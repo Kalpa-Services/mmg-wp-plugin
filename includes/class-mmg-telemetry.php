@@ -35,7 +35,16 @@ class MMG_Telemetry {
 		$gateway_settings = get_option( 'woocommerce_mmg_checkout_settings', array() );
 		$is_enabled       = isset( $gateway_settings['enabled'] ) && 'yes' === $gateway_settings['enabled'];
 		$mode             = get_option( 'mmg_mode', 'demo' );
-		$theme            = wp_get_theme();
+		$error_count      = 0;
+		if ( class_exists( 'MMG_Logger' ) ) {
+			$logs      = MMG_Logger::get_logs();
+			$yesterday = time() - DAY_IN_SECONDS;
+			foreach ( $logs as $entry ) {
+				if ( 'error' === $entry['lvl'] && $entry['ts'] > $yesterday ) {
+					++$error_count;
+				}
+			}
+		}
 
 		$payload = array(
 			'site_url'         => home_url(),
@@ -47,6 +56,7 @@ class MMG_Telemetry {
 			'environment_mode' => $mode,
 			'site_language'    => get_locale(),
 			'active_theme'     => $theme->get( 'Name' ),
+			'error_count_24h'  => $error_count,
 		);
 
 		wp_remote_post(

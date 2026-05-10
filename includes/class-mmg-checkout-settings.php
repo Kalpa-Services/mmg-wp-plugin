@@ -280,7 +280,7 @@ class MMG_Checkout_Settings {
 									<span class="dashicons dashicons-clipboard" style="font-size:14px;width:14px;height:14px;"></span> Copy
 								</button>
 							</div>
-							<p class="mmg-form-hint">Provide this URL to MMG for payment callbacks.</p>
+							<p class="mmg-form-hint">Unified URL for hosted checkout redirects and asynchronous webhooks.</p>
 						</div>
 					</div>
 					<div class="mmg-form-row">
