@@ -306,18 +306,18 @@ class MMG_API_Client {
 			'offset' => isset( $params['offset'] ) ? intval( $params['offset'] ) : 100,
 		);
 
-		// Convert start_date / fromdate to Unix timestamp.
+		// Convert start_date / fromdate to ISO 8601.
 		if ( ! empty( $params['start_date'] ) ) {
-			$query_args['fromdate'] = $this->to_unix_timestamp( $params['start_date'] );
+			$query_args['fromdate'] = $this->format_api_date( $params['start_date'] );
 		} elseif ( ! empty( $params['fromdate'] ) ) {
-			$query_args['fromdate'] = $this->to_unix_timestamp( $params['fromdate'] );
+			$query_args['fromdate'] = $this->format_api_date( $params['fromdate'] );
 		}
 
-		// Convert end_date / todate to Unix timestamp.
+		// Convert end_date / todate to ISO 8601.
 		if ( ! empty( $params['end_date'] ) ) {
-			$query_args['todate'] = $this->to_unix_timestamp( $params['end_date'] );
+			$query_args['todate'] = $this->format_api_date( $params['end_date'] );
 		} elseif ( ! empty( $params['todate'] ) ) {
-			$query_args['todate'] = $this->to_unix_timestamp( $params['todate'] );
+			$query_args['todate'] = $this->format_api_date( $params['todate'] );
 		}
 
 		$query = http_build_query( $query_args );
@@ -333,22 +333,27 @@ class MMG_API_Client {
 	}
 
 	/**
-	 * Convert a date value to a Unix timestamp.
+	 * Convert a date value to the ISO 8601 UTC format expected by the API.
 	 *
-	 * Accepts Unix timestamps (numeric) or date strings (e.g. 2026-05-01).
-	 * For date strings without a time component, the start of day (00:00:00 UTC) is used.
+	 * Format: YYYY-MM-DDTHH:mm:ss.SSSZ
 	 *
-	 * @param string|int $date Date value.
-	 * @return int Unix timestamp.
+	 * @param string|int $date Date value (Unix timestamp or date string).
+	 * @return string Formatted date string.
 	 */
-	private function to_unix_timestamp( $date ) {
-		// Already a Unix timestamp (numeric string or int).
-		if ( is_numeric( $date ) ) {
-			return intval( $date );
+	protected function format_api_date( $date ) {
+		try {
+			if ( is_numeric( $date ) ) {
+				$dt = new DateTime( '@' . $date );
+			} else {
+				// Parse date string, defaulting to UTC if no timezone is specified.
+				$dt = new DateTime( $date, new DateTimeZone( 'UTC' ) );
+			}
+			$dt->setTimezone( new DateTimeZone( 'UTC' ) );
+			return $dt->format( 'Y-m-d\TH:i:s.v\Z' );
+		} catch ( Exception $e ) {
+			MMG_Logger::error( 'Date parsing failed for: ' . $date );
+			return '';
 		}
-		// Parse date string to timestamp.
-		$ts = strtotime( $date );
-		return false !== $ts ? $ts : 0;
 	}
 
 	/**
