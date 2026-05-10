@@ -14,4 +14,4 @@ vendor
 logs
 devbox.d/wordpress
 plugin-updater
-docs/
+docs/*
