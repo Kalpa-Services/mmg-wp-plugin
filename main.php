@@ -15,7 +15,7 @@
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kalpa Services Inc.
- * Author URI:        https://kalpa.dev
+ * Author URI:        https://wetechnologygroup.com
  * Text Domain:       mmg-checkout-payment
  * License:           GPL v2 or later
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
