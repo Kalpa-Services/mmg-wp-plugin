@@ -20,7 +20,7 @@ class MMG_Subscription_Admin {
 	public function __construct() {
 		add_filter( 'product_type_selector', array( $this, 'add_product_type' ) );
 		add_filter( 'woocommerce_product_data_tabs', array( $this, 'subscription_tabs' ) );
-		add_action( 'woocommerce_product_data_panels', array( $this, 'subscription_panels' ) );
+		add_action( 'woocommerce_product_options_general_product_data', array( $this, 'subscription_fields' ) );
 		add_action( 'woocommerce_process_product_meta_mmg_subscription', array( $this, 'save_subscription_meta' ) );
 		add_action( 'admin_footer', array( $this, 'subscription_js' ) );
 	}
@@ -48,10 +48,10 @@ class MMG_Subscription_Admin {
 	}
 
 	/**
-	 * Add subscription fields to product panel.
+	 * Add subscription fields to General tab.
 	 */
-	public function subscription_panels() {
-		echo '<div id="mmg_subscription_data" class="panel woocommerce_options_panel show_if_mmg_subscription">';
+	public function subscription_fields() {
+		echo '<div class="options_group show_if_mmg_subscription">';
 
 		woocommerce_wp_select(
 			array(
@@ -121,6 +121,7 @@ class MMG_Subscription_Admin {
 						$('.show_if_mmg_subscription').show();
 						$('.options_group.pricing').show();
 						$('.general_options').show();
+						$('.general_tab').show();
 					}
 				}
 
@@ -128,8 +129,8 @@ class MMG_Subscription_Admin {
 					toggle_mmg_sub_fields();
 				});
 
-				// Initial check on load.
-				toggle_mmg_sub_fields();
+				// Initial check on load with a small delay to override default Woo JS.
+				setTimeout(toggle_mmg_sub_fields, 100);
 			});
 		</script>
 		<?php
