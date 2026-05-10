@@ -109,6 +109,7 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
             ->onlyMethods( ['http_get', 'http_post'] )
             ->getMock();
         $client->method( 'http_get' )->willReturn( $ok );
+        // http_post has no default stub — each test that calls a POST method must set its own willReturn.
         return $client;
     }
 
@@ -221,7 +222,7 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
             ->with(
                 $this->anything(),
                 $this->anything(),
-                json_encode( $payload )
+                wp_json_encode( $payload )
             )
             ->willReturn( ['response' => ['code' => 200], 'body' => '{"result":"ok"}'] );
 

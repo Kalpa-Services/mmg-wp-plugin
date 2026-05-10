@@ -390,9 +390,13 @@ class MMG_API_Client {
 	 * @throws Exception On API error.
 	 */
 	public function initiate_payment( array $payload ): array {
-		$url = $this->base_url . '/e-merchant-initiated-transactions/payment';
+		$url  = $this->base_url . '/e-merchant-initiated-transactions/payment';
+		$body = wp_json_encode( $payload );
+		if ( false === $body ) {
+			throw new Exception( 'Failed to JSON-encode payment payload.' );
+		}
 		$this->ensure_token();
-		$body     = wp_json_encode( $payload );
+		MMG_Logger::info( 'POST ' . $url );
 		$response = $this->http_post( $url, $this->get_auth_headers(), $body );
 		$code     = is_wp_error( $response ) ? 'WP_Error' : wp_remote_retrieve_response_code( $response );
 		MMG_Logger::info( sprintf( 'POST %s -> HTTP %s', $url, $code ) );
