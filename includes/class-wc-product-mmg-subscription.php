@@ -33,6 +33,15 @@ class WC_Product_MMG_Subscription extends WC_Product_Simple {
 	}
 
 	/**
+	 * Returns true if the product is sold individually.
+	 *
+	 * @return bool
+	 */
+	public function is_sold_individually() {
+		return true;
+	}
+
+	/**
 	 * Get product name.
 	 *
 	 * @param string $context Context.
