@@ -58,7 +58,7 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 			return;
 		}
 
-		$rate = floatval( $rates[ $currency ]['rate'] );
+		$rate  = floatval( $rates[ $currency ]['rate'] );
 		$total = 0;
 		if ( is_object( WC()->cart ) ) {
 			$total = floatval( WC()->cart->get_total( 'edit' ) );
@@ -74,8 +74,9 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 					<div>
 						<?php
 						printf(
-							esc_html__( 'Your total of %s will be converted to GYD at a rate of 1 %s = %s GYD.', 'mmg-checkout-payment' ),
-							'<strong>' . wc_price( $total ) . '</strong>',
+							/* translators: 1: formatted original total, 2: currency code, 3: exchange rate */
+							esc_html__( 'Your total of %1$s will be converted to GYD at a rate of 1 %2$s = %3$s GYD.', 'mmg-checkout-payment' ),
+							'<strong>' . wp_kses_post( wc_price( $total ) ) . '</strong>',
 							esc_html( $currency ),
 							'<strong>' . esc_html( $rate ) . '</strong>'
 						);
@@ -84,8 +85,9 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 					<div style="margin-top: 8px; font-size: 15px; font-weight: 700; color: #1e2a3a;">
 						<?php
 						printf(
+							/* translators: %s: converted total in GYD */
 							esc_html__( 'Total to Pay: %s GYD', 'mmg-checkout-payment' ),
-							number_format( $converted_total, 0 )
+							esc_html( number_format( $converted_total, 0 ) )
 						);
 						?>
 					</div>

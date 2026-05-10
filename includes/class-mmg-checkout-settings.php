@@ -910,10 +910,10 @@ class MMG_Checkout_Settings {
 					?>
 					<div class="mmg-currency-card" data-code="<?php echo esc_attr( $code ); ?>">
 						<div class="mmg-currency-info">
-							<img src="https://flagcdn.com/w40/<?php echo esc_attr( strtolower( substr( $code, 0, 2 ) ) ); ?>.png" 
-								 class="mmg-flag-icon" 
-								 onerror="this.src='https://flagcdn.com/w40/un.png'"
-								 alt="<?php echo esc_attr( $code ); ?>" />
+							<img src="https://flagcdn.com/w40/<?php echo esc_attr( strtolower( substr( $code, 0, 2 ) ) ); ?>.png"
+								class="mmg-flag-icon"
+								onerror="this.src='https://flagcdn.com/w40/un.png'"
+								alt="<?php echo esc_attr( $code ); ?>" />
 							<div>
 								<div class="mmg-currency-code"><?php echo esc_html( $code ); ?></div>
 								<div class="mmg-currency-name"><?php echo esc_html( $wc_currencies[ $code ] ?? 'Custom Currency' ); ?></div>

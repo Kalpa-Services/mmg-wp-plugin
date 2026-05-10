@@ -663,10 +663,9 @@ class MMG_Checkout_Payment {
 	/**
 	 * REST get balance.
 	 *
-	 * @param WP_REST_Request $request Request.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function rest_get_balance( $request ) {
+	public function rest_get_balance() {
 		try {
 			return new WP_REST_Response( ( new MMG_API_Client() )->get_balance(), 200 );
 		} catch ( Exception $e ) {
