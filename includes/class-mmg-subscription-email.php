@@ -65,10 +65,10 @@ class MMG_Subscription_Email {
      * @param string $reason Failure reason for logging (not shown to customer).
      */
     public function send_payment_failed( object $sub, string $reason = '' ): void {
-        $this->send( 'mmg_email_tpl_failed', $sub );
         if ( $reason ) {
             MMG_Logger::error( "Subscription #{$sub->id} payment failed: {$reason}", 'errors' );
         }
+        $this->send( 'mmg_email_tpl_failed', $sub );
     }
 
     /**
@@ -100,6 +100,7 @@ class MMG_Subscription_Email {
                 '{customer_name}'     => $user->display_name,
                 '{subscription_name}' => $product_name,
                 '{amount}'            => $product ? wc_price( $product->get_price() ) : '',
+                '{currency}'          => get_option( 'woocommerce_currency', 'GYD' ),
                 '{next_payment_date}' => $sub->next_payment_date,
                 '{account_url}'       => $account_url,
                 '{site_name}'         => get_bloginfo( 'name' ),
