@@ -59,9 +59,24 @@ class WC_MMG_Payments_Blocks extends AbstractPaymentMethodType {
 	 * @return array
 	 */
 	public function get_payment_method_data() {
+		$currency       = get_woocommerce_currency();
+		$rates          = get_option( 'mmg_currency_rates', array() );
+		$rate           = 1;
+		$has_conversion = false;
+
+		if ( 'GYD' !== $currency && isset( $rates[ $currency ] ) && 'yes' === $rates[ $currency ]['enabled'] ) {
+			$rate           = floatval( $rates[ $currency ]['rate'] );
+			$has_conversion = true;
+		}
+
 		return array(
-			'title'       => $this->settings['title'],
-			'description' => $this->settings['description'],
+			'title'           => $this->settings['title'] ?? 'MMG Checkout',
+			'description'     => $this->settings['description'] ?? '',
+			'currency'        => $currency,
+			'currency_symbol' => get_woocommerce_currency_symbol(),
+			'rate'            => $rate,
+			'has_conversion'  => $has_conversion,
+			'supports'        => $this->get_supported_features(),
 		);
 	}
 }
