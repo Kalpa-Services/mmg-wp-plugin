@@ -178,15 +178,35 @@ class MMG_Checkout_Payment {
 		$order->update_meta_data( '_mmg_payment_attempt', $attempt_number );
 		$order->save();
 
+		$currency = $order->get_currency();
+		$total    = $order->get_total();
+		$amount   = $total;
+		$rate     = 1;
+
+		if ( 'GYD' !== $currency ) {
+			$rates = get_option( 'mmg_currency_rates', array() );
+			if ( isset( $rates[ $currency ] ) && 'yes' === $rates[ $currency ]['enabled'] ) {
+				$rate   = floatval( $rates[ $currency ]['rate'] );
+				$amount = round( $total * $rate );
+			}
+		}
+
 		$token_data = array(
 			'secretKey'             => get_option( "mmg_{$this->mode}_secret_key" ),
-			'amount'                => $order->get_total(),
+			'amount'                => $amount,
 			'merchantId'            => get_option( "mmg_{$this->mode}_merchant_id" ),
 			'merchantTransactionId' => $order->get_id() . '-' . $attempt_number,
 			'productDescription'    => 'Order #' . $order->get_order_number(),
 			'requestInitiationTime' => time(),
 			'merchantName'          => get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ),
 		);
+
+		// Store conversion metadata for reference.
+		$order->update_meta_data( '_mmg_conversion_rate', $rate );
+		$order->update_meta_data( '_mmg_original_amount', $total );
+		$order->update_meta_data( '_mmg_original_currency', $currency );
+		$order->update_meta_data( '_mmg_converted_amount_gyd', $amount );
+		$order->save();
 
 		$encoded      = $this->url_safe_base64_encode( $this->encrypt( $token_data ) );
 		$checkout_url = add_query_arg(
@@ -234,7 +254,7 @@ class MMG_Checkout_Payment {
 	 * @return string
 	 * @throws Exception If encryption fails.
 	 */
-	private function encrypt( $checkout_object ) {
+	protected function encrypt( $checkout_object ) {
 		$json_object = wp_json_encode( $checkout_object, JSON_UNESCAPED_SLASHES );
 
 		// Message to bytes.
@@ -273,7 +293,7 @@ class MMG_Checkout_Payment {
 	 * @param string $data Data to encode.
 	 * @return string
 	 */
-	private function url_safe_base64_encode( $data ) {
+	protected function url_safe_base64_encode( $data ) {
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 		return rtrim( strtr( base64_encode( $data ), '+/', '-_' ), '=' );
 	}
@@ -283,7 +303,7 @@ class MMG_Checkout_Payment {
 	 *
 	 * @return bool
 	 */
-	private function validate_public_key() {
+	protected function validate_public_key() {
 		$public_key = get_option( 'mmg_' . $this->mode . '_rsa_public_key' );
 		if ( ! $public_key ) {
 			return false;
@@ -559,7 +579,7 @@ class MMG_Checkout_Payment {
 	 * @param string $mode 'live' or 'demo'.
 	 * @return string
 	 */
-	private function get_checkout_url( $mode = null ) {
+	protected function get_checkout_url( $mode = null ) {
 		// If no mode is provided, use the current mode.
 		if ( null === $mode ) {
 			$mode = $this->mode;
@@ -643,10 +663,9 @@ class MMG_Checkout_Payment {
 	/**
 	 * REST get balance.
 	 *
-	 * @param WP_REST_Request $request Request.
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function rest_get_balance( $request ) {
+	public function rest_get_balance() {
 		try {
 			return new WP_REST_Response( ( new MMG_API_Client() )->get_balance(), 200 );
 		} catch ( Exception $e ) {

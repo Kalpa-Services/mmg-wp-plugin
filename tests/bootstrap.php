@@ -79,6 +79,21 @@ class WP_Error {
     }
     public function get_error_message() { return $this->message; }
 }
+class WC_Order {
+    public function get_currency() { return 'GYD'; }
+    public function get_total() { return 0.00; }
+    public function get_id() { return 0; }
+    public function get_order_number() { return '0'; }
+    public function get_meta( $key, $single = true, $context = 'view' ) { return ''; }
+    public function update_meta_data( $key, $value, $meta_id = 0 ) {}
+    public function save() {}
+    public function payment_complete( $transaction_id = '' ) {}
+    public function add_order_note( $note, $is_customer_note = 0, $added_by_user = false ) {}
+    public function update_status( $new_status, $note = '', $manual = false ) {}
+    public function is_paid() { return false; }
+    public function get_checkout_payment_url( $on_checkout = false ) { return 'http://example.com/checkout/pay'; }
+    public function get_checkout_order_received_url() { return 'http://example.com/checkout/thankyou'; }
+}
 class WP_REST_Response {
     public $data, $status;
     public function __construct( $data = null, $status = 200 ) {

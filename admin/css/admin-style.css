@@ -1201,3 +1201,155 @@
   padding: 0;
   margin: 0;
 }
+
+/* ---------- Currency Conversion Tab ---------- */
+.mmg-currency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.mmg-currency-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--mmg-surface);
+  border: 1px solid var(--mmg-border);
+  border-radius: var(--mmg-radius-lg);
+  padding: 16px 20px;
+  transition: all var(--mmg-transition);
+}
+
+.mmg-currency-card:hover {
+  border-color: var(--mmg-accent);
+  box-shadow: var(--mmg-shadow);
+}
+
+.mmg-currency-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mmg-flag-icon {
+  width: 40px;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: var(--mmg-shadow-sm);
+  background: var(--mmg-surface-alt);
+}
+
+.mmg-currency-code {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--mmg-text);
+}
+
+.mmg-currency-name {
+  font-size: 12px;
+  color: var(--mmg-text-secondary);
+}
+
+.mmg-currency-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.mmg-rate-prefix, .mmg-rate-suffix {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mmg-text-secondary);
+}
+
+.mmg-rate-input {
+  width: 100px !important;
+  text-align: center;
+}
+
+.mmg-toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mmg-btn-remove-currency {
+  background: none;
+  border: none;
+  color: var(--mmg-text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  transition: color var(--mmg-transition);
+  padding: 0;
+  line-height: 1;
+}
+
+.mmg-btn-remove-currency:hover {
+  color: var(--mmg-danger);
+}
+
+.mmg-currency-add-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: var(--mmg-surface-alt);
+  border: 1px dashed var(--mmg-border);
+  border-radius: var(--mmg-radius-lg);
+  margin-bottom: 24px;
+}
+
+.mmg-currency-add-row select {
+  max-width: 240px !important;
+}
+
+/* Custom Switch Toggle */
+.mmg-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+}
+
+.mmg-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mmg-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--mmg-border);
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.mmg-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .mmg-slider {
+  background-color: var(--mmg-accent);
+}
+
+input:focus + .mmg-slider {
+  box-shadow: 0 0 1px var(--mmg-accent);
+}
+
+input:checked + .mmg-slider:before {
+  transform: translateX(22px);
+}

@@ -1,13 +1,5 @@
-.....W...... 12 / 12 (100%)
+............. 13 / 13 (100%)
 
 
-
-FILE: ...y/Documents/projects/mmg-wp-plugin/includes/class-mmg-checkout-payment.php
---------------------------------------------------------------------------------
-FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
---------------------------------------------------------------------------------
- 649 | WARNING | The method parameter $request is never used
---------------------------------------------------------------------------------
-
-Time: 465ms; Memory: 22MB
+Time: 499ms; Memory: 22MB
 

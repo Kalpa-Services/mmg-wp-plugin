@@ -106,6 +106,7 @@ class MMG_Checkout_Settings {
 		// Common settings.
 		register_setting( 'mmg_checkout_settings', 'mmg_merchant_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_live_mwallet_url', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'mmg_currency_rates_group', 'mmg_currency_rates', array( 'sanitize_callback' => array( $this, 'sanitize_currency_rates' ) ) );
 	}
 
 	/**
@@ -134,6 +135,10 @@ class MMG_Checkout_Settings {
 			'transactions' => array(
 				'label' => 'Transactions',
 				'icon'  => 'dashicons-list-view',
+			),
+			'currency'     => array(
+				'label' => 'Currency Conversion',
+				'icon'  => 'dashicons-translation',
 			),
 			'logs'         => array(
 				'label' => 'Logs',
@@ -192,6 +197,9 @@ class MMG_Checkout_Settings {
 					</div>
 					<div id="mmg-panel-transactions" class="mmg-tab-panel <?php echo 'transactions' === $current_tab ? 'mmg-tab-active' : ''; ?>">
 						<?php $this->render_transactions_tab(); ?>
+					</div>
+					<div id="mmg-panel-currency" class="mmg-tab-panel <?php echo 'currency' === $current_tab ? 'mmg-tab-active' : ''; ?>">
+						<?php $this->render_currency_tab(); ?>
 					</div>
 					<div id="mmg-panel-logs" class="mmg-tab-panel <?php echo 'logs' === $current_tab ? 'mmg-tab-active' : ''; ?>">
 						<?php $this->render_logs_tab(); ?>
@@ -860,6 +868,118 @@ class MMG_Checkout_Settings {
 			)
 		);
 		wp_enqueue_style( 'mmg-admin-style', plugin_dir_url( __FILE__ ) . '../admin/css/admin-style.css', array(), MMG_PLUGIN_VERSION );
+	}
+
+	/**
+	 * Render the Currency Conversion tab.
+	 */
+	private function render_currency_tab() {
+		$rates = get_option( 'mmg_currency_rates', array() );
+
+		// Ensure USD defaults to 215 if not set.
+		if ( ! isset( $rates['USD'] ) ) {
+			$rates['USD'] = array(
+				'rate'    => 215,
+				'enabled' => 'yes',
+			);
+		}
+
+		$wc_currencies = function_exists( 'get_woocommerce_currencies' ) ? get_woocommerce_currencies() : array();
+		$site_currency = function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'USD';
+		?>
+		<h2 class="mmg-section-title">Currency Conversion</h2>
+		<p class="mmg-section-desc">MMG only supports GYD. Set exchange rates to convert your site's default currency to GYD at checkout.</p>
+
+		<form method="post" action="options.php" id="mmg-currency-settings-form">
+			<?php settings_fields( 'mmg_currency_rates_group' ); ?>
+			
+			<div class="mmg-alert mmg-alert-info">
+				<span class="mmg-alert-icon dashicons dashicons-info"></span>
+				<div><strong>Default Currency:</strong> Your site is currently set to <strong><?php echo esc_html( $site_currency ); ?></strong>. <?php echo 'GYD' === $site_currency ? 'No conversion needed.' : 'Ensure you have a rate set for this currency.'; ?></div>
+			</div>
+			<div class="mmg-alert mmg-alert-info">
+				<span class="mmg-alert-icon dashicons dashicons-saved"></span>
+				<div><?php esc_html_e( 'Changes take effect on the checkout immediately after saving.', 'mmg-checkout-payment' ); ?></div>
+			</div>
+
+			<div class="mmg-currency-list" id="mmg-currency-list">
+				<?php
+				foreach ( $rates as $code => $data ) :
+					$rate    = isset( $data['rate'] ) ? $data['rate'] : 1;
+					$enabled = isset( $data['enabled'] ) ? $data['enabled'] : 'yes';
+					?>
+					<div class="mmg-currency-card" data-code="<?php echo esc_attr( $code ); ?>">
+						<div class="mmg-currency-info">
+							<img src="https://flagcdn.com/w40/<?php echo esc_attr( strtolower( substr( $code, 0, 2 ) ) ); ?>.png"
+								class="mmg-flag-icon"
+								onerror="this.src='https://flagcdn.com/w40/un.png'"
+								alt="<?php echo esc_attr( $code ); ?>" />
+							<div>
+								<div class="mmg-currency-code"><?php echo esc_html( $code ); ?></div>
+								<div class="mmg-currency-name"><?php echo esc_html( $wc_currencies[ $code ] ?? 'Custom Currency' ); ?></div>
+							</div>
+						</div>
+						<div class="mmg-currency-actions">
+							<div class="mmg-input-group">
+								<span class="mmg-rate-prefix">1 <?php echo esc_html( $code ); ?> =</span>
+								<input type="number" step="0.01" name="mmg_currency_rates[<?php echo esc_attr( $code ); ?>][rate]" value="<?php echo esc_attr( $rate ); ?>" class="mmg-rate-input" />
+								<span class="mmg-rate-suffix">GYD</span>
+							</div>
+							<div class="mmg-toggle-group">
+								<label class="mmg-switch">
+									<input type="checkbox" name="mmg_currency_rates[<?php echo esc_attr( $code ); ?>][enabled]" value="yes" <?php checked( $enabled, 'yes' ); ?> />
+									<span class="mmg-slider"></span>
+								</label>
+								<button type="button" class="mmg-btn-remove-currency" title="Remove">&times;</button>
+							</div>
+						</div>
+					</div>
+				<?php endforeach; ?>
+			</div>
+
+			<div class="mmg-currency-add-row">
+				<select id="mmg-new-currency-select">
+					<option value="">Add a currency...</option>
+					<?php foreach ( $wc_currencies as $code => $label ) : ?>
+						<?php if ( ! isset( $rates[ $code ] ) ) : ?>
+							<option value="<?php echo esc_attr( $code ); ?>"><?php echo esc_html( $code ); ?> - <?php echo esc_html( $label ); ?></option>
+						<?php endif; ?>
+					<?php endforeach; ?>
+				</select>
+				<button type="button" id="mmg-add-currency-btn" class="mmg-btn mmg-btn-secondary mmg-btn-sm">
+					<span class="dashicons dashicons-plus"></span> Add Currency
+				</button>
+			</div>
+
+			<button type="submit" class="mmg-btn mmg-btn-primary mmg-btn-save">
+				<span class="dashicons dashicons-saved" style="font-size:16px;width:16px;height:16px;"></span> Save Rates
+			</button>
+		</form>
+		<?php
+	}
+
+	/**
+	 * Sanitize currency rates.
+	 *
+	 * @param array $input Input rates.
+	 * @return array
+	 */
+	public function sanitize_currency_rates( $input ) {
+		if ( ! is_array( $input ) ) {
+			return array();
+		}
+		$output = array();
+		foreach ( $input as $code => $data ) {
+			$clean_code = sanitize_text_field( $code );
+			if ( empty( $clean_code ) ) {
+				continue;
+			}
+			$output[ $clean_code ] = array(
+				'rate'    => isset( $data['rate'] ) ? floatval( $data['rate'] ) : 1,
+				'enabled' => isset( $data['enabled'] ) ? 'yes' : 'no',
+			);
+		}
+		return $output;
 	}
 
 	/**
