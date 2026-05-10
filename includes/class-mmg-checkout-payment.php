@@ -834,8 +834,13 @@ class MMG_Checkout_Payment {
 		}
 
 		// 5. Log event to database.
-		$order_id = ! empty( $data['order_id'] ) ? intval( $data['order_id'] ) : $this->extract_order_id( $data['merchantTransactionId'] ?? '' );
-		$this->log_event( $event_id, $data['event_type'] ?? 'payment.success', $order_id );
+		$order_id   = ! empty( $data['order_id'] ) ? intval( $data['order_id'] ) : $this->extract_order_id( $data['merchantTransactionId'] ?? '' );
+		$event_type = $data['event_type'] ?? 'payment.success';
+		$this->log_event( $event_id, $event_type, $order_id );
+
+		// Ensure these are in data for background processing.
+		$data['order_id']   = $order_id;
+		$data['event_type'] = $event_type;
 
 		// 6. Push to Action Scheduler for background processing.
 		if ( function_exists( 'as_enqueue_async_action' ) ) {

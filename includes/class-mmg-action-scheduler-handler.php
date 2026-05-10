@@ -134,7 +134,7 @@ class MMG_Action_Scheduler_Handler {
 	 */
 	protected function handle_payment_success( $order, $data ) {
 		if ( ! $order->is_paid() ) {
-			$txn_id = isset( $data['transaction_id'] ) ? $data['transaction_id'] : '';
+			$txn_id = isset( $data['transaction_id'] ) ? $data['transaction_id'] : ( $data['transactionId'] ?? '' );
 			$order->payment_complete( $txn_id );
 			$order->add_order_note( sprintf( 'Payment confirmed via webhook. Transaction ID: %s', $txn_id ) );
 
