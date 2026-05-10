@@ -32,6 +32,7 @@ class MMG_Checkout_Settings {
 		add_action( 'wp_ajax_mmg_lookup_transaction', array( $this, 'ajax_lookup_transaction' ) );
 		add_action( 'wp_ajax_mmg_reversal', array( $this, 'ajax_reversal' ) );
 		add_action( 'wp_ajax_mmg_clear_logs', array( $this, 'ajax_clear_logs' ) );
+		add_action( 'wp_ajax_mmg_get_logs', array( $this, 'ajax_get_logs' ) );
 	}
 
 	/**
@@ -781,6 +782,43 @@ class MMG_Checkout_Settings {
 	}
 
 	/**
+	 * AJAX handler: Get all plugin logs.
+	 */
+	public function ajax_get_logs() {
+		check_ajax_referer( 'mmg_admin_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Unauthorized', 403 );
+		}
+		$logs   = MMG_Logger::get_logs();
+		$counts = MMG_Logger::count_by_level();
+
+		// Format timestamps and messages for JS.
+		$formatted_logs = array();
+		foreach ( $logs as $entry ) {
+			$lvl = isset( $entry['lvl'] ) ? $entry['lvl'] : 'info';
+			$ts  = isset( $entry['ts'] ) ? (int) $entry['ts'] : 0;
+			$msg = isset( $entry['msg'] ) ? $entry['msg'] : '';
+			$dt  = $ts ? wp_date( 'Y-m-d H:i:s', $ts ) : '—';
+
+			$formatted_logs[] = array(
+				'lvl'       => $lvl,
+				'lvl_upper' => strtoupper( $lvl ),
+				'dt'        => $dt,
+				'msg'       => $msg,
+				'copy'      => '[' . strtoupper( $lvl ) . '] ' . $dt . ' | ' . $msg,
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'logs'   => $formatted_logs,
+				'counts' => $counts,
+				'total'  => count( $logs ),
+			)
+		);
+	}
+
+	/**
 	 * Render the Logs tab.
 	 */
 	private function render_logs_tab() {
@@ -794,12 +832,16 @@ class MMG_Checkout_Settings {
 				<p class="mmg-section-desc">Activity and error log for MMG Checkout. The last <?php echo esc_html( MMG_Logger::MAX_ENTRIES ); ?> entries are retained.</p>
 			</div>
 			<div class="mmg-logs-actions">
+				<button type="button" id="mmg-reload-logs" class="mmg-btn mmg-btn-secondary mmg-btn-sm">
+					<span class="dashicons dashicons-update" style="font-size:14px;width:14px;height:14px;"></span> Reload
+				</button>
 				<button type="button" id="mmg-download-logs" class="mmg-btn mmg-btn-secondary mmg-btn-sm"<?php echo empty( $logs ) ? ' disabled' : ''; ?>>
 					<span class="dashicons dashicons-download" style="font-size:14px;width:14px;height:14px;"></span> Export
 				</button>
 				<button type="button" id="mmg-clear-logs" class="mmg-btn mmg-btn-danger mmg-btn-sm"<?php echo empty( $logs ) ? ' disabled' : ''; ?>>
 					<span class="dashicons dashicons-trash" style="font-size:14px;width:14px;height:14px;"></span> Clear Logs
 				</button>
+				<span id="mmg-reload-logs-spinner" class="spinner" style="float:none;display:none;"></span>
 				<span id="mmg-clear-logs-spinner" class="spinner" style="float:none;display:none;"></span>
 			</div>
 		</div>

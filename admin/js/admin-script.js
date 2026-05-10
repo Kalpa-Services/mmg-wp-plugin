@@ -277,6 +277,78 @@ jQuery(document).ready(function ($) {
     }
   });
 
+  $("#mmg-reload-logs").on("click", function () {
+    var $btn = $(this);
+    var $spinner = $("#mmg-reload-logs-spinner");
+    $btn.prop("disabled", true);
+    $spinner.show();
+    $.post(mmg_admin_params.ajax_url, {
+      action: "mmg_get_logs",
+      nonce: mmg_admin_params.nonce,
+    })
+      .done(function (r) {
+        if (r.success) {
+          var logs = r.data.logs;
+          var counts = r.data.counts;
+          var total = r.data.total;
+
+          // Update counts.
+          $(".mmg-log-filter-all .mmg-log-count").text(total);
+          $(".mmg-log-filter-error .mmg-log-count").text(counts.error);
+          $(".mmg-log-filter-warning .mmg-log-count").text(counts.warning);
+          $(".mmg-log-filter-info .mmg-log-count").text(counts.info);
+
+          if (logs.length === 0) {
+            $("#mmg-log-list").replaceWith(
+              '<div class="mmg-logs-empty">' +
+                '<span class="dashicons dashicons-yes-alt"></span>' +
+                "<p>No log entries yet. Events will appear here as the plugin operates.</p>" +
+                "</div>"
+            );
+            $("#mmg-download-logs, #mmg-clear-logs").prop("disabled", true);
+          } else {
+            var html = '<div class="mmg-log-list" id="mmg-log-list">';
+            logs.forEach(function (entry) {
+              html += '<div class="mmg-log-entry" data-level="' + entry.lvl + '">';
+              html += '<span class="mmg-log-badge mmg-log-badge-' + entry.lvl + '">' + entry.lvl_upper + "</span>";
+              html += '<span class="mmg-log-time">' + entry.dt + "</span>";
+              html += '<span class="mmg-log-msg">' + entry.msg + "</span>";
+              html += '<button type="button" class="mmg-log-copy" title="Copy" onclick="mmgCopyToClipboard(\'' + entry.copy.replace(/'/g, "\\'") + "')\">";
+              html += '<span class="dashicons dashicons-clipboard"></span>';
+              html += "</button>";
+              html += "</div>";
+            });
+            html += "</div>";
+
+            // If we were showing the "empty" div, replace it. Otherwise update the list.
+            if ($(".mmg-logs-empty").length) {
+              $(".mmg-logs-empty").replaceWith(html);
+            } else {
+              $("#mmg-log-list").replaceWith(html);
+            }
+            $("#mmg-download-logs, #mmg-clear-logs").prop("disabled", false);
+            
+            // Re-apply current filter if any.
+            var currentFilter = $(".mmg-log-filter-active").data("filter");
+            if (currentFilter && currentFilter !== "all") {
+               $(".mmg-log-entry").hide();
+               $('.mmg-log-entry[data-level="' + currentFilter + '"]').show();
+            }
+          }
+          mmgShowToast("Logs refreshed.", "success");
+        } else {
+          mmgShowToast("Failed to refresh logs.", "error");
+        }
+      })
+      .fail(function () {
+        mmgShowToast("Server error.", "error");
+      })
+      .always(function () {
+        $btn.prop("disabled", false);
+        $spinner.hide();
+      });
+  });
+
   $("#mmg-clear-logs").on("click", function () {
     if (!confirm("Clear all logs? This cannot be undone.")) return;
     var $btn = $(this);
