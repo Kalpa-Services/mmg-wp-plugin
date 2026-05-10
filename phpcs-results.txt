@@ -32,5 +32,5 @@ FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
      |         | wp_cache_get() / wp_cache_set() or wp_cache_delete().
 --------------------------------------------------------------------------------
 
-Time: 656ms; Memory: 26MB
+Time: 663ms; Memory: 26MB
 

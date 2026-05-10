@@ -126,6 +126,7 @@ class MMG_Checkout_Payment {
 		new MMG_Subscription_Manager();
 		new MMG_Subscription_Account();
 		add_filter( 'woocommerce_product_class', array( $this, 'get_subscription_product_class' ), 10, 2 );
+		add_action( 'woocommerce_mmg_subscription_add_to_cart', 'woocommerce_simple_add_to_cart', 30 );
 
 		$this->live_checkout_url = $this->get_checkout_url( 'live' );
 		$this->demo_checkout_url = $this->get_checkout_url( 'demo' );

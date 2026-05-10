@@ -24,6 +24,15 @@ class WC_Product_MMG_Subscription extends WC_Product_Simple {
 	}
 
 	/**
+	 * Returns false if the product is not purchasable.
+	 *
+	 * @return bool
+	 */
+	public function is_purchasable() {
+		return true;
+	}
+
+	/**
 	 * Get product name.
 	 *
 	 * @param string $context Context.
