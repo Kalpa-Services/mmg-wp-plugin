@@ -1,0 +1,36 @@
+PHPUnit 9.6.34 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.0RC4
+Configuration: /home/carlhandy/Documents/projects/mmg-wp-plugin/phpunit.xml
+
+ [36m◓[0m running tests[1K[27D [36m◑[0m running tests[1K[27D[4mMMGApi Client[0m
+ [32m✔[0m Demo base url [32m 1 [2mms[0m
+ [36m◓[0m running tests[1K[27D [32m✔[0m Live base url uses option [32m 1 [2mms[0m
+ [32m✔[0m Live base url defaults when option missing [32m 1 [2mms[0m
+ [36m◓[0m running tests[1K[27D [32m✔[0m Ensure token skips login when cached [32m 1 [2mms[0m
+ [36m◓[0m running tests[1K[27D [32m✔[0m Ensure token calls login when no token [32m 1 [2mms[0m
+ [36m◓[0m running tests[1K[27D [32m✔[0m Clear tokens removes access token [32m 1 [2mms[0m
+ [36m◓[0m running tests[1K[27D [32m✔[0m Login stores access token on success [32m 1 [2mms[0m
+ [36m◓[0m running tests[1K[27D [32m✔[0m Login throws on non 200 [32m 1 [2mms[0m
+ [36m◓[0m running tests[1K[27D [32m✔[0m Get balance url contains balance path and merchant msisdn [32m 1 [2mms[0m
+ [32m✔[0m Get transaction history url contains txn history path and msisdn [32m 3 [2mms[0m
+ [32m✔[0m Lookup transaction url contains lookup path and txn id [32m 1 [2mms[0m
+ [32m✔[0m Reversal posts to reversal path with mid and txn id [32m 1 [2mms[0m
+ [32m✔[0m All authenticated calls inject required headers [32m 1 [2mms[0m
+
+[4mMMGCheckout Payment (MMG_Checkout_Payment\MMGCheckoutPayment)[0m
+ [32m✔[0m Generate checkout url [32m 1 [2mms[0m
+
+[4mMMGGateway[0m
+ [32m✔[0m Process refund returns true on success [32m 1 [2mms[0m
+ [32m✔[0m Process refund returns wp error on failure [32m 1 [2mms[0m
+
+[4mMMGWebhook[0m
+ [32m✔[0m Webhook completes order on result code zero [32m 1 [2mms[0m
+ [32m✔[0m Webhook rejects invalid callback key with 403 [32m 1 [2mms[0m
+ [32m✔[0m Webhook returns 200 on decrypt failure to prevent retries [32m 1 [2mms[0m
+ [32m✔[0m Webhook does not double complete already paid order [32m 1 [2mms[0m
+
+Time: 00:00.008, Memory: 6.00 MB
+
+[30;42mOK (20 tests, 29 assertions)[0m

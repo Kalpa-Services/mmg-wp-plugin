@@ -25,7 +25,7 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
     public function test_live_base_url_defaults_when_option_missing() {
         $GLOBALS['mmg_test_options']['mmg_mode'] = 'live';
         $client = new MMG_API_Client();
-        $this->assertSame( 'https://mwallet.mymmg.gy/olive/publisher/v1', $client->get_base_url() );
+        $this->assertSame( 'https://ecommerce.mymmg.gy/olive/publisher/v1', $client->get_base_url() );
     }
 
     public function test_ensure_token_skips_login_when_cached() {

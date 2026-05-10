@@ -398,7 +398,7 @@ class MMG_Checkout_Settings {
 						<div class="mmg-form-row">
 							<div class="mmg-form-label">mWallet Base URL</div>
 							<div class="mmg-form-control">
-								<input type="text" name="mmg_live_mwallet_url" value="<?php echo esc_attr( get_option( 'mmg_live_mwallet_url', 'https://mwallet.mymmg.gy/olive/publisher/v1' ) ); ?>" />
+								<input type="text" name="mmg_live_mwallet_url" value="<?php echo esc_attr( get_option( 'mmg_live_mwallet_url', 'https://ecommerce.mymmg.gy/olive/publisher/v1' ) ); ?>" />
 								<p class="mmg-form-hint">Leave as default unless MMG provides a different one.</p>
 							</div>
 						</div>
