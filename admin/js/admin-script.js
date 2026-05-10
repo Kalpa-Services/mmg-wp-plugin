@@ -360,7 +360,7 @@ jQuery(document).ready(function ($) {
         }
         var html = '<div class="mmg-table-wrap"><table class="mmg-table">';
         html +=
-          "<thead><tr><th>ID</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody>";
+          "<thead><tr><th>ID</th><th>Date</th><th>Description</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody>";
         rows.forEach(function (t) {
           var txnId = t.transactionReference || t.transactionReceipt || t.transactionId || t.id || "—";
           var date = t.modificationDate || t.date || t.createdAt || "—";
@@ -369,9 +369,12 @@ jQuery(document).ready(function ($) {
           var statusLower = status.toLowerCase();
           var canRefund = (statusLower === 'completed' || statusLower === 'successful' || statusLower === 'success');
 
+          var desc = t.descriptionText || t.description || "—";
+
           html += "<tr>";
           html += '<td style="font-family:monospace; font-size:11px;">' + txnId + "</td>";
           html += "<td>" + date + "</td>";
+          html += "<td>" + desc + "</td>";
           html += "<td><strong>" + amount + "</strong></td>";
           html += "<td>" + status + "</td>";
           html += "<td>";
