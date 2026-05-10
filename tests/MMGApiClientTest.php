@@ -133,7 +133,7 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
                 $this->logicalAnd(
                     $this->stringContains( '/txn-history' ),
                     $this->stringContains( 'msisdn=MID999' ),
-                    $this->stringContains( 'fromdate=' . strtotime('2025-01-01') )
+                    $this->stringContains( 'fromdate=2025-01-01T00%3A00%3A00.000Z' )
                 ),
                 $this->anything()
             );
