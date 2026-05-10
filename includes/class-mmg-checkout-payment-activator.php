@@ -59,6 +59,8 @@ class MMG_Checkout_Payment_Activator {
 		}
 	}
 
+
+
 	/**
 	 * Add rewrite rules for MMG Checkout Payment callbacks.
 	 *
