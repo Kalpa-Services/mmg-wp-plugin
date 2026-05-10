@@ -34,7 +34,14 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		);
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'woocommerce_review_order_before_payment', array( $this, 'display_currency_conversion_notice' ) );
+	}
+
+	/**
+	 * Output payment fields.
+	 */
+	public function payment_fields() {
+		parent::payment_fields();
+		$this->display_currency_conversion_notice();
 	}
 
 	/**
@@ -52,16 +59,38 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		}
 
 		$rate = floatval( $rates[ $currency ]['rate'] );
+		$total = 0;
+		if ( is_object( WC()->cart ) ) {
+			$total = floatval( WC()->cart->get_total( 'edit' ) );
+		}
+
+		$converted_total = round( $total * $rate );
 		?>
-		<div class="mmg-checkout-conversion-notice" style="margin-bottom: 20px; padding: 15px; background: #f8f9fb; border: 1px solid #e2e6ed; border-radius: 8px; font-size: 13px; color: #64748b; line-height: 1.5;">
-			<span class="dashicons dashicons-info" style="font-size: 18px; color: #0f9b8e; margin-right: 8px; vertical-align: middle;"></span>
-			<?php
-			printf(
-				esc_html__( 'Total will be converted to GYD at an exchange rate of 1 %s = %s GYD.', 'mmg-checkout-payment' ),
-				esc_html( $currency ),
-				esc_html( $rate )
-			);
-			?>
+		<div class="mmg-checkout-conversion-notice" style="margin-top: 15px; padding: 15px; background: #fffbeb; border: 1px solid #f59e0b; border-radius: 8px; font-size: 13px; color: #92400e; line-height: 1.6;">
+			<div style="display: flex; align-items: flex-start; gap: 10px;">
+				<span class="dashicons dashicons-info" style="font-size: 20px; color: #f59e0b; margin-top: 2px;"></span>
+				<div>
+					<div style="font-weight: 700; margin-bottom: 4px;"><?php esc_html_e( 'Currency Conversion', 'mmg-checkout-payment' ); ?></div>
+					<div>
+						<?php
+						printf(
+							esc_html__( 'Your total of %s will be converted to GYD at a rate of 1 %s = %s GYD.', 'mmg-checkout-payment' ),
+							'<strong>' . wc_price( $total ) . '</strong>',
+							esc_html( $currency ),
+							'<strong>' . esc_html( $rate ) . '</strong>'
+						);
+						?>
+					</div>
+					<div style="margin-top: 8px; font-size: 15px; font-weight: 700; color: #1e2a3a;">
+						<?php
+						printf(
+							esc_html__( 'Total to Pay: %s GYD', 'mmg-checkout-payment' ),
+							number_format( $converted_total, 0 )
+						);
+						?>
+					</div>
+				</div>
+			</div>
 		</div>
 		<?php
 	}

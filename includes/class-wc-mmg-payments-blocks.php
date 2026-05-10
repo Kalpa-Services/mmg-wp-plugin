@@ -65,8 +65,10 @@ class WC_MMG_Payments_Blocks extends AbstractPaymentMethodType {
 		$has_conversion = false;
 
 		if ( 'GYD' !== $currency && isset( $rates[ $currency ] ) && 'yes' === $rates[ $currency ]['enabled'] ) {
-			$rate           = floatval( $rates[ $currency ]['rate'] );
-			$has_conversion = true;
+			$rate = floatval( $rates[ $currency ]['rate'] );
+			if ( $rate > 0 ) {
+				$has_conversion = true;
+			}
 		}
 
 		return array(
