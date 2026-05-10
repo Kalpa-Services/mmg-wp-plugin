@@ -29,9 +29,10 @@ const MMGCheckoutContent = () => {
   ];
 
   if (has_conversion && cartTotals && parseFloat(rate) > 0) {
-    const total = parseFloat(cartTotals.total_price) / 100;
+    const minorUnit = parseInt(cartTotals.currency_minor_unit ?? 2, 10);
+    const total = parseFloat(cartTotals.total_price) / Math.pow(10, minorUnit);
     const converted_total = Math.round(total * parseFloat(rate));
-    const price_formatted = `${decodeEntities(currency_symbol || "")}${total.toFixed(2)}`;
+    const price_formatted = `${decodeEntities(currency_symbol || "")}${total.toFixed(minorUnit)}`;
 
     content.push(
       createElement(
