@@ -381,4 +381,21 @@ class MMG_API_Client {
 			'/e-merchant-initiated-transactions/reversal?' . $query
 		);
 	}
+
+	/**
+	 * Initiate a Merchant Initiated Transaction (recurring payment).
+	 *
+	 * @param array $payload Payment payload.
+	 * @return array
+	 * @throws Exception On API error.
+	 */
+	public function initiate_payment( array $payload ): array {
+		$url = $this->base_url . '/e-merchant-initiated-transactions/payment';
+		$this->ensure_token();
+		$body     = wp_json_encode( $payload );
+		$response = $this->http_post( $url, $this->get_auth_headers(), $body );
+		$code     = is_wp_error( $response ) ? 'WP_Error' : wp_remote_retrieve_response_code( $response );
+		MMG_Logger::info( sprintf( 'POST %s -> HTTP %s', $url, $code ) );
+		return $this->parse_response( $response, 'POST /e-merchant-initiated-transactions/payment' );
+	}
 }

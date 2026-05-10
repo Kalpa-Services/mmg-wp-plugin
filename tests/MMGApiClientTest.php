@@ -109,7 +109,6 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
             ->onlyMethods( ['http_get', 'http_post'] )
             ->getMock();
         $client->method( 'http_get' )->willReturn( $ok );
-        $client->method( 'http_post' )->willReturn( $ok );
         return $client;
     }
 
@@ -164,7 +163,8 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
                 ),
                 $this->anything(),
                 $this->anything()
-            );
+            )
+            ->willReturn( ['response' => ['code' => 200], 'body' => '{}'] );
         $client->reversal( 'MID999', 'TXN-77' );
     }
 
@@ -183,5 +183,58 @@ class MMGApiClientTest extends \PHPUnit\Framework\TestCase {
                 )
             );
         $client->get_balance();
+    }
+
+    public function test_initiate_payment_posts_to_mit_payment_endpoint() {
+        $client = $this->make_testable_client();
+        $client->expects( $this->once() )->method( 'http_post' )
+            ->with(
+                $this->stringContains( '/e-merchant-initiated-transactions/payment' ),
+                $this->anything(),
+                $this->anything()
+            )
+            ->willReturn( ['response' => ['code' => 200], 'body' => '{}'] );
+
+        $client->initiate_payment( ['merchant_msisdn' => 'MID999', 'amount' => 5000] );
+    }
+
+    public function test_initiate_payment_includes_auth_headers() {
+        $client = $this->make_testable_client();
+        $client->expects( $this->once() )->method( 'http_post' )
+            ->with(
+                $this->anything(),
+                $this->logicalAnd(
+                    $this->arrayHasKey( 'x-wss-token' ),
+                    $this->arrayHasKey( 'x-wss-mid' )
+                ),
+                $this->anything()
+            )
+            ->willReturn( ['response' => ['code' => 200], 'body' => '{}'] );
+
+        $client->initiate_payment( ['merchant_msisdn' => 'MID999', 'amount' => 5000] );
+    }
+
+    public function test_initiate_payment_json_encodes_payload_as_body() {
+        $payload = ['merchant_msisdn' => 'MID999', 'amount' => 5000, 'payment_token' => 'tok123'];
+        $client  = $this->make_testable_client();
+        $client->expects( $this->once() )->method( 'http_post' )
+            ->with(
+                $this->anything(),
+                $this->anything(),
+                json_encode( $payload )
+            )
+            ->willReturn( ['response' => ['code' => 200], 'body' => '{"result":"ok"}'] );
+
+        $result = $client->initiate_payment( $payload );
+        $this->assertSame( ['result' => 'ok'], $result );
+    }
+
+    public function test_initiate_payment_throws_on_non_200() {
+        $client = $this->make_testable_client();
+        $client->method( 'http_post' )
+            ->willReturn( ['response' => ['code' => 422], 'body' => '{"message":"invalid token"}'] );
+
+        $this->expectException( Exception::class );
+        $client->initiate_payment( ['merchant_msisdn' => 'MID999'] );
     }
 }
