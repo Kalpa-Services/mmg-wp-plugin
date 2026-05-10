@@ -897,6 +897,10 @@ class MMG_Checkout_Settings {
 				<span class="mmg-alert-icon dashicons dashicons-info"></span>
 				<div><strong>Default Currency:</strong> Your site is currently set to <strong><?php echo esc_html( $site_currency ); ?></strong>. <?php echo 'GYD' === $site_currency ? 'No conversion needed.' : 'Ensure you have a rate set for this currency.'; ?></div>
 			</div>
+			<div class="mmg-alert mmg-alert-info">
+				<span class="mmg-alert-icon dashicons dashicons-saved"></span>
+				<div><?php esc_html_e( 'Changes take effect on the checkout immediately after saving.', 'mmg-checkout-payment' ); ?></div>
+			</div>
 
 			<div class="mmg-currency-list" id="mmg-currency-list">
 				<?php
