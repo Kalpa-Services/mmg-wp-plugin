@@ -47,7 +47,7 @@ class MMG_API_Client {
 	 */
 	protected function resolve_base_url() {
 		if ( 'live' === $this->mode ) {
-			return rtrim( get_option( 'mmg_live_mwallet_url', 'https://mwallet.mymmg.gy/olive/publisher/v1' ), '/' );
+			return rtrim( get_option( 'mmg_live_mwallet_url', 'https://ecommerce.mymmg.gy/olive/publisher/v1' ), '/' );
 		}
 		return 'https://mwallet.mmgtest.net/olive/publisher/v1';
 	}
