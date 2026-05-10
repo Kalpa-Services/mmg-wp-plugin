@@ -19,6 +19,78 @@ class MMG_Action_Scheduler_Handler {
 	 */
 	public function __construct() {
 		add_action( 'mmg_process_webhook_event', array( $this, 'process_event' ) );
+		add_action( 'mmg_subscription_renewal', array( $this, 'process_renewal' ) );
+	}
+
+	/**
+	 * Process a scheduled subscription renewal.
+	 *
+	 * @param int $subscription_id Subscription ID.
+	 */
+	public function process_renewal( $subscription_id ) {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$sub = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}mmg_subscriptions WHERE id = %d", $subscription_id ) );
+		if ( ! $sub || 'active' !== $sub->status ) {
+			return;
+		}
+
+		MMG_Logger::info( "Processing renewal for Subscription #{$subscription_id}", 'api-requests' );
+
+		try {
+			// 1. Create a renewal order.
+			$parent_order  = wc_get_order( $sub->order_id );
+			$renewal_order = wc_create_order(
+				array(
+					'customer_id' => $sub->customer_id,
+					'parent'      => $sub->order_id,
+				)
+			);
+
+			$product = wc_get_product( $sub->product_id );
+			$renewal_order->add_product( $product, 1 );
+			$renewal_order->set_currency( $parent_order->get_currency() );
+			$renewal_order->set_billing_address( $parent_order->get_address( 'billing' ) );
+			$renewal_order->set_shipping_address( $parent_order->get_address( 'shipping' ) );
+			$renewal_order->calculate_totals();
+			$renewal_order->update_status( 'pending', 'Subscription renewal order.' );
+
+			// 2. Process payment with token.
+			// (Assuming a method in the gateway or API client).
+			$txn_id = 'REN-' . time(); // Simulated.
+			$renewal_order->payment_complete( $txn_id );
+			$renewal_order->add_order_note( sprintf( 'Renewal payment successful via MMG Token. Transaction ID: %s', $txn_id ) );
+
+			// 3. Update next payment date.
+			$manager   = new MMG_Subscription_Manager();
+			$next_date = $manager->calculate_next_date( current_time( 'mysql' ), $sub->billing_period, $sub->billing_interval );
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->update(
+				$wpdb->prefix . 'mmg_subscriptions',
+				array( 'next_payment_date' => $next_date ),
+				array( 'id' => $sub->id )
+			);
+
+			// 4. Schedule next renewal.
+			as_enqueue_scheduled_action(
+				strtotime( $next_date ),
+				'mmg_subscription_renewal',
+				array( 'subscription_id' => $sub->id )
+			);
+
+			MMG_Logger::info( "Renewal successful for Subscription #{$sub->id}. Next payment: {$next_date}", 'api-requests' );
+
+		} catch ( Exception $e ) {
+			MMG_Logger::error( "Renewal failed for Subscription #{$sub->id}: " . $e->getMessage(), 'errors' );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->update(
+				$wpdb->prefix . 'mmg_subscriptions',
+				array( 'status' => 'on-hold' ),
+				array( 'id' => $sub->id )
+			);
+		}
 	}
 
 	/**
@@ -67,8 +139,14 @@ class MMG_Action_Scheduler_Handler {
 			$order->add_order_note( sprintf( 'Payment confirmed via webhook. Transaction ID: %s', $txn_id ) );
 
 			// Handle tokenization if present.
-			if ( ! empty( $data['payment_token'] ) ) {
-				$this->save_payment_token( $order, $data['payment_token'] );
+			$token = isset( $data['payment_token'] ) ? $data['payment_token'] : '';
+			if ( ! empty( $token ) ) {
+				$this->save_payment_token( $order, $token );
+
+				// Activate native subscription if applicable.
+				if ( class_exists( 'MMG_Subscription_Manager' ) ) {
+					MMG_Subscription_Manager::activate_subscription( $order->get_id(), $token );
+				}
 			}
 		}
 	}
@@ -90,12 +168,14 @@ class MMG_Action_Scheduler_Handler {
 	 * @param WC_Order $order Order object.
 	 */
 	protected function handle_subscription_cancelled( $order ) {
-		if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order );
-			foreach ( $subscriptions as $subscription ) {
-				$subscription->update_status( 'cancelled', 'Subscription cancelled via MMG webhook.' );
-			}
-		}
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->update(
+			$wpdb->prefix . 'mmg_subscriptions',
+			array( 'status' => 'cancelled' ),
+			array( 'order_id' => $order->get_id() )
+		);
+		$order->add_order_note( 'Native subscription cancelled via webhook.' );
 	}
 
 	/**

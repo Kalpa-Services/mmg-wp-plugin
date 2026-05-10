@@ -31,6 +31,35 @@ class MMG_Checkout_Payment_Activator {
 	 */
 	public static function activate() {
 		self::mmg_activate();
+		self::create_subscription_table();
+	}
+
+	/**
+	 * Create custom table for native subscriptions.
+	 */
+	public static function create_subscription_table() {
+		global $wpdb;
+		$table_name      = $wpdb->prefix . 'mmg_subscriptions';
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$sql = "CREATE TABLE $table_name (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			customer_id bigint(20) NOT NULL,
+			order_id bigint(20) NOT NULL,
+			product_id bigint(20) NOT NULL,
+			status varchar(20) DEFAULT 'active' NOT NULL,
+			billing_interval int(11) DEFAULT 1 NOT NULL,
+			billing_period varchar(20) DEFAULT 'month' NOT NULL,
+			next_payment_date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			payment_token text NOT NULL,
+			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY customer_id (customer_id),
+			KEY status (status)
+		) $charset_collate;";
+
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		dbDelta( $sql );
 	}
 
 	/**

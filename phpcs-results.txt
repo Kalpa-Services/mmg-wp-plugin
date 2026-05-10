@@ -1,5 +1,36 @@
-.............. 14 / 14 (100%)
+...........W..WW.. 18 / 18 (100%)
 
 
-Time: 583ms; Memory: 26MB
+
+FILE: ...nts/projects/mmg-wp-plugin/includes/class-mmg-action-scheduler-handler.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 3 WARNINGS AFFECTING 3 LINES
+--------------------------------------------------------------------------------
+  70 | WARNING | Direct database call without caching detected. Consider using
+     |         | wp_cache_get() / wp_cache_set() or wp_cache_delete().
+  88 | WARNING | Direct database call without caching detected. Consider using
+     |         | wp_cache_get() / wp_cache_set() or wp_cache_delete().
+ 173 | WARNING | Direct database call without caching detected. Consider using
+     |         | wp_cache_get() / wp_cache_set() or wp_cache_delete().
+--------------------------------------------------------------------------------
+
+
+FILE: ...cuments/projects/mmg-wp-plugin/includes/class-mmg-subscription-manager.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+--------------------------------------------------------------------------------
+ 108 | WARNING | Direct database call without caching detected. Consider using
+     |         | wp_cache_get() / wp_cache_set() or wp_cache_delete().
+--------------------------------------------------------------------------------
+
+
+FILE: ...cuments/projects/mmg-wp-plugin/includes/class-mmg-subscription-account.php
+--------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 1 WARNING AFFECTING 1 LINE
+--------------------------------------------------------------------------------
+ 101 | WARNING | Direct database call without caching detected. Consider using
+     |         | wp_cache_get() / wp_cache_set() or wp_cache_delete().
+--------------------------------------------------------------------------------
+
+Time: 694ms; Memory: 26MB
 

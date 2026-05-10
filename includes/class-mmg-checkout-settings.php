@@ -120,27 +120,31 @@ class MMG_Checkout_Settings {
 		$logo_url    = plugin_dir_url( __FILE__ ) . '../public/images/mmg-logo-white.png';
 
 		$tabs = array(
-			'dashboard'    => array(
+			'dashboard'     => array(
 				'label' => 'Dashboard',
 				'icon'  => 'dashicons-dashboard',
 			),
-			'credentials'  => array(
+			'credentials'   => array(
 				'label' => 'Credentials',
 				'icon'  => 'dashicons-lock',
 			),
-			'balance'      => array(
+			'balance'       => array(
 				'label' => 'Balance',
 				'icon'  => 'dashicons-chart-area',
 			),
-			'transactions' => array(
+			'transactions'  => array(
 				'label' => 'Transactions',
 				'icon'  => 'dashicons-list-view',
 			),
-			'currency'     => array(
+			'subscriptions' => array(
+				'label' => 'Subscriptions',
+				'icon'  => 'dashicons-update',
+			),
+			'currency'      => array(
 				'label' => 'Currency Conversion',
 				'icon'  => 'dashicons-translation',
 			),
-			'logs'         => array(
+			'logs'          => array(
 				'label' => 'Logs',
 				'icon'  => 'dashicons-warning',
 			),
@@ -198,6 +202,9 @@ class MMG_Checkout_Settings {
 					<div id="mmg-panel-transactions" class="mmg-tab-panel <?php echo 'transactions' === $current_tab ? 'mmg-tab-active' : ''; ?>">
 						<?php $this->render_transactions_tab(); ?>
 					</div>
+					<div id="mmg-panel-subscriptions" class="mmg-tab-panel <?php echo 'subscriptions' === $current_tab ? 'mmg-tab-active' : ''; ?>">
+						<?php $this->render_subscriptions_tab(); ?>
+					</div>
 					<div id="mmg-panel-currency" class="mmg-tab-panel <?php echo 'currency' === $current_tab ? 'mmg-tab-active' : ''; ?>">
 						<?php $this->render_currency_tab(); ?>
 					</div>
@@ -209,6 +216,84 @@ class MMG_Checkout_Settings {
 		</div>
 		<!-- Toast container -->
 		<div id="mmg-toast" class="mmg-toast"></div>
+		<?php
+	}
+
+	/**
+	 * Render the Subscriptions tab.
+	 */
+	private function render_subscriptions_tab() {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mmg_subscriptions';
+
+		// Ensure table exists.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) !== $table_name ) {
+			if ( class_exists( 'MMG_Checkout_Payment_Activator' ) ) {
+				MMG_Checkout_Payment_Activator::create_subscription_table();
+			}
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$subs = $wpdb->get_results( "SELECT * FROM $table_name ORDER BY created_at DESC LIMIT 100" );
+		?>
+		<h2 class="mmg-section-title">Subscription Management</h2>
+		<p class="mmg-section-desc">Manage your native MMG recurring payments and customer lifecycle.</p>
+
+		<div class="mmg-card">
+			<div class="mmg-card-header">
+				<h3 class="mmg-card-title">Active Subscriptions</h3>
+			</div>
+			<div class="mmg-card-body">
+				<?php if ( empty( $subs ) ) : ?>
+					<p>No subscriptions found.</p>
+				<?php else : ?>
+					<div class="mmg-table-wrap">
+						<table class="mmg-table">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>Customer</th>
+									<th>Product</th>
+									<th>Status</th>
+									<th>Interval</th>
+									<th>Next Payment</th>
+									<th>Created</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ( $subs as $sub ) : ?>
+									<?php
+									$customer = get_userdata( $sub->customer_id );
+									$product  = wc_get_product( $sub->product_id );
+									?>
+									<tr>
+										<td>#<?php echo esc_html( $sub->id ); ?></td>
+										<td>
+											<?php if ( $customer ) : ?>
+												<strong><?php echo esc_html( $customer->display_name ); ?></strong><br>
+												<small><?php echo esc_html( $customer->user_email ); ?></small>
+											<?php else : ?>
+												Guest
+											<?php endif; ?>
+										</td>
+										<td><?php echo $product ? esc_html( $product->get_name() ) : 'N/A'; ?></td>
+										<td>
+											<span class="mmg-badge mmg-badge-<?php echo esc_attr( $sub->status ); ?>">
+												<?php echo esc_html( ucfirst( $sub->status ) ); ?>
+											</span>
+										</td>
+										<td>Every <?php echo esc_html( $sub->billing_interval ); ?> <?php echo esc_html( $sub->billing_period ); ?>(s)</td>
+										<td><?php echo esc_html( $sub->next_payment_date ); ?></td>
+										<td><?php echo esc_html( $sub->created_at ); ?></td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+					</div>
+				<?php endif; ?>
+			</div>
+		</div>
 		<?php
 	}
 

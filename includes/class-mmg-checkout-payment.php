@@ -115,8 +115,34 @@ class MMG_Checkout_Payment {
 		require_once __DIR__ . '/class-mmg-action-scheduler-handler.php';
 		new MMG_Action_Scheduler_Handler();
 
+		// Initialize Native Subscriptions.
+		require_once __DIR__ . '/class-wc-product-mmg-subscription.php';
+		require_once __DIR__ . '/class-mmg-subscription-admin.php';
+		require_once __DIR__ . '/class-mmg-subscription-manager.php';
+		require_once __DIR__ . '/class-mmg-subscription-account.php';
+		if ( is_admin() ) {
+			new MMG_Subscription_Admin();
+		}
+		new MMG_Subscription_Manager();
+		new MMG_Subscription_Account();
+		add_filter( 'woocommerce_product_class', array( $this, 'get_subscription_product_class' ), 10, 2 );
+
 		$this->live_checkout_url = $this->get_checkout_url( 'live' );
 		$this->demo_checkout_url = $this->get_checkout_url( 'demo' );
+	}
+
+	/**
+	 * Map mmg_subscription product type to our custom class.
+	 *
+	 * @param string $classname    Class name.
+	 * @param string $product_type Product type.
+	 * @return string
+	 */
+	public function get_subscription_product_class( $classname, $product_type ) {
+		if ( 'mmg_subscription' === $product_type ) {
+			return 'WC_Product_MMG_Subscription';
+		}
+		return $classname;
 	}
 
 	/**
@@ -206,7 +232,16 @@ class MMG_Checkout_Payment {
 		);
 
 		// If this is a subscription order, signal MMG to tokenize the payment.
-		if ( function_exists( 'wcs_is_subscription' ) && ( wcs_is_subscription( $order ) || wcs_order_contains_subscription( $order ) ) ) {
+		$has_subscription = false;
+		foreach ( $order->get_items() as $item ) {
+			$product = $item->get_product();
+			if ( $product && 'mmg_subscription' === $product->get_type() ) {
+				$has_subscription = true;
+				break;
+			}
+		}
+
+		if ( $has_subscription || ( function_exists( 'wcs_is_subscription' ) && ( wcs_is_subscription( $order ) || wcs_order_contains_subscription( $order ) ) ) ) {
 			$token_data['setupFutureUsage'] = 'on_session';
 		}
 

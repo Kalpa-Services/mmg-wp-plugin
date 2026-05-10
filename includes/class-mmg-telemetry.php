@@ -46,6 +46,7 @@ class MMG_Telemetry {
 			}
 		}
 
+		$theme   = wp_get_theme();
 		$payload = array(
 			'site_url'         => home_url(),
 			'plugin_version'   => MMG_PLUGIN_VERSION,
