@@ -106,7 +106,7 @@ class MMG_Checkout_Settings {
 		// Common settings.
 		register_setting( 'mmg_checkout_settings', 'mmg_merchant_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'mmg_checkout_settings', 'mmg_live_mwallet_url', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'mmg_checkout_settings', 'mmg_currency_rates', array( 'sanitize_callback' => array( $this, 'sanitize_currency_rates' ) ) );
+		register_setting( 'mmg_currency_rates_group', 'mmg_currency_rates', array( 'sanitize_callback' => array( $this, 'sanitize_currency_rates' ) ) );
 	}
 
 	/**
@@ -891,7 +891,7 @@ class MMG_Checkout_Settings {
 		<p class="mmg-section-desc">MMG only supports GYD. Set exchange rates to convert your site's default currency to GYD at checkout.</p>
 
 		<form method="post" action="options.php" id="mmg-currency-settings-form">
-			<?php settings_fields( 'mmg_checkout_settings' ); ?>
+			<?php settings_fields( 'mmg_currency_rates_group' ); ?>
 			
 			<div class="mmg-alert mmg-alert-info">
 				<span class="mmg-alert-icon dashicons dashicons-info"></span>
