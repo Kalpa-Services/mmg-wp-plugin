@@ -38,7 +38,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-deactivator.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-checkout-payment-rewrites.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mmg-telemetry.php';
-// This is temporary until the plugin is uploaded to the WordPress repository.
+
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $mmg_update_checker = PucFactory::buildUpdateChecker(
