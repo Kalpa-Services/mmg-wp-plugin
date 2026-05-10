@@ -484,4 +484,54 @@ jQuery(document).ready(function ($) {
       $spinner.hide();
     });
   });
+  /* ---- Currency Conversion tab ---- */
+  $("#mmg-add-currency-btn").on("click", function() {
+    var code = $("#mmg-new-currency-select").val();
+    if (!code) return;
+
+    var name = $("#mmg-new-currency-select option:selected").text().split(" - ")[1] || "Custom Currency";
+    var flagCode = code.substring(0, 2).toLowerCase();
+
+    var html = '<div class="mmg-currency-card" data-code="' + code + '">' +
+        '<div class="mmg-currency-info">' +
+          '<img src="https://flagcdn.com/w40/' + flagCode + '.png" class="mmg-flag-icon" onerror="this.src=\'https://flagcdn.com/w40/un.png\'" alt="' + code + '" />' +
+          '<div>' +
+            '<div class="mmg-currency-code">' + code + '</div>' +
+            '<div class="mmg-currency-name">' + name + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="mmg-currency-actions">' +
+          '<div class="mmg-input-group">' +
+            '<span class="mmg-rate-prefix">1 ' + code + ' =</span>' +
+            '<input type="number" step="0.01" name="mmg_currency_rates[' + code + '][rate]" value="1.00" class="mmg-rate-input" />' +
+            '<span class="mmg-rate-suffix">GYD</span>' +
+          '</div>' +
+          '<div class="mmg-toggle-group">' +
+            '<label class="mmg-switch">' +
+              '<input type="checkbox" name="mmg_currency_rates[' + code + '][enabled]" value="yes" checked />' +
+              '<span class="mmg-slider"></span>' +
+            '</label>' +
+            '<button type="button" class="mmg-btn-remove-currency" title="Remove">&times;</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    $("#mmg-currency-list").append(html);
+    $("#mmg-new-currency-select option[value='" + code + "']").remove();
+    $("#mmg-new-currency-select").val("");
+    
+    mmgShowToast(code + " added. Remember to save changes.", "success");
+  });
+
+  $("#mmg-currency-list").on("click", ".mmg-btn-remove-currency", function() {
+    var $card = $(this).closest(".mmg-currency-card");
+    var code = $card.data("code");
+    var name = $card.find(".mmg-currency-name").text();
+
+    if (confirm("Remove " + code + " conversion?")) {
+      $card.remove();
+      $("#mmg-new-currency-select").append('<option value="' + code + '">' + code + ' - ' + name + '</option>');
+      mmgShowToast(code + " removed. Remember to save changes.", "success");
+    }
+  });
 });

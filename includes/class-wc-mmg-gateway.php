@@ -34,6 +34,36 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 		);
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_action( 'woocommerce_review_order_before_payment', array( $this, 'display_currency_conversion_notice' ) );
+	}
+
+	/**
+	 * Display currency conversion notice on checkout.
+	 */
+	public function display_currency_conversion_notice() {
+		$currency = get_woocommerce_currency();
+		if ( 'GYD' === $currency ) {
+			return;
+		}
+
+		$rates = get_option( 'mmg_currency_rates', array() );
+		if ( ! isset( $rates[ $currency ] ) || 'yes' !== $rates[ $currency ]['enabled'] ) {
+			return;
+		}
+
+		$rate = floatval( $rates[ $currency ]['rate'] );
+		?>
+		<div class="mmg-checkout-conversion-notice" style="margin-bottom: 20px; padding: 15px; background: #f8f9fb; border: 1px solid #e2e6ed; border-radius: 8px; font-size: 13px; color: #64748b; line-height: 1.5;">
+			<span class="dashicons dashicons-info" style="font-size: 18px; color: #0f9b8e; margin-right: 8px; vertical-align: middle;"></span>
+			<?php
+			printf(
+				esc_html__( 'Total will be converted to GYD at an exchange rate of 1 %s = %s GYD.', 'mmg-checkout-payment' ),
+				esc_html( $currency ),
+				esc_html( $rate )
+			);
+			?>
+		</div>
+		<?php
 	}
 
 	/**
