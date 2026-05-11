@@ -190,10 +190,11 @@ class MMG_Subscription_Model {
 	 */
 	public function count( string $status_filter = '' ): int {
 		global $wpdb;
-		$where = $status_filter ? $wpdb->prepare( 'WHERE status = %s', $status_filter ) : '';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$table_name = $this->get_table();
+		$where      = $status_filter ? $wpdb->prepare( 'WHERE status = %s', $status_filter ) : '';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		return (int) $wpdb->get_var(
-			"SELECT COUNT(*) FROM {$this->get_table()} {$where}"
+			"SELECT COUNT(*) FROM {$table_name} {$where}" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 	}
 
