@@ -176,7 +176,7 @@ class MMG_Subscription_Renewal_Handler {
 	 */
 	protected function halt_subscription( int $id ): void {
 		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update(
 			$wpdb->prefix . 'mmg_subscriptions',
 			array( 'status' => 'on-hold' ),
@@ -200,7 +200,7 @@ class MMG_Subscription_Renewal_Handler {
 		$new_cycle_id = $sub->id . '-' . gmdate( 'Y-m-d', strtotime( $next_date ) );
 
 		// Optimistic lock: only advance if the cycle ID hasn't changed yet (prevents double-advance on duplicate AS job).
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$updated = $wpdb->update(
 			$wpdb->prefix . 'mmg_subscriptions',
 			array(

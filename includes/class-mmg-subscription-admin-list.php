@@ -18,6 +18,9 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
  */
 class MMG_Subscription_Admin_List extends WP_List_Table {
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -34,15 +37,18 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 	 */
 	public static function register_menu(): void {
 		add_submenu_page(
-			'mmg-checkout',
+			'mmg-checkout-settings',
 			'Subscriptions',
 			'Subscriptions',
-			'manage_woocommerce',
+			'manage_woocommerce', // phpcs:ignore WordPress.WP.Capabilities.Unknown
 			'mmg-subscriptions-admin',
 			array( new self(), 'render_page' )
 		);
 	}
 
+	/**
+	 * Render the subscriptions admin page.
+	 */
 	public function render_page(): void {
 		echo '<div class="wrap"><h1>MMG Subscriptions</h1>';
 		$this->prepare_items();
@@ -51,6 +57,11 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 		echo '</form></div>';
 	}
 
+	/**
+	 * Define the table columns.
+	 *
+	 * @return array Column definitions.
+	 */
 	public function get_columns(): array {
 		return array(
 			'id'                 => 'ID',
@@ -62,6 +73,11 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 		);
 	}
 
+	/**
+	 * Define the sortable columns.
+	 *
+	 * @return array Sortable column definitions.
+	 */
 	protected function get_sortable_columns(): array {
 		return array(
 			'next_payment_date' => array( 'next_payment_date', false ),
@@ -69,6 +85,9 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 		);
 	}
 
+	/**
+	 * Fetch subscription rows and configure pagination.
+	 */
 	public function prepare_items(): void {
 		global $wpdb;
 		$per_page      = 20;
@@ -79,10 +98,14 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 		$where = $status_filter ? $wpdb->prepare( 'WHERE status = %s', $status_filter ) : '';
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$this->items = $wpdb->get_results(
-			"SELECT * FROM {$wpdb->prefix}mmg_subscriptions {$where} ORDER BY id DESC LIMIT {$per_page} OFFSET {$offset}" // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			"SELECT * FROM {$wpdb->prefix}mmg_subscriptions {$where} ORDER BY id DESC LIMIT {$per_page} OFFSET {$offset}"
 		);
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}mmg_subscriptions {$where}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$total = (int) $wpdb->get_var(
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			"SELECT COUNT(*) FROM {$wpdb->prefix}mmg_subscriptions {$where}"
+		);
 
 		$this->set_pagination_args(
 			array(
@@ -96,10 +119,23 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 		$this->_column_headers = array( $columns, array(), $sortable );
 	}
 
+	/**
+	 * Render a generic column cell.
+	 *
+	 * @param object $item        Current row object.
+	 * @param string $column_name Column identifier.
+	 * @return string Escaped cell content.
+	 */
 	protected function column_default( $item, $column_name ): string {
 		return esc_html( $item->$column_name ?? '' );
 	}
 
+	/**
+	 * Render the ID column with row actions.
+	 *
+	 * @param object $item Current row object.
+	 * @return string HTML for the ID cell.
+	 */
 	protected function column_id( $item ): string {
 		$halt_url   = wp_nonce_url(
 			add_query_arg(
@@ -149,7 +185,7 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 	 * Hooked on admin_init so it runs before headers are sent.
 	 */
 	public function handle_row_actions(): void {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
 			return;
 		}
 		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_key( $_GET['_wpnonce'] ) : '';
@@ -172,9 +208,14 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * Admin action: set subscription to on-hold.
+	 *
+	 * @param int $id Subscription ID.
+	 */
 	private function admin_halt( int $id ): void {
 		global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update( $wpdb->prefix . 'mmg_subscriptions', array( 'status' => 'on-hold' ), array( 'id' => $id ) );
 		as_unschedule_all_actions( 'mmg_subscription_renewal', array( 'subscription_id' => $id ), 'mmg-subscriptions' );
 		( new MMG_Subscription_Reminder_Scheduler() )->cancel_for_subscription( $id );
@@ -182,9 +223,14 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 		exit;
 	}
 
+	/**
+	 * Admin action: cancel a subscription.
+	 *
+	 * @param int $id Subscription ID.
+	 */
 	private function admin_cancel( int $id ): void {
 		global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update( $wpdb->prefix . 'mmg_subscriptions', array( 'status' => 'cancelled' ), array( 'id' => $id ) );
 		as_unschedule_all_actions( 'mmg_subscription_renewal', array( 'subscription_id' => $id ), 'mmg-subscriptions' );
 		( new MMG_Subscription_Reminder_Scheduler() )->cancel_for_subscription( $id );
@@ -192,6 +238,11 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 		exit;
 	}
 
+	/**
+	 * Admin action: resend the payment reminder email.
+	 *
+	 * @param int $id Subscription ID.
+	 */
 	private function admin_resend( int $id ): void {
 		global $wpdb;
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -207,7 +258,7 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 		}
 		$url = MMG_Subscription_Account::generate_pay_token_url( $id );
 		( new MMG_Subscription_Email() )->send_reminder( $sub, $url );
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update(
 			$wpdb->prefix . 'mmg_subscriptions',
 			array( 'last_reminder_sent' => current_time( 'mysql' ) ),

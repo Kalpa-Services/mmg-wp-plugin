@@ -1353,3 +1353,177 @@ input:focus + .mmg-slider {
 input:checked + .mmg-slider:before {
   transform: translateX(22px);
 }
+
+/* ---------- Email Template Split Layout ---------- */
+.mmg-tpl-split {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.mmg-tpl-editor {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mmg-tpl-editor .mmg-form-row {
+  margin-top: 0;
+}
+
+.mmg-tpl-editor .mmg-form-control input[type="text"] {
+  max-width: 100%;
+}
+
+/* Label above the WYSIWYG editor */
+.mmg-editor-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mmg-editor-block .mmg-form-label {
+  padding-top: 0;
+}
+
+/* Style the wp_editor wrapper */
+.mmg-editor-block .wp-editor-wrap {
+  border: 1px solid var(--mmg-border);
+  border-radius: var(--mmg-radius);
+  overflow: hidden;
+  box-shadow: var(--mmg-shadow-sm);
+}
+
+.mmg-editor-block .wp-editor-tools {
+  background: var(--mmg-surface-alt);
+  border-bottom: 1px solid var(--mmg-border);
+  padding: 6px 10px 0;
+}
+
+.mmg-editor-block .wp-editor-container {
+  background: var(--mmg-surface);
+}
+
+.mmg-editor-block #wp-mmg_tpl_reminder_body-editor-tools,
+.mmg-editor-block #wp-mmg_tpl_confirmed_body-editor-tools,
+.mmg-editor-block #wp-mmg_tpl_failed_body-editor-tools {
+  background: var(--mmg-surface-alt);
+}
+
+.mmg-tpl-preview-pane {
+  flex: 0 0 400px;
+  position: sticky;
+  top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mmg-tpl-preview-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--mmg-text-muted);
+}
+
+.mmg-email-chrome {
+  border: 1px solid var(--mmg-border);
+  border-radius: var(--mmg-radius-lg);
+  background: #fff;
+  overflow: hidden;
+  box-shadow: var(--mmg-shadow);
+}
+
+.mmg-email-chrome-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #f3f4f6;
+  border-bottom: 1px solid var(--mmg-border);
+}
+
+.mmg-email-chrome-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.mmg-email-chrome-dot:nth-child(1) { background: #fc6058; }
+.mmg-email-chrome-dot:nth-child(2) { background: #fec02f; }
+.mmg-email-chrome-dot:nth-child(3) { background: #2aca3e; }
+
+.mmg-email-meta {
+  padding: 10px 16px;
+  background: var(--mmg-surface-alt);
+  border-bottom: 1px solid var(--mmg-border-light);
+  font-size: 12px;
+  color: var(--mmg-text-secondary);
+  line-height: 1.8;
+}
+
+.mmg-email-meta span {
+  font-weight: 600;
+  color: var(--mmg-text);
+}
+
+.mmg-email-subject-preview {
+  padding: 10px 16px;
+  background: var(--mmg-surface);
+  border-bottom: 1px solid var(--mmg-border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mmg-text);
+  min-height: 38px;
+  word-break: break-word;
+}
+
+.mmg-email-body-preview {
+  padding: 20px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #333;
+  min-height: 160px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.mmg-email-body-preview p { margin: 0 0 12px; }
+.mmg-email-body-preview p:last-child { margin-bottom: 0; }
+
+.mmg-tpl-vars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  background: var(--mmg-surface-alt);
+  border: 1px solid var(--mmg-border-light);
+  border-radius: var(--mmg-radius);
+}
+
+.mmg-tpl-vars code {
+  background: rgba(15, 155, 142, .1);
+  color: var(--mmg-accent);
+  border: 1px solid rgba(15, 155, 142, .2);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+}
+
+@media screen and (max-width: 960px) {
+  .mmg-tpl-split {
+    flex-direction: column;
+  }
+  .mmg-tpl-preview-pane {
+    flex: none;
+    width: 100%;
+    position: static;
+  }
+}

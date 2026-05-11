@@ -199,7 +199,7 @@ class MMG_Subscription_Account {
 		if ( ! $sub || 'active' !== $sub->status ) {
 			return;
 		}
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update(
 			$wpdb->prefix . 'mmg_subscriptions',
 			array( 'status' => 'on-hold' ),
@@ -240,7 +240,7 @@ class MMG_Subscription_Account {
 		}
 		$cycle_id = $sub->id . '-' . gmdate( 'Y-m-d', $next_ts );
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update(
 			$wpdb->prefix . 'mmg_subscriptions',
 			array(
@@ -304,7 +304,7 @@ class MMG_Subscription_Account {
 		}
 		$cycle_id = $sub->id . '-' . gmdate( 'Y-m-d', $next_ts );
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update(
 			$wpdb->prefix . 'mmg_subscriptions',
 			array(

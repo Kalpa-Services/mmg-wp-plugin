@@ -121,33 +121,37 @@ class MMG_Checkout_Settings {
 		$logo_url    = plugin_dir_url( __FILE__ ) . '../public/images/mmg-logo-white.png';
 
 		$tabs = array(
-			'dashboard'     => array(
+			'dashboard'       => array(
 				'label' => 'Dashboard',
 				'icon'  => 'dashicons-dashboard',
 			),
-			'credentials'   => array(
+			'credentials'     => array(
 				'label' => 'Credentials',
 				'icon'  => 'dashicons-lock',
 			),
-			'balance'       => array(
+			'balance'         => array(
 				'label' => 'Balance',
 				'icon'  => 'dashicons-chart-area',
 			),
-			'transactions'  => array(
+			'transactions'    => array(
 				'label' => 'Transactions',
 				'icon'  => 'dashicons-list-view',
 			),
-			'subscriptions' => array(
+			'subscriptions'   => array(
 				'label' => 'Subscriptions',
 				'icon'  => 'dashicons-update',
 			),
-			'currency'      => array(
+			'currency'        => array(
 				'label' => 'Currency Conversion',
 				'icon'  => 'dashicons-translation',
 			),
-			'logs'          => array(
+			'logs'            => array(
 				'label' => 'Logs',
 				'icon'  => 'dashicons-warning',
+			),
+			'email-templates' => array(
+				'label' => 'Email Templates',
+				'icon'  => 'dashicons-email-alt',
 			),
 		);
 		?>
@@ -211,6 +215,9 @@ class MMG_Checkout_Settings {
 					</div>
 					<div id="mmg-panel-logs" class="mmg-tab-panel <?php echo 'logs' === $current_tab ? 'mmg-tab-active' : ''; ?>">
 						<?php $this->render_logs_tab(); ?>
+					</div>
+					<div id="mmg-panel-email-templates" class="mmg-tab-panel <?php echo 'email-templates' === $current_tab ? 'mmg-tab-active' : ''; ?>">
+						<?php MMG_Subscription_Email_Settings::render_tab_content(); ?>
 					</div>
 				</div>
 			</div>
