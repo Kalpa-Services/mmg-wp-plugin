@@ -68,6 +68,8 @@ class MMG_Subscription_Email_Settings {
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="mmg_save_email_settings">
 			<?php wp_nonce_field( 'mmg_email_settings' ); ?>
+			<h2 class="mmg-section-title">Email Templates</h2>
+			<p class="mmg-section-desc">Customize the email templates that are sent to your customers for subscription reminders, payment confirmations, and failed payment notifications.</p>
 
 			<!-- Reminder Schedule card -->
 			<div class="mmg-card">
