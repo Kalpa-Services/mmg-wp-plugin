@@ -40,7 +40,7 @@ class MMG_Checkout_Payment_Activator {
 
 	public static function seed_subscription_defaults(): void {
 		if ( ! get_option( 'mmg_reminder_schedule' ) ) {
-			update_option( 'mmg_reminder_schedule', wp_json_encode( [3] ) );
+			update_option( 'mmg_reminder_schedule', wp_json_encode( array( 3 ) ) );
 		}
 
 		$defaults = MMG_Subscription_Email::get_default_templates();

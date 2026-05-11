@@ -136,7 +136,7 @@ class MMG_Checkout_Payment {
 			new MMG_Subscription_Email_Settings();
 			if ( class_exists( 'WP_List_Table' ) ) {
 				require_once __DIR__ . '/class-mmg-subscription-admin-list.php';
-				add_action( 'admin_menu', [ 'MMG_Subscription_Admin_List', 'register_menu' ] );
+				add_action( 'admin_menu', array( 'MMG_Subscription_Admin_List', 'register_menu' ) );
 			}
 		}
 		new MMG_Subscription_Manager();

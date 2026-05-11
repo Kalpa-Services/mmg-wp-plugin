@@ -97,9 +97,9 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 	 * Fetch subscription rows and configure pagination.
 	 */
 	public function prepare_items(): void {
-		$per_page     = 20;
-		$current_page = $this->get_pagenum();
-		$offset       = ( $current_page - 1 ) * $per_page;
+		$per_page      = 20;
+		$current_page  = $this->get_pagenum();
+		$offset        = ( $current_page - 1 ) * $per_page;
 		$status_filter = isset( $_GET['sub_status'] ) ? sanitize_text_field( $_GET['sub_status'] ) : ''; // phpcs:ignore
 
 		$this->items = $this->model->get_paginated( $per_page, $offset, $status_filter );

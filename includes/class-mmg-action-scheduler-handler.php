@@ -32,7 +32,7 @@ class MMG_Action_Scheduler_Handler {
 		$this->model = null !== $model ? $model : new MMG_Subscription_Model();
 
 		add_action( 'mmg_process_webhook_event', array( $this, 'process_event' ) );
-		add_action( 'mmg_subscription_renewal',  array( $this, 'process_renewal' ) );
+		add_action( 'mmg_subscription_renewal', array( $this, 'process_renewal' ) );
 		add_action( 'mmg_subscription_reminder', array( $this, 'process_reminder' ) );
 		add_action( 'mmg_mit_payment_confirmed', array( $this, 'on_mit_payment_confirmed' ) );
 	}
