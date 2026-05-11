@@ -80,7 +80,7 @@ class MMG_Subscription_Account {
 			if ( 'active' === $sub->status ) {
 				echo '<a href="' . esc_url( $halt_url ) . '" class="woocommerce-button button">Pause</a> ';
 				echo '<a href="' . esc_url( $cancel_url ) . '" class="woocommerce-button button cancel">Cancel</a> ';
-				echo $this->render_upgrade_form( $sub );
+				echo $this->render_upgrade_form( $sub ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped internally.
 			} elseif ( 'on-hold' === $sub->status ) {
 				echo '<a href="' . esc_url( $renew_url ) . '" class="woocommerce-button button">Resume</a> ';
 				echo '<a href="' . esc_url( $cancel_url ) . '" class="woocommerce-button button cancel">Cancel</a>';
