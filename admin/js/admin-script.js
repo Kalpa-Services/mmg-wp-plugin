@@ -321,7 +321,7 @@ jQuery(document).ready(function ($) {
               html += '<span class="mmg-log-badge mmg-log-badge-' + entry.lvl + '">' + entry.lvl_upper + "</span>";
               html += '<span class="mmg-log-time">' + entry.dt + "</span>";
               html += '<span class="mmg-log-msg">' + entry.msg + "</span>";
-              html += '<button type="button" class="mmg-log-copy" title="Copy" onclick="mmgCopyToClipboard(\'' + entry.copy.replace(/'/g, "\\'") + "')\">";
+              html += '<button type="button" class="mmg-log-copy" title="Copy" onclick="mmgCopyToClipboard(' + JSON.stringify(String(entry.copy)) + ')">';
               html += '<span class="dashicons dashicons-clipboard"></span>';
               html += "</button>";
               html += "</div>";
