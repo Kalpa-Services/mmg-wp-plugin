@@ -9,15 +9,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once __DIR__ . '/models/class-mmg-subscription-model.php';
+
 /**
  * MMG_Action_Scheduler_Handler class.
  */
 class MMG_Action_Scheduler_Handler {
 
 	/**
-	 * Constructor.
+	 * Subscription data access layer.
+	 *
+	 * @var MMG_Subscription_Model
 	 */
-	public function __construct() {
+	private $model;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param MMG_Subscription_Model|null $model Optional injected model for testing.
+	 */
+	public function __construct( MMG_Subscription_Model $model = null ) {
+		$this->model = null !== $model ? $model : new MMG_Subscription_Model();
+
 		add_action( 'mmg_process_webhook_event', array( $this, 'process_event' ) );
 		add_action( 'mmg_subscription_renewal',  array( $this, 'process_renewal' ) );
 		add_action( 'mmg_subscription_reminder', array( $this, 'process_reminder' ) );
@@ -34,19 +47,13 @@ class MMG_Action_Scheduler_Handler {
 	}
 
 	/**
-	 * Process a scheduled reminder — sends reminder email and updates last_reminder_sent.
+	 * Process a scheduled reminder — sends reminder email and records the send time.
 	 *
 	 * @param int $subscription_id Subscription ID.
 	 * @param int $days_before     Days before renewal this reminder fires.
 	 */
 	public function process_reminder( $subscription_id, $days_before = 3 ) {
-		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$sub = $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}mmg_subscriptions WHERE id = %d AND status = 'active'",
-			(int) $subscription_id
-		) );
-
+		$sub = $this->model->get_active_by_id( (int) $subscription_id );
 		if ( ! $sub ) {
 			return;
 		}
@@ -54,12 +61,7 @@ class MMG_Action_Scheduler_Handler {
 		$payment_url = MMG_Subscription_Account::generate_pay_token_url( (int) $sub->id );
 		( new MMG_Subscription_Email() )->send_reminder( $sub, $payment_url );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$wpdb->update(
-			$wpdb->prefix . 'mmg_subscriptions',
-			array( 'last_reminder_sent' => current_time( 'mysql' ) ),
-			array( 'id' => (int) $sub->id )
-		);
+		$this->model->update_last_reminder_sent( (int) $sub->id );
 
 		MMG_Logger::info( "Reminder sent for subscription #{$subscription_id} ({$days_before}d before renewal).", 'api-requests' );
 	}
@@ -157,10 +159,7 @@ class MMG_Action_Scheduler_Handler {
 	 * @param WC_Order $order Order object.
 	 */
 	protected function handle_subscription_cancelled( $order ) {
-		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$wpdb->update(
-			$wpdb->prefix . 'mmg_subscriptions',
+		$this->model->update(
 			array( 'status' => 'cancelled' ),
 			array( 'order_id' => $order->get_id() )
 		);
@@ -168,10 +167,13 @@ class MMG_Action_Scheduler_Handler {
 	}
 
 	/**
-	 * Save payment token for recurring payments.
+	 * Save an MMG wallet payment token for recurring payments.
+	 *
+	 * Deduplicates against existing tokens for the same user + gateway so that
+	 * repeated webhooks do not accumulate duplicate rows in the WC token table.
 	 *
 	 * @param WC_Order $order Order object.
-	 * @param string   $token Payment token.
+	 * @param string   $token Raw mWallet payment token.
 	 */
 	protected function save_payment_token( $order, $token ) {
 		$user_id = $order->get_user_id();
@@ -179,17 +181,19 @@ class MMG_Action_Scheduler_Handler {
 			return;
 		}
 
-		$token_obj = new WC_Payment_Token_CC();
+		// Check for an existing token with the same value to avoid duplicates.
+		$existing_tokens = WC_Payment_Tokens::get_customer_tokens( $user_id, 'mmg_checkout' );
+		foreach ( $existing_tokens as $existing ) {
+			if ( $existing->get_token() === $token ) {
+				$order->add_payment_token( $existing );
+				return;
+			}
+		}
+
+		$token_obj = new WC_Payment_Token_MMG();
 		$token_obj->set_token( $token );
 		$token_obj->set_gateway_id( 'mmg_checkout' );
 		$token_obj->set_user_id( $user_id );
-
-		// In a real scenario, MMG might provide last4 and card type.
-		$token_obj->set_last4( 'MMG' );
-		$token_obj->set_card_type( 'mWallet' );
-		$token_obj->set_expiry_month( '12' );
-		$token_obj->set_expiry_year( gmdate( 'Y' ) + 10 );
-
 		$token_obj->save();
 
 		$order->add_payment_token( $token_obj );

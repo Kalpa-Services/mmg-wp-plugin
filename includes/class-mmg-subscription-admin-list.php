@@ -19,6 +19,13 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 class MMG_Subscription_Admin_List extends WP_List_Table {
 
 	/**
+	 * Subscription data access layer.
+	 *
+	 * @var MMG_Subscription_Model
+	 */
+	private $model;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -29,6 +36,7 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 				'ajax'     => false,
 			)
 		);
+		$this->model = new MMG_Subscription_Model();
 		add_action( 'admin_init', array( $this, 'handle_row_actions' ) );
 	}
 
@@ -89,23 +97,13 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 	 * Fetch subscription rows and configure pagination.
 	 */
 	public function prepare_items(): void {
-		global $wpdb;
-		$per_page      = 20;
-		$current_page  = $this->get_pagenum();
-		$offset        = ( $current_page - 1 ) * $per_page;
-        $status_filter = isset( $_GET['sub_status'] ) ? sanitize_text_field( $_GET['sub_status'] ) : ''; // phpcs:ignore
+		$per_page     = 20;
+		$current_page = $this->get_pagenum();
+		$offset       = ( $current_page - 1 ) * $per_page;
+		$status_filter = isset( $_GET['sub_status'] ) ? sanitize_text_field( $_GET['sub_status'] ) : ''; // phpcs:ignore
 
-		$where = $status_filter ? $wpdb->prepare( 'WHERE status = %s', $status_filter ) : '';
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$this->items = $wpdb->get_results(
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			"SELECT * FROM {$wpdb->prefix}mmg_subscriptions {$where} ORDER BY id DESC LIMIT {$per_page} OFFSET {$offset}"
-		);
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$total = (int) $wpdb->get_var(
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			"SELECT COUNT(*) FROM {$wpdb->prefix}mmg_subscriptions {$where}"
-		);
+		$this->items = $this->model->get_paginated( $per_page, $offset, $status_filter );
+		$total       = $this->model->count( $status_filter );
 
 		$this->set_pagination_args(
 			array(
@@ -214,9 +212,7 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 	 * @param int $id Subscription ID.
 	 */
 	private function admin_halt( int $id ): void {
-		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update( $wpdb->prefix . 'mmg_subscriptions', array( 'status' => 'on-hold' ), array( 'id' => $id ) );
+		$this->model->update_status( $id, 'on-hold' );
 		as_unschedule_all_actions( 'mmg_subscription_renewal', array( 'subscription_id' => $id ), 'mmg-subscriptions' );
 		( new MMG_Subscription_Reminder_Scheduler() )->cancel_for_subscription( $id );
 		wp_safe_redirect( admin_url( 'admin.php?page=mmg-subscriptions-admin&updated=halted' ) );
@@ -229,9 +225,7 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 	 * @param int $id Subscription ID.
 	 */
 	private function admin_cancel( int $id ): void {
-		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update( $wpdb->prefix . 'mmg_subscriptions', array( 'status' => 'cancelled' ), array( 'id' => $id ) );
+		$this->model->update_status( $id, 'cancelled' );
 		as_unschedule_all_actions( 'mmg_subscription_renewal', array( 'subscription_id' => $id ), 'mmg-subscriptions' );
 		( new MMG_Subscription_Reminder_Scheduler() )->cancel_for_subscription( $id );
 		wp_safe_redirect( admin_url( 'admin.php?page=mmg-subscriptions-admin&updated=cancelled' ) );
@@ -244,26 +238,14 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 	 * @param int $id Subscription ID.
 	 */
 	private function admin_resend( int $id ): void {
-		global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$sub = $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}mmg_subscriptions WHERE id = %d",
-				$id
-			)
-		);
+		$sub = $this->model->get_by_id( $id );
 		if ( ! $sub ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mmg-subscriptions-admin' ) );
 			exit;
 		}
 		$url = MMG_Subscription_Account::generate_pay_token_url( $id );
 		( new MMG_Subscription_Email() )->send_reminder( $sub, $url );
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update(
-			$wpdb->prefix . 'mmg_subscriptions',
-			array( 'last_reminder_sent' => current_time( 'mysql' ) ),
-			array( 'id' => $id )
-		);
+		$this->model->update_last_reminder_sent( $id );
 		wp_safe_redirect( admin_url( 'admin.php?page=mmg-subscriptions-admin&updated=resent' ) );
 		exit;
 	}

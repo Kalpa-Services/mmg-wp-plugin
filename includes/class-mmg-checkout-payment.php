@@ -111,6 +111,13 @@ class MMG_Checkout_Payment {
 		add_action( 'parse_request', array( $this, 'parse_api_request' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 
+		// Data access layer.
+		require_once __DIR__ . '/models/class-mmg-subscription-model.php';
+
+		// Custom payment token — must be loaded before any WC token hydration occurs.
+		require_once __DIR__ . '/class-wc-payment-token-mmg.php';
+		add_filter( 'woocommerce_payment_token_class', array( $this, 'register_mmg_token_class' ), 10, 2 );
+
 		// Initialize Action Scheduler Handler.
 		require_once __DIR__ . '/class-mmg-action-scheduler-handler.php';
 		new MMG_Action_Scheduler_Handler();
@@ -153,6 +160,20 @@ class MMG_Checkout_Payment {
 			return 'WC_Product_MMG_Subscription';
 		}
 		return $classname;
+	}
+
+	/**
+	 * Register WC_Payment_Token_MMG so WooCommerce can hydrate tokens of type 'mmg'.
+	 *
+	 * @param string $class Token class name WooCommerce resolved by convention.
+	 * @param string $type  Token type stored in the database.
+	 * @return string
+	 */
+	public function register_mmg_token_class( $class, $type ) {
+		if ( 'mmg' === $type ) {
+			return 'WC_Payment_Token_MMG';
+		}
+		return $class;
 	}
 
 	/**

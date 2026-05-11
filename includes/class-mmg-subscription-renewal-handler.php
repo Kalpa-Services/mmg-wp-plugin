@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once __DIR__ . '/models/class-mmg-subscription-model.php';
+
 /**
  * Handles the recurring payment lifecycle: idempotency check, MIT API call,
  * auto-halt on failure, and cycle advancement.
@@ -44,23 +46,43 @@ class MMG_Subscription_Renewal_Handler {
 	private $manager;
 
 	/**
+	 * Subscription data access layer.
+	 *
+	 * @var MMG_Subscription_Model
+	 */
+	private $model;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param MMG_API_Client                      $api_client Optional injected API client.
 	 * @param MMG_Subscription_Email              $email      Optional injected email handler.
 	 * @param MMG_Subscription_Reminder_Scheduler $scheduler  Optional injected scheduler.
 	 * @param MMG_Subscription_Manager            $manager    Optional injected manager.
+	 * @param MMG_Subscription_Model              $model      Optional injected model.
 	 */
 	public function __construct(
 		MMG_API_Client $api_client = null,
 		MMG_Subscription_Email $email = null,
 		MMG_Subscription_Reminder_Scheduler $scheduler = null,
-		MMG_Subscription_Manager $manager = null
+		MMG_Subscription_Manager $manager = null,
+		MMG_Subscription_Model $model = null
 	) {
 		$this->api_client = null !== $api_client ? $api_client : new MMG_API_Client();
 		$this->email      = null !== $email ? $email : new MMG_Subscription_Email();
 		$this->scheduler  = null !== $scheduler ? $scheduler : new MMG_Subscription_Reminder_Scheduler();
 		$this->manager    = null !== $manager ? $manager : new MMG_Subscription_Manager();
+		$this->model      = null !== $model ? $model : new MMG_Subscription_Model();
+	}
+
+	/**
+	 * Fetch a subscription row — thin wrapper kept for mock-ability in tests.
+	 *
+	 * @param int $id Subscription ID.
+	 * @return object|null
+	 */
+	protected function get_subscription( int $id ) {
+		return $this->model->get_by_id( $id );
 	}
 
 	/**
@@ -101,23 +123,6 @@ class MMG_Subscription_Renewal_Handler {
 		}
 		$this->advance_cycle( $sub );
 		$this->email->send_payment_confirmed( $sub );
-	}
-
-	/**
-	 * Get subscription row from DB.
-	 *
-	 * @param int $id Subscription ID.
-	 * @return object|null
-	 */
-	protected function get_subscription( int $id ) {
-		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}mmg_subscriptions WHERE id = %d",
-				$id
-			)
-		);
 	}
 
 	/**
@@ -175,13 +180,7 @@ class MMG_Subscription_Renewal_Handler {
 	 * @param int $id Subscription ID.
 	 */
 	protected function halt_subscription( int $id ): void {
-		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update(
-			$wpdb->prefix . 'mmg_subscriptions',
-			array( 'status' => 'on-hold' ),
-			array( 'id' => $id )
-		);
+		$this->model->update_status( $id, 'on-hold' );
 	}
 
 	/**
@@ -190,8 +189,6 @@ class MMG_Subscription_Renewal_Handler {
 	 * @param object $sub Subscription row.
 	 */
 	protected function advance_cycle( object $sub ): void {
-		global $wpdb;
-
 		$next_date    = $this->manager->calculate_next_date(
 			current_time( 'mysql' ),
 			$sub->billing_period,
@@ -200,20 +197,17 @@ class MMG_Subscription_Renewal_Handler {
 		$new_cycle_id = $sub->id . '-' . gmdate( 'Y-m-d', strtotime( $next_date ) );
 
 		// Optimistic lock: only advance if the cycle ID hasn't changed yet (prevents double-advance on duplicate AS job).
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$updated = $wpdb->update(
-			$wpdb->prefix . 'mmg_subscriptions',
+		$advanced = $this->model->advance_cycle_if_current(
+			(int) $sub->id,
+			$sub->payment_cycle_id,
 			array(
 				'next_payment_date'  => $next_date,
 				'payment_cycle_id'   => $new_cycle_id,
 				'last_reminder_sent' => null,
-			),
-			array(
-				'id'               => (int) $sub->id,
-				'payment_cycle_id' => $sub->payment_cycle_id,
 			)
 		);
-		if ( ! $updated ) {
+
+		if ( ! $advanced ) {
 			return;
 		}
 

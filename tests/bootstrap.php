@@ -2,6 +2,7 @@
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 if ( ! defined( 'MINUTE_IN_SECONDS' ) ) define( 'MINUTE_IN_SECONDS', 60 );
+if ( ! defined( 'HOUR_IN_SECONDS' ) )   define( 'HOUR_IN_SECONDS', 3600 );
 if ( ! defined( 'DAY_IN_SECONDS' ) )    define( 'DAY_IN_SECONDS', 86400 );
 if ( ! defined( 'ABSPATH' ) )           define( 'ABSPATH', '/' );
 
@@ -71,6 +72,46 @@ function wc_get_logger() {
         public function info( $msg, $ctx = [] ) {}
         public function log( $level, $message, $context = [] ) {}
     };
+}
+
+// Object cache stubs — model uses these for single-row caching.
+$GLOBALS['mmg_test_cache'] = [];
+function wp_cache_get( $key, $group = '', $force = false, &$found = null ) {
+    $found = isset( $GLOBALS['mmg_test_cache'][ $group ][ $key ] );
+    return $found ? $GLOBALS['mmg_test_cache'][ $group ][ $key ] : false;
+}
+function wp_cache_set( $key, $data, $group = '', $expire = 0 ) {
+    $GLOBALS['mmg_test_cache'][ $group ][ $key ] = $data;
+    return true;
+}
+function wp_cache_delete( $key, $group = '' ) {
+    unset( $GLOBALS['mmg_test_cache'][ $group ][ $key ] );
+    return true;
+}
+
+// WooCommerce payment token stubs.
+if ( ! class_exists( 'WC_Payment_Token' ) ) {
+    class WC_Payment_Token {
+        protected $type = '';
+        private $data   = [];
+        public function validate() { return ! empty( $this->data['token'] ); }
+        public function get_token() { return $this->data['token'] ?? ''; }
+        public function set_token( $v ) { $this->data['token'] = $v; }
+        public function get_gateway_id() { return $this->data['gateway_id'] ?? ''; }
+        public function set_gateway_id( $v ) { $this->data['gateway_id'] = $v; }
+        public function get_user_id() { return $this->data['user_id'] ?? 0; }
+        public function set_user_id( $v ) { $this->data['user_id'] = $v; }
+        public function save() { return 1; }
+        public function get_id() { return 1; }
+        public function get_type() { return $this->type; }
+        public function add_payment_token( $token ) {}
+    }
+}
+if ( ! class_exists( 'WC_Payment_Tokens' ) ) {
+    class WC_Payment_Tokens {
+        public static function get_customer_tokens( $user_id, $gateway_id = '' ) { return []; }
+        public static function get_order_tokens( $order_id ) { return []; }
+    }
 }
 
 class WC_Product {

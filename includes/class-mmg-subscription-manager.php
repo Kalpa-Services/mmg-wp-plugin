@@ -9,24 +9,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once __DIR__ . '/models/class-mmg-subscription-model.php';
+
 /**
  * MMG_Subscription_Manager class.
  */
 class MMG_Subscription_Manager {
 
 	/**
+	 * Subscription data access layer.
+	 *
+	 * @var MMG_Subscription_Model
+	 */
+	private $model;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
+		$this->model = new MMG_Subscription_Model();
 		add_action( 'woocommerce_checkout_order_processed', array( $this, 'process_subscriptions' ), 10, 3 );
 	}
 
 	/**
 	 * Process subscriptions in an order.
 	 *
-	 * @param int      $order_id Order ID.
+	 * @param int      $order_id    Order ID.
 	 * @param array    $posted_data Posted data.
-	 * @param WC_Order $order Order object.
+	 * @param WC_Order $order       Order object.
 	 */
 	public function process_subscriptions( $order_id, $posted_data, $order ) {
 		foreach ( $order->get_items() as $item ) {
@@ -44,17 +54,13 @@ class MMG_Subscription_Manager {
 	 * @param WC_Product $product Product.
 	 */
 	public function create_subscription( $order, $product ) {
-		global $wpdb;
-
 		$period   = $product->get_meta( '_mmg_sub_period' );
 		$interval = $product->get_meta( '_mmg_sub_interval' );
 
-		// Set initial next payment date (we'll update this when payment is confirmed).
+		// Set initial next payment date (updated when payment is confirmed).
 		$next_payment = $this->calculate_next_date( current_time( 'mysql' ), $period, $interval );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$wpdb->insert(
-			$wpdb->prefix . 'mmg_subscriptions',
+		$sub_id = $this->model->insert(
 			array(
 				'customer_id'       => $order->get_customer_id(),
 				'order_id'          => $order->get_id(),
@@ -68,7 +74,6 @@ class MMG_Subscription_Manager {
 			)
 		);
 
-		$sub_id = $wpdb->insert_id;
 		$order->add_order_note( sprintf( 'MMG Subscription #%d created for product %s.', $sub_id, $product->get_name() ) );
 		$order->update_meta_data( '_mmg_subscription_id', $sub_id );
 		$order->save();
@@ -96,17 +101,13 @@ class MMG_Subscription_Manager {
 	 * @param string $token    Payment token.
 	 */
 	public static function activate_subscription( $order_id, $token ) {
-		global $wpdb;
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$sub = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}mmg_subscriptions WHERE order_id = %d", $order_id ) );
+		$model = new MMG_Subscription_Model();
+		$sub   = $model->get_by_order_id( (int) $order_id );
 		if ( ! $sub ) {
 			return;
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update(
-			$wpdb->prefix . 'mmg_subscriptions',
+		$model->update(
 			array(
 				'status'        => 'active',
 				'payment_token' => $token,

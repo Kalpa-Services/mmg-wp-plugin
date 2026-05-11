@@ -232,19 +232,16 @@ class MMG_Checkout_Settings {
 	 * Render the Subscriptions tab.
 	 */
 	private function render_subscriptions_tab() {
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'mmg_subscriptions';
+		$model = new MMG_Subscription_Model();
 
 		// Ensure table exists.
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) !== $table_name ) {
+		if ( ! $model->table_exists() ) {
 			if ( class_exists( 'MMG_Checkout_Payment_Activator' ) ) {
 				MMG_Checkout_Payment_Activator::create_subscription_table();
 			}
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$subs = $wpdb->get_results( "SELECT * FROM $table_name ORDER BY created_at DESC LIMIT 100" );
+		$subs = $model->get_recent( 100 );
 		?>
 		<h2 class="mmg-section-title">Subscription Management</h2>
 		<p class="mmg-section-desc">Manage your native MMG recurring payments and customer lifecycle.</p>

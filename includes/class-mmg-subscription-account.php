@@ -15,9 +15,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 class MMG_Subscription_Account {
 
 	/**
+	 * Subscription data access layer.
+	 *
+	 * @var MMG_Subscription_Model
+	 */
+	private $model;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
+		$this->model = new MMG_Subscription_Model();
+
 		add_filter( 'woocommerce_account_menu_items', array( $this, 'add_menu_item' ) );
 		add_action( 'woocommerce_account_mmg-subscriptions_endpoint', array( $this, 'endpoint_content' ) );
 		add_action( 'template_redirect', array( $this, 'handle_actions' ) );
@@ -44,15 +53,8 @@ class MMG_Subscription_Account {
 	 * Render the my subscriptions endpoint content.
 	 */
 	public function endpoint_content() {
-		global $wpdb;
 		$user_id = get_current_user_id();
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$subs = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}mmg_subscriptions WHERE customer_id = %d ORDER BY created_at DESC",
-				$user_id
-			)
-		);
+		$subs    = $this->model->get_by_customer_id( $user_id );
 
 		if ( empty( $subs ) ) {
 			echo '<p>You have no subscriptions.</p>';
@@ -163,14 +165,11 @@ class MMG_Subscription_Account {
 		if ( ! wp_verify_nonce( $nonce, 'cancel_sub_' . $sub_id ) ) {
 			return;
 		}
-		global $wpdb;
-		$sub = $this->fetch_owned_sub( $sub_id, $user_id );
+		$sub = $this->model->get_owned_by_customer( $sub_id, $user_id );
 		if ( ! $sub ) {
 			return;
 		}
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update(
-			$wpdb->prefix . 'mmg_subscriptions',
+		$this->model->update(
 			array( 'status' => 'cancelled' ),
 			array(
 				'id'          => $sub_id,
@@ -194,14 +193,11 @@ class MMG_Subscription_Account {
 		if ( ! wp_verify_nonce( $nonce, 'halt_sub_' . $sub_id ) ) {
 			return;
 		}
-		global $wpdb;
-		$sub = $this->fetch_owned_sub( $sub_id, $user_id );
+		$sub = $this->model->get_owned_by_customer( $sub_id, $user_id );
 		if ( ! $sub || 'active' !== $sub->status ) {
 			return;
 		}
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update(
-			$wpdb->prefix . 'mmg_subscriptions',
+		$this->model->update(
 			array( 'status' => 'on-hold' ),
 			array(
 				'id'          => $sub_id,
@@ -226,8 +222,7 @@ class MMG_Subscription_Account {
 		if ( ! wp_verify_nonce( $nonce, 'renew_sub_' . $sub_id ) ) {
 			return;
 		}
-		global $wpdb;
-		$sub = $this->fetch_owned_sub( $sub_id, $user_id );
+		$sub = $this->model->get_owned_by_customer( $sub_id, $user_id );
 		if ( ! $sub || 'on-hold' !== $sub->status ) {
 			return;
 		}
@@ -240,9 +235,7 @@ class MMG_Subscription_Account {
 		}
 		$cycle_id = $sub->id . '-' . gmdate( 'Y-m-d', $next_ts );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update(
-			$wpdb->prefix . 'mmg_subscriptions',
+		$this->model->update(
 			array(
 				'status'             => 'active',
 				'next_payment_date'  => $next_date,
@@ -290,8 +283,7 @@ class MMG_Subscription_Account {
 			return;
 		}
 
-		global $wpdb;
-		$sub = $this->fetch_owned_sub( $sub_id, $user_id );
+		$sub = $this->model->get_owned_by_customer( $sub_id, $user_id );
 		if ( ! $sub || 'active' !== $sub->status ) {
 			return;
 		}
@@ -304,9 +296,7 @@ class MMG_Subscription_Account {
 		}
 		$cycle_id = $sub->id . '-' . gmdate( 'Y-m-d', $next_ts );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update(
-			$wpdb->prefix . 'mmg_subscriptions',
+		$this->model->update(
 			array(
 				'billing_period'     => $period,
 				'billing_interval'   => $interval,
@@ -350,14 +340,7 @@ class MMG_Subscription_Account {
 
 		delete_transient( 'mmg_pay_token_' . $token );
 
-		global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$sub = $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}mmg_subscriptions WHERE id = %d",
-				(int) $sub_id
-			)
-		);
+		$sub = $this->model->get_by_id( (int) $sub_id );
 
 		if ( ! $sub || get_current_user_id() !== (int) $sub->customer_id ) {
 			wp_safe_redirect( wc_get_endpoint_url( 'mmg-subscriptions', '', wc_get_page_permalink( 'myaccount' ) ) );
@@ -405,25 +388,6 @@ class MMG_Subscription_Account {
 		$renewal_order->update_status( 'pending', 'Subscription renewal via reminder email.' );
 		$renewal_order->save();
 		return $renewal_order;
-	}
-
-	/**
-	 * Fetch a subscription row owned by the given customer.
-	 *
-	 * @param int $sub_id     Subscription ID.
-	 * @param int $customer_id Customer (user) ID.
-	 * @return object|null
-	 */
-	private function fetch_owned_sub( int $sub_id, int $customer_id ) {
-		global $wpdb;
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}mmg_subscriptions WHERE id = %d AND customer_id = %d",
-				$sub_id,
-				$customer_id
-			)
-		);
 	}
 
 	/**
