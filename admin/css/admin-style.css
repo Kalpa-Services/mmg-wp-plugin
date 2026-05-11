@@ -1482,18 +1482,12 @@ input:checked + .mmg-slider:before {
 }
 
 .mmg-email-body-preview {
-  padding: 20px 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.7;
-  color: #333;
-  min-height: 160px;
-  max-height: 420px;
-  overflow-y: auto;
+  width: 100%;
+  display: block;
+  border: none;
+  min-height: 120px;
+  overflow: hidden;
 }
-
-.mmg-email-body-preview p { margin: 0 0 12px; }
-.mmg-email-body-preview p:last-child { margin-bottom: 0; }
 
 .mmg-tpl-vars {
   display: flex;

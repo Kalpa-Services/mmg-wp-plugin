@@ -55,7 +55,7 @@ class MMG_Subscription_Email_Settings {
 			'textarea_rows' => 14,
 		);
 
-		$preview_css = 'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.7;color:#333;padding:20px 24px;margin:0}p{margin:0 0 12px}p:last-child{margin-bottom:0}a{color:#0f9b8e}';
+		$preview_css = 'body{overflow-x:hidden;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.7;color:#333;padding:20px 24px;margin:0}*{box-sizing:border-box;max-width:100%}p{margin:0 0 12px}p:last-child{margin-bottom:0}a{color:#0f9b8e}';
 		?>
 
 		<?php if ( $saved ) : ?>
@@ -267,10 +267,24 @@ class MMG_Subscription_Email_Settings {
 				return ta ? ta.value : '';
 			}
 
+			// Auto-resize iframe to content height so no scrollbar is needed.
+			function fitIframe( frame ) {
+				try {
+					var doc = frame.contentDocument || ( frame.contentWindow && frame.contentWindow.document );
+					if ( doc && doc.body ) {
+						frame.style.height = doc.body.scrollHeight + 'px';
+					}
+				} catch ( e ) { /* cross-origin guard */ }
+			}
+
 			function wirePreview( subjId, editorId, previewSubjId, frameId ) {
 				var subjEl      = document.getElementById( subjId );
 				var previewSubj = document.getElementById( previewSubjId );
 				var frame       = document.getElementById( frameId );
+
+				if ( frame ) {
+					frame.addEventListener( 'load', function () { fitIframe( frame ); } );
+				}
 
 				function refresh() {
 					if ( previewSubj && subjEl ) {
@@ -312,6 +326,19 @@ class MMG_Subscription_Email_Settings {
 				'mmg_tpl_failed_subject',  'mmg_tpl_failed_body',
 				'mmg-preview-subj-failed', 'mmg-preview-body-failed'
 			);
+
+			// When the email-templates tab becomes visible, resize TinyMCE editors
+			// so they fill the full width (they initialise inside a hidden panel).
+			var panel = document.getElementById( 'mmg-panel-email-templates' );
+			if ( panel && window.MutationObserver ) {
+				new MutationObserver( function ( mutations ) {
+					mutations.forEach( function ( m ) {
+						if ( 'class' === m.attributeName && panel.classList.contains( 'mmg-tab-active' ) ) {
+							window.dispatchEvent( new Event( 'resize' ) );
+						}
+					} );
+				} ).observe( panel, { attributes: true } );
+			}
 		}());
 		</script>
 		<?php
