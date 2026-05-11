@@ -76,6 +76,7 @@ function wc_get_logger() {
 class WC_Product {
     public function get_type() { return 'simple'; }
     public function get_name( $context = 'view' ) { return 'Test Product'; }
+    public function get_price() { return ''; }
     public function get_meta( $key, $single = true, $context = 'view' ) { return ''; }
 }
 class WC_Product_Simple extends WC_Product {}
