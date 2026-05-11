@@ -38,6 +38,11 @@ class MMG_Checkout_Payment_Activator {
 		self::seed_subscription_defaults();
 	}
 
+	/**
+	 * Seed default option values for the subscription reminder system.
+	 *
+	 * @return void
+	 */
 	public static function seed_subscription_defaults(): void {
 		if ( ! get_option( 'mmg_reminder_schedule' ) ) {
 			update_option( 'mmg_reminder_schedule', wp_json_encode( array( 3 ) ) );

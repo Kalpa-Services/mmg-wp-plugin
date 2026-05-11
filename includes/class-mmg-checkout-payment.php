@@ -165,15 +165,15 @@ class MMG_Checkout_Payment {
 	/**
 	 * Register WC_Payment_Token_MMG so WooCommerce can hydrate tokens of type 'mmg'.
 	 *
-	 * @param string $class Token class name WooCommerce resolved by convention.
-	 * @param string $type  Token type stored in the database.
+	 * @param string $class_name Token class name WooCommerce resolved by convention.
+	 * @param string $type       Token type stored in the database.
 	 * @return string
 	 */
-	public function register_mmg_token_class( $class, $type ) {
+	public function register_mmg_token_class( $class_name, $type ) {
 		if ( 'mmg' === $type ) {
 			return 'WC_Payment_Token_MMG';
 		}
-		return $class;
+		return $class_name;
 	}
 
 	/**

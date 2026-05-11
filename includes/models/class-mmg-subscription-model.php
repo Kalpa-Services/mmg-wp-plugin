@@ -70,14 +70,15 @@ class MMG_Subscription_Model {
 	public function get_by_id( int $id ): ?object {
 		$cached = wp_cache_get( $this->cache_key( $id ), self::CACHE_GROUP );
 		if ( false !== $cached ) {
-			return $cached ?: null;
+			return $cached ? $cached : null;
 		}
 
 		global $wpdb;
+		$table_name = $this->get_table();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$this->get_table()} WHERE id = %d",
+				"SELECT * FROM {$table_name} WHERE id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$id
 			)
 		);
@@ -85,7 +86,7 @@ class MMG_Subscription_Model {
 		// Store 0 for a miss so we don't re-query within the same request.
 		wp_cache_set( $this->cache_key( $id ), $row ?? 0, self::CACHE_GROUP, self::CACHE_TTL );
 
-		return $row ?: null;
+		return $row ? $row : null;
 	}
 
 	/**
@@ -109,13 +110,15 @@ class MMG_Subscription_Model {
 	 */
 	public function get_by_order_id( int $order_id ): ?object {
 		global $wpdb;
+		$table_name = $this->get_table();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return $wpdb->get_row(
+		$row = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$this->get_table()} WHERE order_id = %d",
+				"SELECT * FROM {$table_name} WHERE order_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$order_id
 			)
-		) ?: null;
+		);
+		return $row ? $row : null;
 	}
 
 	/**
@@ -126,10 +129,11 @@ class MMG_Subscription_Model {
 	 */
 	public function get_by_customer_id( int $customer_id ): array {
 		global $wpdb;
+		$table_name = $this->get_table();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		return (array) $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$this->get_table()} WHERE customer_id = %d ORDER BY created_at DESC",
+				"SELECT * FROM {$table_name} WHERE customer_id = %d ORDER BY created_at DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$customer_id
 			)
 		);
@@ -144,14 +148,16 @@ class MMG_Subscription_Model {
 	 */
 	public function get_owned_by_customer( int $id, int $customer_id ): ?object {
 		global $wpdb;
+		$table_name = $this->get_table();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return $wpdb->get_row(
+		$row = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$this->get_table()} WHERE id = %d AND customer_id = %d",
+				"SELECT * FROM {$table_name} WHERE id = %d AND customer_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$id,
 				$customer_id
 			)
-		) ?: null;
+		);
+		return $row ? $row : null;
 	}
 
 	/**
@@ -164,10 +170,15 @@ class MMG_Subscription_Model {
 	 */
 	public function get_paginated( int $per_page, int $offset, string $status_filter = '' ): array {
 		global $wpdb;
-		$where = $status_filter ? $wpdb->prepare( 'WHERE status = %s', $status_filter ) : '';
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$table_name = $this->get_table();
+		$where      = $status_filter ? $wpdb->prepare( 'WHERE status = %s', $status_filter ) : '';
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		return (array) $wpdb->get_results(
-			"SELECT * FROM {$this->get_table()} {$where} ORDER BY id DESC LIMIT {$per_page} OFFSET {$offset}"
+			$wpdb->prepare(
+				"SELECT * FROM {$table_name} {$where} ORDER BY id DESC LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$per_page,
+				$offset
+			)
 		);
 	}
 
@@ -194,10 +205,11 @@ class MMG_Subscription_Model {
 	 */
 	public function get_recent( int $limit = 100 ): array {
 		global $wpdb;
+		$table_name = $this->get_table();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		return (array) $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$this->get_table()} ORDER BY id DESC LIMIT %d",
+				"SELECT * FROM {$table_name} ORDER BY id DESC LIMIT %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$limit
 			)
 		);
