@@ -24,14 +24,19 @@ class MMG_Subscription_Renewal_Handler {
     /** @var MMG_Subscription_Reminder_Scheduler */
     private $scheduler;
 
+    /** @var MMG_Subscription_Manager */
+    private $manager;
+
     public function __construct(
         MMG_API_Client $api_client = null,
         MMG_Subscription_Email $email = null,
-        MMG_Subscription_Reminder_Scheduler $scheduler = null
+        MMG_Subscription_Reminder_Scheduler $scheduler = null,
+        MMG_Subscription_Manager $manager = null
     ) {
         $this->api_client = $api_client ?: new MMG_API_Client();
         $this->email      = $email      ?: new MMG_Subscription_Email();
         $this->scheduler  = $scheduler  ?: new MMG_Subscription_Reminder_Scheduler();
+        $this->manager    = $manager    ?: new MMG_Subscription_Manager();
     }
 
     /**
@@ -157,24 +162,27 @@ class MMG_Subscription_Renewal_Handler {
     protected function advance_cycle( object $sub ): void {
         global $wpdb;
 
-        $manager   = new MMG_Subscription_Manager();
-        $next_date = $manager->calculate_next_date(
+        $next_date    = $this->manager->calculate_next_date(
             current_time( 'mysql' ),
             $sub->billing_period,
             $sub->billing_interval
         );
         $new_cycle_id = $sub->id . '-' . gmdate( 'Y-m-d', strtotime( $next_date ) );
 
+        // Optimistic lock: only advance if the cycle ID hasn't changed yet (prevents double-advance on duplicate AS job).
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-        $wpdb->update(
+        $updated = $wpdb->update(
             $wpdb->prefix . 'mmg_subscriptions',
             [
                 'next_payment_date'  => $next_date,
                 'payment_cycle_id'   => $new_cycle_id,
                 'last_reminder_sent' => null,
             ],
-            [ 'id' => (int) $sub->id ]
+            [ 'id' => (int) $sub->id, 'payment_cycle_id' => $sub->payment_cycle_id ]
         );
+        if ( ! $updated ) {
+            return;
+        }
 
         $this->scheduler->schedule_for_subscription( (int) $sub->id, $next_date );
         as_enqueue_scheduled_action(

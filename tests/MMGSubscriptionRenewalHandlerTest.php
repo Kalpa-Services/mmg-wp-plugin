@@ -78,13 +78,14 @@ class MMGSubscriptionRenewalHandlerTest extends \PHPUnit\Framework\TestCase {
         $email = $this->createMock( MMG_Subscription_Email::class );
         $sched = $this->createMock( MMG_Subscription_Reminder_Scheduler::class );
 
+        $sub     = $this->make_sub();
         $handler = $this->getMockBuilder( MMG_Subscription_Renewal_Handler::class )
             ->setConstructorArgs( [ $api, $email, $sched ] )
             ->onlyMethods( ['get_subscription', 'is_cycle_paid', 'advance_cycle'] )
             ->getMock();
-        $handler->method( 'get_subscription' )->willReturn( $this->make_sub() );
+        $handler->method( 'get_subscription' )->willReturn( $sub );
         $handler->method( 'is_cycle_paid' )->willReturn( true );
-        $handler->expects( $this->once() )->method( 'advance_cycle' );
+        $handler->expects( $this->once() )->method( 'advance_cycle' )->with( $sub );
 
         $api->expects( $this->never() )->method( 'initiate_payment' );
 
