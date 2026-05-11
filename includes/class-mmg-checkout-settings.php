@@ -141,6 +141,10 @@ class MMG_Checkout_Settings {
 				'label' => 'Subscriptions',
 				'icon'  => 'dashicons-update',
 			),
+			'email-templates' => array(
+				'label' => 'Email Templates',
+				'icon'  => 'dashicons-email-alt',
+			),
 			'currency'        => array(
 				'label' => 'Currency Conversion',
 				'icon'  => 'dashicons-translation',
@@ -149,10 +153,7 @@ class MMG_Checkout_Settings {
 				'label' => 'Logs',
 				'icon'  => 'dashicons-warning',
 			),
-			'email-templates' => array(
-				'label' => 'Email Templates',
-				'icon'  => 'dashicons-email-alt',
-			),
+
 		);
 		?>
 		<div class="mmg-dashboard-wrap">
