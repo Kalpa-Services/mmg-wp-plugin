@@ -414,6 +414,7 @@ class MMG_Checkout_Settings {
 
 		<form method="post" action="options.php" id="mmg-checkout-settings-form">
 			<?php settings_fields( 'mmg_checkout_settings' ); ?>
+			<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( admin_url( 'admin.php?page=mmg-checkout-settings&tab=credentials' ) ); ?>" />
 
 			<!-- Common Settings -->
 			<div class="mmg-card" style="margin-bottom:20px;">
@@ -1027,6 +1028,7 @@ class MMG_Checkout_Settings {
 
 		<form method="post" action="options.php" id="mmg-currency-settings-form">
 			<?php settings_fields( 'mmg_currency_rates_group' ); ?>
+			<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( admin_url( 'admin.php?page=mmg-checkout-settings&tab=currency' ) ); ?>" />
 			
 			<div class="mmg-alert mmg-alert-info">
 				<span class="mmg-alert-icon dashicons dashicons-info"></span>
