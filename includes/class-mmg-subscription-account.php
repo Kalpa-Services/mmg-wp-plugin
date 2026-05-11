@@ -331,18 +331,24 @@ class MMG_Subscription_Account {
 	 * @param string $token URL token.
 	 */
 	public function handle_pay_token( string $token ): void {
-		$sub_id = get_transient( 'mmg_pay_token_' . $token );
-		if ( ! $sub_id ) {
+		$data = get_transient( 'mmg_pay_token_' . $token );
+		if ( ! is_array( $data ) || empty( $data['sub_id'] ) || empty( $data['customer_id'] ) ) {
 			wc_add_notice( 'This payment link has expired. Please contact support for a new one.', 'error' );
+			wp_safe_redirect( wc_get_endpoint_url( 'mmg-subscriptions', '', wc_get_page_permalink( 'myaccount' ) ) );
+			exit;
+		}
+
+		// Verify ownership before consuming the token so it is not exhausted by a mismatched or CSRF request.
+		if ( get_current_user_id() !== (int) $data['customer_id'] ) {
 			wp_safe_redirect( wc_get_endpoint_url( 'mmg-subscriptions', '', wc_get_page_permalink( 'myaccount' ) ) );
 			exit;
 		}
 
 		delete_transient( 'mmg_pay_token_' . $token );
 
-		$sub = $this->model->get_by_id( (int) $sub_id );
+		$sub = $this->model->get_by_id( (int) $data['sub_id'] );
 
-		if ( ! $sub || get_current_user_id() !== (int) $sub->customer_id ) {
+		if ( ! $sub ) {
 			wp_safe_redirect( wc_get_endpoint_url( 'mmg-subscriptions', '', wc_get_page_permalink( 'myaccount' ) ) );
 			exit;
 		}
@@ -393,12 +399,20 @@ class MMG_Subscription_Account {
 	/**
 	 * Generate a signed 48-hour pay URL for use in reminder emails.
 	 *
-	 * @param int $sub_id Subscription ID.
+	 * @param int $sub_id      Subscription ID.
+	 * @param int $customer_id Customer (user) ID who owns the subscription.
 	 * @return string Absolute URL with mmg_pay_token query arg.
 	 */
-	public static function generate_pay_token_url( int $sub_id ): string {
+	public static function generate_pay_token_url( int $sub_id, int $customer_id ): string {
 		$token = wp_generate_password( 32, false );
-		set_transient( 'mmg_pay_token_' . $token, $sub_id, 2 * DAY_IN_SECONDS );
+		set_transient(
+			'mmg_pay_token_' . $token,
+			array(
+				'sub_id'      => $sub_id,
+				'customer_id' => $customer_id,
+			),
+			2 * DAY_IN_SECONDS
+		);
 		return add_query_arg( array( 'mmg_pay_token' => $token ), wc_get_endpoint_url( 'mmg-subscriptions', '', wc_get_page_permalink( 'myaccount' ) ) );
 	}
 }

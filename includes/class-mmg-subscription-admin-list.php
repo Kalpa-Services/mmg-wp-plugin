@@ -243,7 +243,7 @@ class MMG_Subscription_Admin_List extends WP_List_Table {
 			wp_safe_redirect( admin_url( 'admin.php?page=mmg-subscriptions-admin' ) );
 			exit;
 		}
-		$url = MMG_Subscription_Account::generate_pay_token_url( $id );
+		$url = MMG_Subscription_Account::generate_pay_token_url( $id, (int) $sub->customer_id );
 		( new MMG_Subscription_Email() )->send_reminder( $sub, $url );
 		$this->model->update_last_reminder_sent( $id );
 		wp_safe_redirect( admin_url( 'admin.php?page=mmg-subscriptions-admin&updated=resent' ) );

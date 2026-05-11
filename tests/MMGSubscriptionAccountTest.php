@@ -179,7 +179,7 @@ class MMGSubscriptionAccountTest extends \PHPUnit\Framework\TestCase {
     }
 
     public function test_generate_pay_token_url_returns_url_with_token_query_arg() {
-        $url = MMG_Subscription_Account::generate_pay_token_url( 7 );
+        $url = MMG_Subscription_Account::generate_pay_token_url( 7, 42 );
         $this->assertStringContainsString( 'mmg_pay_token=', $url );
     }
 

@@ -58,7 +58,7 @@ class MMG_Action_Scheduler_Handler {
 			return;
 		}
 
-		$payment_url = MMG_Subscription_Account::generate_pay_token_url( (int) $sub->id );
+		$payment_url = MMG_Subscription_Account::generate_pay_token_url( (int) $sub->id, (int) $sub->customer_id );
 		( new MMG_Subscription_Email() )->send_reminder( $sub, $payment_url );
 
 		$this->model->update_last_reminder_sent( (int) $sub->id );
