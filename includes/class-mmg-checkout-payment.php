@@ -111,8 +111,69 @@ class MMG_Checkout_Payment {
 		add_action( 'parse_request', array( $this, 'parse_api_request' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 
+		// Data access layer.
+		require_once __DIR__ . '/models/class-mmg-subscription-model.php';
+
+		// Custom payment token — must be loaded before any WC token hydration occurs.
+		require_once __DIR__ . '/class-wc-payment-token-mmg.php';
+		add_filter( 'woocommerce_payment_token_class', array( $this, 'register_mmg_token_class' ), 10, 2 );
+
+		// Initialize Action Scheduler Handler.
+		require_once __DIR__ . '/class-mmg-action-scheduler-handler.php';
+		new MMG_Action_Scheduler_Handler();
+
+		// Initialize Native Subscriptions.
+		require_once __DIR__ . '/class-wc-product-mmg-subscription.php';
+		require_once __DIR__ . '/class-mmg-subscription-admin.php';
+		require_once __DIR__ . '/class-mmg-subscription-manager.php';
+		require_once __DIR__ . '/class-mmg-subscription-account.php';
+		require_once __DIR__ . '/class-mmg-subscription-renewal-handler.php';
+		require_once __DIR__ . '/class-mmg-subscription-reminder-scheduler.php';
+		require_once __DIR__ . '/class-mmg-subscription-email.php';
+		if ( is_admin() ) {
+			new MMG_Subscription_Admin();
+			require_once __DIR__ . '/class-mmg-subscription-email-settings.php';
+			new MMG_Subscription_Email_Settings();
+			if ( class_exists( 'WP_List_Table' ) ) {
+				require_once __DIR__ . '/class-mmg-subscription-admin-list.php';
+				add_action( 'admin_menu', array( 'MMG_Subscription_Admin_List', 'register_menu' ) );
+			}
+		}
+		new MMG_Subscription_Manager();
+		new MMG_Subscription_Account();
+		add_filter( 'woocommerce_product_class', array( $this, 'get_subscription_product_class' ), 10, 2 );
+		add_action( 'woocommerce_mmg_subscription_add_to_cart', 'woocommerce_simple_add_to_cart', 30 );
+
 		$this->live_checkout_url = $this->get_checkout_url( 'live' );
 		$this->demo_checkout_url = $this->get_checkout_url( 'demo' );
+	}
+
+	/**
+	 * Map mmg_subscription product type to our custom class.
+	 *
+	 * @param string $classname    Class name.
+	 * @param string $product_type Product type.
+	 * @return string
+	 */
+	public function get_subscription_product_class( $classname, $product_type ) {
+		if ( 'mmg_subscription' === $product_type ) {
+			return 'WC_Product_MMG_Subscription';
+		}
+		return $classname;
+	}
+
+	/**
+	 * Register WC_Payment_Token_MMG so WooCommerce can hydrate tokens of type 'mmg'.
+	 *
+	 * @param string $class_name Token class name WooCommerce resolved by convention.
+	 * @param string $type       Token type stored in the database.
+	 * @return string
+	 */
+	public function register_mmg_token_class( $class_name, $type ) {
+		if ( 'mmg' === $type ) {
+			return 'WC_Payment_Token_MMG';
+		}
+		return $class_name;
 	}
 
 	/**
@@ -200,6 +261,20 @@ class MMG_Checkout_Payment {
 			'requestInitiationTime' => time(),
 			'merchantName'          => get_option( 'mmg_merchant_name', get_bloginfo( 'name' ) ),
 		);
+
+		// If this is a subscription order, signal MMG to tokenize the payment.
+		$has_subscription = false;
+		foreach ( $order->get_items() as $item ) {
+			$product = $item->get_product();
+			if ( $product && 'mmg_subscription' === $product->get_type() ) {
+				$has_subscription = true;
+				break;
+			}
+		}
+
+		if ( $has_subscription || ( function_exists( 'wcs_is_subscription' ) && ( wcs_is_subscription( $order ) || wcs_order_contains_subscription( $order ) ) ) ) {
+			$token_data['setupFutureUsage'] = 'on_session';
+		}
 
 		// Store conversion metadata for reference.
 		$order->update_meta_data( '_mmg_conversion_rate', $rate );
@@ -738,56 +813,131 @@ class MMG_Checkout_Payment {
 	/**
 	 * Handle webhook notification from MMG on payment completion.
 	 */
+	/**
+	 * Handle webhook notification from MMG on payment completion.
+	 *
+	 * Unified handler for asynchronous status updates and renewals.
+	 */
 	private function handle_webhook_notification() {
+		$payload = $this->get_raw_post_body();
+		$headers = getallheaders();
+
+		MMG_Logger::info( 'Webhook received: ' . $payload, 'webhooks' );
+
+		// 1. Verify Callback Key (Token in URL).
 		if ( ! $this->verify_callback_key() ) {
-			wp_send_json_error( 'Invalid callback', 403 );
-			return;
+			MMG_Logger::error( 'Invalid callback key for webhook.', 'webhooks' );
+			wp_send_json_error( 'Invalid callback key', 403 );
 		}
 
-		$raw  = $this->get_raw_post_body();
-		$json = json_decode( $raw, true );
+		// 2. Verify HMAC Signature.
+		$signature = isset( $headers['X-MMG-Signature'] ) ? $headers['X-MMG-Signature'] : '';
+		if ( ! $this->verify_signature( $payload, $signature ) ) {
+			MMG_Logger::error( 'Invalid HMAC signature for webhook.', 'webhooks' );
+			wp_send_json_error( 'Invalid signature', 403 );
+		}
 
-		if ( ! empty( $json['token'] ) ) {
-			$token = sanitize_text_field( $json['token'] );
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		} elseif ( ! empty( $_POST['token'] ) ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$token = sanitize_text_field( wp_unslash( $_POST['token'] ) );
+		$data = json_decode( $payload, true );
+		if ( ! $data ) {
+			MMG_Logger::error( 'Invalid webhook payload (not JSON).', 'webhooks' );
+			wp_send_json_error( 'Invalid payload', 400 );
+		}
+
+		// 3. Extract Order Data from Token if present.
+		if ( ! empty( $data['token'] ) ) {
+			try {
+				$decoded      = $this->url_safe_base64_decode( $data['token'] );
+				$payment_data = $this->decrypt( $decoded );
+				$data         = array_merge( $data, $payment_data );
+			} catch ( Exception $e ) {
+				MMG_Logger::error( 'Webhook decrypt error: ' . $e->getMessage(), 'webhooks' );
+				wp_send_json_success(); // 200 to prevent retries.
+				return;
+			}
+		}
+
+		// 4. Check Idempotency.
+		$event_id = isset( $data['event_id'] ) ? $data['event_id'] : ( isset( $data['merchantTransactionId'] ) ? $data['merchantTransactionId'] : '' );
+		if ( ! empty( $event_id ) && $this->is_event_processed( $event_id ) ) {
+			MMG_Logger::info( 'Webhook event already processed: ' . $event_id, 'webhooks' );
+			wp_send_json_success( array( 'message' => 'Event already processed' ) );
+		}
+
+		// 5. Log event to database.
+		$order_id   = ! empty( $data['order_id'] ) ? intval( $data['order_id'] ) : $this->extract_order_id( $data['merchantTransactionId'] ?? '' );
+		$event_type = $data['event_type'] ?? 'payment.success';
+		$this->log_event( $event_id, $event_type, $order_id );
+
+		// Ensure these are in data for background processing.
+		$data['order_id']   = $order_id;
+		$data['event_type'] = $event_type;
+
+		// 6. Push to Action Scheduler for background processing.
+		if ( function_exists( 'as_enqueue_async_action' ) ) {
+			as_enqueue_async_action( 'mmg_process_webhook_event', array( 'data' => $data ) );
+			MMG_Logger::info( "Webhook event queued for background processing: {$event_id}", 'webhooks' );
 		} else {
-			wc_get_logger()->error( 'MMG webhook: missing token', array( 'source' => 'mmg-checkout' ) );
-			wp_send_json_success();
-			return;
+			do_action( 'mmg_process_webhook_event', $data );
 		}
 
-		try {
-			$decoded      = $this->url_safe_base64_decode( $token );
-			$payment_data = $this->decrypt( $decoded );
-		} catch ( Exception $e ) {
-			wc_get_logger()->error( 'MMG webhook decrypt error: ' . $e->getMessage(), array( 'source' => 'mmg-checkout' ) );
-			wp_send_json_success(); // 200 to prevent MMG retries.
-			return;
+		wp_send_json_success( array( 'message' => 'Webhook received and queued' ) );
+	}
+
+	/**
+	 * Verify HMAC signature.
+	 *
+	 * @param string $payload   Request payload.
+	 * @param string $signature Signature from header.
+	 * @return bool
+	 */
+	protected function verify_signature( $payload, $signature ) {
+		$secret_key = get_option( "mmg_{$this->mode}_secret_key" );
+
+		if ( ! $secret_key || ! $signature ) {
+			return false;
 		}
 
-		if ( empty( $payment_data['merchantTransactionId'] ) ) {
-			wc_get_logger()->error( 'MMG webhook: missing merchantTransactionId', array( 'source' => 'mmg-checkout' ) );
-			wp_send_json_success();
-			return;
+		$expected = hash_hmac( 'sha256', $payload, $secret_key );
+		return hash_equals( $expected, $signature );
+	}
+
+	/**
+	 * Check if event has already been processed.
+	 *
+	 * @param string $event_id Event ID.
+	 * @return bool
+	 */
+	protected function is_event_processed( $event_id ) {
+		$orders = wc_get_orders(
+			array(
+				'limit'      => 1,
+				'return'     => 'ids',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'meta_query' => array(
+					array(
+						'key'     => '_mmg_processed_event_id',
+						'value'   => $event_id,
+						'compare' => '=',
+					),
+				),
+			)
+		);
+		return ! empty( $orders );
+	}
+
+	/**
+	 * Log event using order metadata.
+	 *
+	 * @param string $event_id   Event ID.
+	 * @param string $event_type Event Type.
+	 * @param int    $order_id   Order ID.
+	 */
+	protected function log_event( $event_id, $event_type, $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( $order ) {
+			$order->add_meta_data( '_mmg_processed_event_id', $event_id, false );
+			$order->add_meta_data( '_mmg_event_type_' . $event_id, $event_type, true );
+			$order->save();
 		}
-
-		$order_id = $this->extract_order_id( $payment_data['merchantTransactionId'] );
-		$order    = wc_get_order( $order_id );
-
-		if ( ! $order ) {
-			wc_get_logger()->error( "MMG webhook: order {$order_id} not found", array( 'source' => 'mmg-checkout' ) );
-			wp_send_json_success();
-			return;
-		}
-
-		if ( ! $order->is_paid() && isset( $payment_data['ResultCode'] ) && 0 === intval( $payment_data['ResultCode'] ) ) {
-			$order->payment_complete();
-			$order->add_order_note( 'Payment completed via MMG webhook. Transaction ID: ' . esc_html( $payment_data['transactionId'] ?? 'unknown' ) );
-		}
-
-		wp_send_json_success();
 	}
 }

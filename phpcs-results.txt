@@ -1,5 +1,79 @@
-............. 13 / 13 (100%)
+....E.E............E.EW.. 25 / 25 (100%)
 
 
-Time: 499ms; Memory: 22MB
+
+FILE: /home/carlhandy/Documents/projects/mmg-wp-plugin/includes/class-mmg-checkout-payment-activator.php
+--------------------------------------------------------------------------------------------------------
+FOUND 4 ERRORS AFFECTING 2 LINES
+--------------------------------------------------------------------------------------------------------
+ 41 | ERROR | [ ] Missing doc comment for function seed_subscription_defaults()
+ 43 | ERROR | [x] Expected 1 space after the array opener in a single line array. Found: no spaces
+ 43 | ERROR | [x] Short array syntax is not allowed
+ 43 | ERROR | [x] Expected 1 space before the array closer in a single line array. Found: no spaces
+--------------------------------------------------------------------------------------------------------
+PHPCBF CAN FIX THE 3 MARKED SNIFF VIOLATIONS AUTOMATICALLY
+--------------------------------------------------------------------------------------------------------
+
+
+FILE: /home/carlhandy/Documents/projects/mmg-wp-plugin/includes/class-mmg-checkout-payment.php
+---------------------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AND 1 WARNING AFFECTING 2 LINES
+---------------------------------------------------------------------------------------------------------------------
+ 139 | ERROR   | [x] Short array syntax is not allowed
+ 172 | WARNING | [ ] It is recommended not to use reserved keyword "class" as function parameter name. Found: $class
+---------------------------------------------------------------------------------------------------------------------
+PHPCBF CAN FIX THE 1 MARKED SNIFF VIOLATIONS AUTOMATICALLY
+---------------------------------------------------------------------------------------------------------------------
+
+
+FILE: /home/carlhandy/Documents/projects/mmg-wp-plugin/includes/models/class-mmg-subscription-model.php
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+FOUND 15 ERRORS AFFECTING 11 LINES
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  73 | ERROR | Using short ternaries is not allowed as they are rarely used correctly
+  80 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$this->get_table()} at "SELECT * FROM {$this->get_table()} WHERE id = %d"
+  88 | ERROR | Using short ternaries is not allowed as they are rarely used correctly
+ 115 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$this->get_table()} at "SELECT * FROM {$this->get_table()} WHERE order_id = %d"
+ 118 | ERROR | Using short ternaries is not allowed as they are rarely used correctly
+ 132 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$this->get_table()} at "SELECT * FROM {$this->get_table()} WHERE customer_id = %d ORDER
+     |       | BY created_at DESC"
+ 150 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$this->get_table()} at "SELECT * FROM {$this->get_table()} WHERE id = %d AND customer_id
+     |       | = %d"
+ 154 | ERROR | Using short ternaries is not allowed as they are rarely used correctly
+ 170 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$this->get_table()} at "SELECT * FROM {$this->get_table()} {$where} ORDER BY id DESC
+     |       | LIMIT {$per_page} OFFSET {$offset}"
+ 170 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$where} at "SELECT * FROM {$this->get_table()} {$where} ORDER BY id DESC LIMIT
+     |       | {$per_page} OFFSET {$offset}"
+ 170 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$per_page} at "SELECT * FROM {$this->get_table()} {$where} ORDER BY id DESC LIMIT
+     |       | {$per_page} OFFSET {$offset}"
+ 170 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$offset} at "SELECT * FROM {$this->get_table()} {$where} ORDER BY id DESC LIMIT
+     |       | {$per_page} OFFSET {$offset}"
+ 185 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$this->get_table()} at "SELECT COUNT(*) FROM {$this->get_table()} {$where}"
+ 185 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$where} at "SELECT COUNT(*) FROM {$this->get_table()} {$where}"
+ 200 | ERROR | Use placeholders and $wpdb->prepare(); found interpolated variable {$this->get_table()} at "SELECT * FROM {$this->get_table()} ORDER BY id DESC LIMIT %d"
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+FILE: /home/carlhandy/Documents/projects/mmg-wp-plugin/includes/class-mmg-action-scheduler-handler.php
+------------------------------------------------------------------------------------------------------
+FOUND 1 ERROR AFFECTING 1 LINE
+------------------------------------------------------------------------------------------------------
+ 35 | ERROR | [x] Expected 1 space after comma in argument list; 2 found
+------------------------------------------------------------------------------------------------------
+PHPCBF CAN FIX THE 1 MARKED SNIFF VIOLATIONS AUTOMATICALLY
+------------------------------------------------------------------------------------------------------
+
+
+FILE: /home/carlhandy/Documents/projects/mmg-wp-plugin/includes/class-mmg-subscription-admin-list.php
+----------------------------------------------------------------------------------------------------------------
+FOUND 0 ERRORS AND 3 WARNINGS AFFECTING 3 LINES
+----------------------------------------------------------------------------------------------------------------
+ 100 | WARNING | [x] Equals sign not aligned with surrounding assignments; expected 6 spaces but found 5 spaces
+ 101 | WARNING | [x] Equals sign not aligned with surrounding assignments; expected 2 spaces but found 1 space
+ 102 | WARNING | [x] Equals sign not aligned with surrounding assignments; expected 8 spaces but found 7 spaces
+----------------------------------------------------------------------------------------------------------------
+PHPCBF CAN FIX THE 3 MARKED SNIFF VIOLATIONS AUTOMATICALLY
+----------------------------------------------------------------------------------------------------------------
+
+Time: 955ms; Memory: 28MB
 

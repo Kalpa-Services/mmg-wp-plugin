@@ -2,6 +2,7 @@
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 if ( ! defined( 'MINUTE_IN_SECONDS' ) ) define( 'MINUTE_IN_SECONDS', 60 );
+if ( ! defined( 'HOUR_IN_SECONDS' ) )   define( 'HOUR_IN_SECONDS', 3600 );
 if ( ! defined( 'DAY_IN_SECONDS' ) )    define( 'DAY_IN_SECONDS', 86400 );
 if ( ! defined( 'ABSPATH' ) )           define( 'ABSPATH', '/' );
 
@@ -34,8 +35,17 @@ function wp_unslash( $str ) { return $str; }
 function esc_html( $str ) { return $str; }
 function esc_url_raw( $url ) { return $url; }
 function wp_parse_url( $url, $c = -1 ) { return parse_url( $url, $c ); }
-function add_action() {}
+$GLOBALS['mmg_test_actions'] = [];
+function add_action( $tag, $callback ) {
+    $GLOBALS['mmg_test_actions'][ $tag ][] = $callback;
+}
+function do_action( $tag, ...$args ) {
+    foreach ( $GLOBALS['mmg_test_actions'][ $tag ] ?? [] as $callback ) {
+        call_user_func_array( $callback, $args );
+    }
+}
 function add_filter() {}
+function apply_filters( $tag, $value ) { return $value; }
 function current_user_can() { return true; }
 function check_ajax_referer() { return true; }
 function register_rest_route() {}
@@ -51,14 +61,84 @@ function plugin_dir_url( $file ) { return 'http://example.com/wp-content/plugins
 function wp_enqueue_script() {}
 function wp_enqueue_style() {}
 function wp_localize_script() {}
+function is_admin() { return false; }
 function selected( $selected, $current = true ) { return $selected === $current ? ' selected' : ''; }
+if ( ! function_exists( 'getallheaders' ) ) {
+    function getallheaders() { return []; }
+}
 function wc_get_logger() {
     return new class {
         public function error( $msg, $ctx = [] ) {}
         public function info( $msg, $ctx = [] ) {}
+        public function log( $level, $message, $context = [] ) {}
     };
 }
+
+// Object cache stubs — model uses these for single-row caching.
+$GLOBALS['mmg_test_cache'] = [];
+function wp_cache_get( $key, $group = '', $force = false, &$found = null ) {
+    $found = isset( $GLOBALS['mmg_test_cache'][ $group ][ $key ] );
+    return $found ? $GLOBALS['mmg_test_cache'][ $group ][ $key ] : false;
+}
+function wp_cache_set( $key, $data, $group = '', $expire = 0 ) {
+    $GLOBALS['mmg_test_cache'][ $group ][ $key ] = $data;
+    return true;
+}
+function wp_cache_delete( $key, $group = '' ) {
+    unset( $GLOBALS['mmg_test_cache'][ $group ][ $key ] );
+    return true;
+}
+
+// WooCommerce payment token stubs.
+if ( ! class_exists( 'WC_Payment_Token' ) ) {
+    class WC_Payment_Token {
+        protected $type = '';
+        private $data   = [];
+        public function validate() { return ! empty( $this->data['token'] ); }
+        public function get_token() { return $this->data['token'] ?? ''; }
+        public function set_token( $v ) { $this->data['token'] = $v; }
+        public function get_gateway_id() { return $this->data['gateway_id'] ?? ''; }
+        public function set_gateway_id( $v ) { $this->data['gateway_id'] = $v; }
+        public function get_user_id() { return $this->data['user_id'] ?? 0; }
+        public function set_user_id( $v ) { $this->data['user_id'] = $v; }
+        public function save() { return 1; }
+        public function get_id() { return 1; }
+        public function get_type() { return $this->type; }
+        public function add_payment_token( $token ) {}
+    }
+}
+if ( ! class_exists( 'WC_Payment_Tokens' ) ) {
+    class WC_Payment_Tokens {
+        public static function get_customer_tokens( $user_id, $gateway_id = '' ) { return []; }
+        public static function get_order_tokens( $order_id ) { return []; }
+    }
+}
+
+class WC_Product {
+    public function get_type() { return 'simple'; }
+    public function get_name( $context = 'view' ) { return 'Test Product'; }
+    public function get_price() { return ''; }
+    public function get_meta( $key, $single = true, $context = 'view' ) { return ''; }
+}
+class WC_Product_Simple extends WC_Product {}
+class WC_Order {
+    public function get_currency() { return 'GYD'; }
+    public function get_total() { return 0.00; }
+    public function get_id() { return 0; }
+    public function get_order_number() { return '0'; }
+    public function get_meta( $key, $single = true, $context = 'view' ) { return ''; }
+    public function update_meta_data( $key, $value, $meta_id = 0 ) {}
+    public function save() {}
+    public function payment_complete( $transaction_id = '' ) {}
+    public function add_order_note( $note, $is_customer_note = 0, $added_by_user = false ) {}
+    public function update_status( $new_status, $note = '', $manual = false ) {}
+    public function is_paid() { return false; }
+    public function get_checkout_payment_url( $on_checkout = false ) { return 'http://example.com/checkout/pay'; }
+    public function get_checkout_order_received_url() { return 'http://example.com/checkout/thankyou'; }
+    public function get_items() { return []; }
+}
 function wc_get_order( $id ) { return $GLOBALS['mmg_test_orders'][ $id ] ?? null; }
+function wc_get_orders( $args = [] ) { return []; }
 function wc_add_notice( $msg, $type = 'success' ) {}
 function wp_safe_redirect( $url ) { throw new MMGTestRedirectException( $url ); }
 function wp_send_json_success( $data = null, $code = 200 ) {
@@ -78,21 +158,6 @@ class WP_Error {
         $this->code = $code; $this->message = $message;
     }
     public function get_error_message() { return $this->message; }
-}
-class WC_Order {
-    public function get_currency() { return 'GYD'; }
-    public function get_total() { return 0.00; }
-    public function get_id() { return 0; }
-    public function get_order_number() { return '0'; }
-    public function get_meta( $key, $single = true, $context = 'view' ) { return ''; }
-    public function update_meta_data( $key, $value, $meta_id = 0 ) {}
-    public function save() {}
-    public function payment_complete( $transaction_id = '' ) {}
-    public function add_order_note( $note, $is_customer_note = 0, $added_by_user = false ) {}
-    public function update_status( $new_status, $note = '', $manual = false ) {}
-    public function is_paid() { return false; }
-    public function get_checkout_payment_url( $on_checkout = false ) { return 'http://example.com/checkout/pay'; }
-    public function get_checkout_order_received_url() { return 'http://example.com/checkout/thankyou'; }
 }
 class WP_REST_Response {
     public $data, $status;

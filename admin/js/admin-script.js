@@ -57,15 +57,23 @@ jQuery(document).ready(function ($) {
     $(".mmg-tab-panel").removeClass("mmg-tab-active");
     $("#mmg-panel-" + tab).addClass("mmg-tab-active");
 
-    // Update URL hash (for direct linking).
+    // Update URL: strip ?tab and ?saved so other-tab form saves don't
+    // inherit a stale tab redirect, then set the hash for direct linking.
     if (history.replaceState) {
-      history.replaceState(null, null, "#" + tab);
+      var url = new URL(window.location.href);
+      url.searchParams.delete("tab");
+      url.searchParams.delete("saved");
+      url.hash = tab;
+      history.replaceState(null, null, url.toString());
     }
   });
 
-  // After settings save, return to credentials tab so the user sees what changed.
-  if (window.location.search.indexOf("settings-updated=true") !== -1) {
-    $(".mmg-nav-link[data-tab='credentials']").trigger("click");
+  // After settings save, restore the saved tab and show a success notification.
+  var saveParams = new URLSearchParams(window.location.search);
+  if (saveParams.get("settings-updated") === "true" || saveParams.get("saved") === "1") {
+    var savedTab = saveParams.get("tab") || "credentials";
+    $(".mmg-nav-link[data-tab='" + savedTab + "']").trigger("click");
+    mmgShowToast("Settings saved successfully.", "success");
   } else {
     // Restore tab from URL hash on load.
     var hash = window.location.hash.replace("#", "");
