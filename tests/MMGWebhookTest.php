@@ -38,6 +38,7 @@ class MMGWebhookTest extends \PHPUnit\Framework\TestCase {
             public function payment_complete() { $this->paid = true; }
             public function add_order_note( $n ) { $this->notes[] = $n; }
             public function add_meta_data( $k, $v, $u = true ) {}
+            public function get_meta( $k, $single = false ) { return ''; }
             public function save() {}
         };
         $GLOBALS['mmg_test_orders'][42] = $order;

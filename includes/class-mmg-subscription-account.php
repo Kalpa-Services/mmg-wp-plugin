@@ -137,18 +137,19 @@ class MMG_Subscription_Account {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce checked in each sub-handler.
 		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ) : '';
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce checked in each sub-handler.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- nonce verified in each individual handler below.
 		if ( isset( $_GET['cancel_mmg_sub'] ) ) {
-			$this->handle_cancel( (int) $_GET['cancel_mmg_sub'], $nonce, $user_id ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$this->handle_cancel( (int) $_GET['cancel_mmg_sub'], $nonce, $user_id );
 		} elseif ( isset( $_GET['halt_mmg_sub'] ) ) {
-			$this->handle_halt( (int) $_GET['halt_mmg_sub'], $nonce, $user_id ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$this->handle_halt( (int) $_GET['halt_mmg_sub'], $nonce, $user_id );
 		} elseif ( isset( $_GET['renew_mmg_sub'] ) ) {
-			$this->handle_renew( (int) $_GET['renew_mmg_sub'], $nonce, $user_id ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$this->handle_renew( (int) $_GET['renew_mmg_sub'], $nonce, $user_id );
 		} elseif ( isset( $_GET['upgrade_mmg_sub_freq'] ) ) {
-			$this->handle_upgrade_frequency( (int) $_GET['upgrade_mmg_sub_freq'], $nonce, $user_id ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$this->handle_upgrade_frequency( (int) $_GET['upgrade_mmg_sub_freq'], $nonce, $user_id );
 		} elseif ( isset( $_GET['mmg_pay_token'] ) ) {
-			$this->handle_pay_token( sanitize_key( $_GET['mmg_pay_token'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$this->handle_pay_token( sanitize_key( $_GET['mmg_pay_token'] ) );
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -167,7 +168,7 @@ class MMG_Subscription_Account {
 		if ( ! $sub ) {
 			return;
 		}
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->update(
 			$wpdb->prefix . 'mmg_subscriptions',
 			array( 'status' => 'cancelled' ),
