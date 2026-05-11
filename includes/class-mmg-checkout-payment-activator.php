@@ -32,6 +32,23 @@ class MMG_Checkout_Payment_Activator {
 	public static function activate() {
 		self::mmg_activate();
 		self::create_subscription_table();
+		if ( ! class_exists( 'MMG_Subscription_Email' ) ) {
+			require_once __DIR__ . '/class-mmg-subscription-email.php';
+		}
+		self::seed_subscription_defaults();
+	}
+
+	public static function seed_subscription_defaults(): void {
+		if ( ! get_option( 'mmg_reminder_schedule' ) ) {
+			update_option( 'mmg_reminder_schedule', wp_json_encode( [3] ) );
+		}
+
+		$defaults = MMG_Subscription_Email::get_default_templates();
+		foreach ( $defaults as $option_key => $tpl ) {
+			if ( ! get_option( $option_key ) ) {
+				update_option( $option_key, $tpl );
+			}
+		}
 	}
 
 	/**

@@ -19,78 +19,58 @@ class MMG_Action_Scheduler_Handler {
 	 */
 	public function __construct() {
 		add_action( 'mmg_process_webhook_event', array( $this, 'process_event' ) );
-		add_action( 'mmg_subscription_renewal', array( $this, 'process_renewal' ) );
+		add_action( 'mmg_subscription_renewal',  array( $this, 'process_renewal' ) );
+		add_action( 'mmg_subscription_reminder', array( $this, 'process_reminder' ) );
+		add_action( 'mmg_mit_payment_confirmed', array( $this, 'on_mit_payment_confirmed' ) );
 	}
 
 	/**
-	 * Process a scheduled subscription renewal.
+	 * Process a scheduled subscription renewal — delegates to renewal handler.
 	 *
 	 * @param int $subscription_id Subscription ID.
 	 */
 	public function process_renewal( $subscription_id ) {
-		global $wpdb;
+		( new MMG_Subscription_Renewal_Handler() )->process_renewal( (int) $subscription_id );
+	}
 
+	/**
+	 * Process a scheduled reminder — sends reminder email and updates last_reminder_sent.
+	 *
+	 * @param int $subscription_id Subscription ID.
+	 * @param int $days_before     Days before renewal this reminder fires.
+	 */
+	public function process_reminder( $subscription_id, $days_before = 3 ) {
+		global $wpdb;
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$sub = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}mmg_subscriptions WHERE id = %d", $subscription_id ) );
-		if ( ! $sub || 'active' !== $sub->status ) {
+		$sub = $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}mmg_subscriptions WHERE id = %d AND status = 'active'",
+			(int) $subscription_id
+		) );
+
+		if ( ! $sub ) {
 			return;
 		}
 
-		MMG_Logger::info( "Processing renewal for Subscription #{$subscription_id}", 'api-requests' );
+		$payment_url = MMG_Subscription_Account::generate_pay_token_url( (int) $sub->id );
+		( new MMG_Subscription_Email() )->send_reminder( $sub, $payment_url );
 
-		try {
-			// 1. Create a renewal order.
-			$parent_order  = wc_get_order( $sub->order_id );
-			$renewal_order = wc_create_order(
-				array(
-					'customer_id' => $sub->customer_id,
-					'parent'      => $sub->order_id,
-				)
-			);
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$wpdb->update(
+			$wpdb->prefix . 'mmg_subscriptions',
+			array( 'last_reminder_sent' => current_time( 'mysql' ) ),
+			array( 'id' => (int) $sub->id )
+		);
 
-			$product = wc_get_product( $sub->product_id );
-			$renewal_order->add_product( $product, 1 );
-			$renewal_order->set_currency( $parent_order->get_currency() );
-			$renewal_order->set_billing_address( $parent_order->get_address( 'billing' ) );
-			$renewal_order->set_shipping_address( $parent_order->get_address( 'shipping' ) );
-			$renewal_order->calculate_totals();
-			$renewal_order->update_status( 'pending', 'Subscription renewal order.' );
+		MMG_Logger::info( "Reminder sent for subscription #{$subscription_id} ({$days_before}d before renewal).", 'api-requests' );
+	}
 
-			// 2. Process payment with token.
-			// (Assuming a method in the gateway or API client).
-			$txn_id = 'REN-' . time(); // Simulated.
-			$renewal_order->payment_complete( $txn_id );
-			$renewal_order->add_order_note( sprintf( 'Renewal payment successful via MMG Token. Transaction ID: %s', $txn_id ) );
-
-			// 3. Update next payment date.
-			$manager   = new MMG_Subscription_Manager();
-			$next_date = $manager->calculate_next_date( current_time( 'mysql' ), $sub->billing_period, $sub->billing_interval );
-
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->update(
-				$wpdb->prefix . 'mmg_subscriptions',
-				array( 'next_payment_date' => $next_date ),
-				array( 'id' => $sub->id )
-			);
-
-			// 4. Schedule next renewal.
-			as_enqueue_scheduled_action(
-				strtotime( $next_date ),
-				'mmg_subscription_renewal',
-				array( 'subscription_id' => $sub->id )
-			);
-
-			MMG_Logger::info( "Renewal successful for Subscription #{$sub->id}. Next payment: {$next_date}", 'api-requests' );
-
-		} catch ( Exception $e ) {
-			MMG_Logger::error( "Renewal failed for Subscription #{$sub->id}: " . $e->getMessage(), 'errors' );
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-			$wpdb->update(
-				$wpdb->prefix . 'mmg_subscriptions',
-				array( 'status' => 'on-hold' ),
-				array( 'id' => $sub->id )
-			);
-		}
+	/**
+	 * Handle MIT payment confirmed event.
+	 *
+	 * @param int $subscription_id Subscription ID.
+	 */
+	public function on_mit_payment_confirmed( $subscription_id ) {
+		( new MMG_Subscription_Renewal_Handler() )->on_mit_payment_confirmed( (int) $subscription_id );
 	}
 
 	/**
@@ -146,6 +126,15 @@ class MMG_Action_Scheduler_Handler {
 				// Activate native subscription if applicable.
 				if ( class_exists( 'MMG_Subscription_Manager' ) ) {
 					MMG_Subscription_Manager::activate_subscription( $order->get_id(), $token );
+				}
+			}
+
+			// If this is a renewal order (cycle ID present), fire confirmed hook.
+			$cycle_id = $order->get_meta( '_mmg_payment_cycle_id', true );
+			if ( ! empty( $cycle_id ) ) {
+				$sub_id = (int) explode( '-', $cycle_id )[0];
+				if ( $sub_id ) {
+					do_action( 'mmg_mit_payment_confirmed', $sub_id );
 				}
 			}
 		}

@@ -120,8 +120,17 @@ class MMG_Checkout_Payment {
 		require_once __DIR__ . '/class-mmg-subscription-admin.php';
 		require_once __DIR__ . '/class-mmg-subscription-manager.php';
 		require_once __DIR__ . '/class-mmg-subscription-account.php';
+		require_once __DIR__ . '/class-mmg-subscription-renewal-handler.php';
+		require_once __DIR__ . '/class-mmg-subscription-reminder-scheduler.php';
+		require_once __DIR__ . '/class-mmg-subscription-email.php';
 		if ( is_admin() ) {
 			new MMG_Subscription_Admin();
+			require_once __DIR__ . '/class-mmg-subscription-email-settings.php';
+			new MMG_Subscription_Email_Settings();
+			if ( class_exists( 'WP_List_Table' ) ) {
+				require_once __DIR__ . '/class-mmg-subscription-admin-list.php';
+				add_action( 'admin_menu', [ 'MMG_Subscription_Admin_List', 'register_menu' ] );
+			}
 		}
 		new MMG_Subscription_Manager();
 		new MMG_Subscription_Account();
