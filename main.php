@@ -26,6 +26,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Declare HPOS compatibility for WooCommerce.
+ */
+add_action(
+	'before_woocommerce_init',
+	function () {
+		if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+		}
+	}
+);
+
 // Single source of truth: read version from the plugin header above.
 $mmg_plugin_data = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
 define( 'MMG_PLUGIN_VERSION', $mmg_plugin_data['Version'] );

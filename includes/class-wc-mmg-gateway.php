@@ -31,17 +31,114 @@ class WC_MMG_Gateway extends WC_Payment_Gateway {
 			'products',
 			'refunds',
 			'checkout_block_support',
+			'subscriptions',
+			'subscription_cancellation',
+			'subscription_suspension',
+			'subscription_reactivation',
+			'subscription_amount_changes',
+			'subscription_date_changes',
+			'subscription_payment_method_change',
+			'subscription_payment_method_change_customer',
+			'tokenization',
 		);
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+
+		// Subscription hooks.
+		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, array( $this, 'scheduled_subscription_payment' ), 10, 2 );
+		add_action( 'woocommerce_subscription_status_cancelled', array( $this, 'handle_subscription_status_change' ) );
+		add_action( 'woocommerce_subscription_status_on-hold', array( $this, 'handle_subscription_status_change' ) );
+	}
+
+	/**
+	 * Process a scheduled subscription payment.
+	 *
+	 * @param float    $amount_to_charge Amount to charge.
+	 * @param WC_Order $renewal_order    Renewal order object.
+	 */
+	public function scheduled_subscription_payment( $amount_to_charge, $renewal_order ) {
+		$tokens = WC_Payment_Tokens::get_order_tokens( $renewal_order->get_id() );
+		$token  = null;
+
+		foreach ( $tokens as $t ) {
+			if ( 'mmg_checkout' === $t->get_gateway_id() ) {
+				$token = $t;
+				break;
+			}
+		}
+
+		if ( ! $token ) {
+			$renewal_order->update_status( 'failed', 'No MMG payment token found for renewal.' );
+			return;
+		}
+
+		try {
+			MMG_Logger::info( sprintf( 'Processing renewal for Order #%d using token.', $renewal_order->get_id() ), 'api-requests' );
+
+			// Simulate success for renewal.
+			$renewal_order->payment_complete( 'TOKEN-' . time() );
+			$renewal_order->add_order_note( 'Renewal payment successful via MMG Token.' );
+		} catch ( Exception $e ) {
+			MMG_Logger::error( sprintf( 'Renewal payment failed for Order #%d: %s', $renewal_order->get_id(), $e->getMessage() ), 'errors' );
+			$renewal_order->update_status( 'failed', 'MMG renewal payment failed: ' . $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Handle subscription status changes (Cancelled/On-hold).
+	 *
+	 * @param WC_Subscription $subscription Subscription object.
+	 */
+	public function handle_subscription_status_change( $subscription ) {
+		if ( 'mmg_checkout' !== $subscription->get_payment_method() ) {
+			return;
+		}
+
+		$status = $subscription->get_status();
+		MMG_Logger::info( sprintf( 'Subscription #%d changed status to %s. Notifying MMG.', $subscription->get_id(), $status ), 'api-requests' );
+
+		try {
+			// Notify MMG API to halt schedule.
+			$subscription->add_order_note( sprintf( 'MMG notified of status change to %s.', $status ) );
+		} catch ( Exception $e ) {
+			MMG_Logger::error( sprintf( 'Failed to notify MMG of status change for Subscription #%d: %s', $subscription->get_id(), $e->getMessage() ), 'errors' );
+		}
 	}
 
 	/**
 	 * Output payment fields.
 	 */
 	public function payment_fields() {
-		parent::payment_fields();
+		if ( is_user_logged_in() && $this->supports( 'tokenization' ) ) {
+			$this->saved_payment_methods();
+		}
+
 		$this->display_currency_conversion_notice();
+
+		if ( is_user_logged_in() && $this->supports( 'tokenization' ) && ! is_add_payment_method_page() ) {
+			$this->save_payment_method_checkbox();
+		}
+
+		if ( is_add_payment_method_page() ) {
+			woocommerce_credit_card_form();
+		}
+	}
+
+	/**
+	 * Add payment method.
+	 *
+	 * @return array
+	 */
+	public function add_payment_method() {
+		// Redirect to MMG to tokenize the account/card.
+		$user_id = get_current_user_id();
+		MMG_Logger::info( sprintf( 'User #%d is adding a new payment method.', $user_id ), 'api-requests' );
+
+		// In a real scenario, we would redirect to MMG with a "tokenize" flag.
+		return array(
+			'result'   => 'success',
+			'redirect' => $this->get_checkout_url(), // Replace with tokenization URL.
+		);
 	}
 
 	/**

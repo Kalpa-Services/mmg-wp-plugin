@@ -10,6 +10,7 @@ if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
     }
 }
 require_once dirname(__DIR__) . '/includes/class-mmg-checkout-payment.php';
+require_once dirname(__DIR__) . '/includes/class-mmg-action-scheduler-handler.php';
 
 class MMGWebhookTest extends \PHPUnit\Framework\TestCase {
 
@@ -18,8 +19,10 @@ class MMGWebhookTest extends \PHPUnit\Framework\TestCase {
         $GLOBALS['mmg_test_options']    = ['mmg_callback_key' => 'secret-key-abc'];
         $GLOBALS['mmg_test_transients'] = [];
         $GLOBALS['mmg_test_orders']     = [];
+        $GLOBALS['mmg_test_actions']    = [];
         $_SERVER['REQUEST_URI']         = '/wc-api/mmg-checkout/secret-key-abc';
         $_SERVER['REQUEST_METHOD']      = 'POST';
+        new MMG_Action_Scheduler_Handler();
     }
 
     protected function tearDown(): void {
@@ -34,15 +37,19 @@ class MMGWebhookTest extends \PHPUnit\Framework\TestCase {
             public function is_paid() { return $this->paid; }
             public function payment_complete() { $this->paid = true; }
             public function add_order_note( $n ) { $this->notes[] = $n; }
+            public function add_meta_data( $k, $v, $u = true ) {}
+            public function get_meta( $k, $single = false ) { return ''; }
+            public function save() {}
         };
         $GLOBALS['mmg_test_orders'][42] = $order;
         $_POST['token'] = 'encoded-token';
 
         $client = $this->getMockBuilder( MMG_Checkout_Payment::class )
-            ->onlyMethods( ['verify_callback_key', 'get_raw_post_body', 'url_safe_base64_decode', 'decrypt', 'extract_order_id'] )
+            ->onlyMethods( ['verify_callback_key', 'verify_signature', 'get_raw_post_body', 'url_safe_base64_decode', 'decrypt', 'extract_order_id'] )
             ->getMock();
         $client->method( 'verify_callback_key' )->willReturn( true );
-        $client->method( 'get_raw_post_body' )->willReturn( '' );
+        $client->method( 'verify_signature' )->willReturn( true );
+        $client->method( 'get_raw_post_body' )->willReturn( '{"token":"encoded-token"}' );
         $client->method( 'url_safe_base64_decode' )->willReturn( 'decoded' );
         $client->method( 'decrypt' )->willReturn( [
             'merchantTransactionId' => '42-1',
@@ -74,10 +81,11 @@ class MMGWebhookTest extends \PHPUnit\Framework\TestCase {
     public function test_webhook_returns_200_on_decrypt_failure_to_prevent_retries() {
         $_POST['token'] = 'bad';
         $client = $this->getMockBuilder( MMG_Checkout_Payment::class )
-            ->onlyMethods( ['verify_callback_key', 'get_raw_post_body', 'url_safe_base64_decode', 'decrypt'] )
+            ->onlyMethods( ['verify_callback_key', 'verify_signature', 'get_raw_post_body', 'url_safe_base64_decode', 'decrypt'] )
             ->getMock();
         $client->method( 'verify_callback_key' )->willReturn( true );
-        $client->method( 'get_raw_post_body' )->willReturn( '' );
+        $client->method( 'verify_signature' )->willReturn( true );
+        $client->method( 'get_raw_post_body' )->willReturn( '{"token":"bad"}' );
         $client->method( 'url_safe_base64_decode' )->willReturn( 'x' );
         $client->method( 'decrypt' )->willThrowException( new Exception( 'bad key' ) );
 
@@ -93,15 +101,18 @@ class MMGWebhookTest extends \PHPUnit\Framework\TestCase {
             public function is_paid() { return true; }
             public function payment_complete() { $this->completed_count++; }
             public function add_order_note( $n ) {}
+            public function add_meta_data( $k, $v, $u = true ) {}
+            public function save() {}
         };
         $GLOBALS['mmg_test_orders'][55] = $order;
         $_POST['token'] = 'tok';
 
         $client = $this->getMockBuilder( MMG_Checkout_Payment::class )
-            ->onlyMethods( ['verify_callback_key', 'get_raw_post_body', 'url_safe_base64_decode', 'decrypt', 'extract_order_id'] )
+            ->onlyMethods( ['verify_callback_key', 'verify_signature', 'get_raw_post_body', 'url_safe_base64_decode', 'decrypt', 'extract_order_id'] )
             ->getMock();
         $client->method( 'verify_callback_key' )->willReturn( true );
-        $client->method( 'get_raw_post_body' )->willReturn( '' );
+        $client->method( 'verify_signature' )->willReturn( true );
+        $client->method( 'get_raw_post_body' )->willReturn( '{"token":"tok"}' );
         $client->method( 'url_safe_base64_decode' )->willReturn( 'd' );
         $client->method( 'decrypt' )->willReturn( ['merchantTransactionId' => '55-1', 'ResultCode' => 0, 'transactionId' => 'T'] );
         $client->method( 'extract_order_id' )->willReturn( 55 );

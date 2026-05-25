@@ -26,6 +26,7 @@ class MMGConversionTest extends \PHPUnit\Framework\TestCase {
         $order->method( 'get_id' )->willReturn( 123 );
         $order->method( 'get_order_number' )->willReturn( '123' );
         $order->method( 'get_meta' )->willReturn( '' );
+        $order->method( 'get_items' )->willReturn( [] );
 
         $payment_mock = $this->getMockBuilder( MMG_Checkout_Payment::class )
             ->onlyMethods( ['encrypt', 'get_checkout_url', 'url_safe_base64_encode'] )
@@ -61,6 +62,7 @@ class MMGConversionTest extends \PHPUnit\Framework\TestCase {
         $order->method( 'get_id' )->willReturn( 456 );
         $order->method( 'get_order_number' )->willReturn( '456' );
         $order->method( 'get_meta' )->willReturn( '' );
+        $order->method( 'get_items' )->willReturn( [] );
 
         $payment_mock = $this->getMockBuilder( MMG_Checkout_Payment::class )
             ->onlyMethods( ['encrypt', 'get_checkout_url', 'url_safe_base64_encode'] )

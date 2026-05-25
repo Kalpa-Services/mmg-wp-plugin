@@ -53,5 +53,8 @@ class MMG_Checkout_Payment_Rewrites {
 			'top'
 		);
 		add_rewrite_tag( '%mmg-checkout%', '([^&]+)' );
+
+		// Add My Account endpoint for native subscriptions.
+		add_rewrite_endpoint( 'mmg-subscriptions', EP_PAGES );
 	}
 }

@@ -31,6 +31,67 @@ class MMG_Checkout_Payment_Activator {
 	 */
 	public static function activate() {
 		self::mmg_activate();
+		self::create_subscription_table();
+		if ( ! class_exists( 'MMG_Subscription_Email' ) ) {
+			require_once __DIR__ . '/class-mmg-subscription-email.php';
+		}
+		self::seed_subscription_defaults();
+	}
+
+	/**
+	 * Seed default option values for the subscription reminder system.
+	 *
+	 * @return void
+	 */
+	public static function seed_subscription_defaults(): void {
+		if ( ! get_option( 'mmg_reminder_schedule' ) ) {
+			update_option( 'mmg_reminder_schedule', wp_json_encode( array( 3 ) ) );
+		}
+
+		$defaults = MMG_Subscription_Email::get_default_templates();
+		foreach ( $defaults as $option_key => $tpl ) {
+			if ( ! get_option( $option_key ) ) {
+				update_option( $option_key, $tpl );
+			}
+		}
+	}
+
+	/**
+	 * Returns the CREATE TABLE SQL for the mmg_subscriptions table.
+	 *
+	 * Extracted so it can be unit-tested without a live database.
+	 *
+	 * @param string $prefix The DB table prefix (e.g. 'wp_').
+	 * @return string
+	 */
+	public static function get_subscription_table_sql( string $prefix ): string {
+		global $wpdb;
+		$charset_collate = $wpdb ? $wpdb->get_charset_collate() : 'DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci';
+		return "CREATE TABLE {$prefix}mmg_subscriptions (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			customer_id bigint(20) NOT NULL,
+			order_id bigint(20) NOT NULL,
+			product_id bigint(20) NOT NULL,
+			status varchar(20) DEFAULT 'active' NOT NULL,
+			billing_interval int(11) DEFAULT 1 NOT NULL,
+			billing_period varchar(20) DEFAULT 'month' NOT NULL,
+			next_payment_date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			payment_token text NOT NULL,
+			payment_cycle_id varchar(64) DEFAULT '' NOT NULL,
+			last_reminder_sent datetime DEFAULT NULL,
+			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY customer_id (customer_id),
+			KEY status (status)
+		) $charset_collate;";
+	}
+
+	/**
+	 * Create custom table for native subscriptions.
+	 */
+	public static function create_subscription_table() {
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		dbDelta( self::get_subscription_table_sql( $GLOBALS['wpdb']->prefix ) );
 	}
 
 	/**
@@ -58,6 +119,8 @@ class MMG_Checkout_Payment_Activator {
 			set_transient( 'mmg_activation_redirect', true, 30 );
 		}
 	}
+
+
 
 	/**
 	 * Add rewrite rules for MMG Checkout Payment callbacks.

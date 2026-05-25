@@ -24,27 +24,30 @@ class MMG_Logger {
 	 * Log at INFO level.
 	 *
 	 * @param string $message Message.
+	 * @param string $context Context (api-requests, webhooks, errors).
 	 */
-	public static function info( $message ) {
-		self::log( $message, 'info' );
+	public static function info( $message, $context = 'api-requests' ) {
+		self::log( $message, 'info', $context );
 	}
 
 	/**
 	 * Log at WARNING level.
 	 *
 	 * @param string $message Message.
+	 * @param string $context Context (api-requests, webhooks, errors).
 	 */
-	public static function warning( $message ) {
-		self::log( $message, 'warning' );
+	public static function warning( $message, $context = 'api-requests' ) {
+		self::log( $message, 'warning', $context );
 	}
 
 	/**
 	 * Log at ERROR level.
 	 *
 	 * @param string $message Message.
+	 * @param string $context Context (api-requests, webhooks, errors).
 	 */
-	public static function error( $message ) {
-		self::log( $message, 'error' );
+	public static function error( $message, $context = 'errors' ) {
+		self::log( $message, 'error', $context );
 	}
 
 	/**
@@ -52,15 +55,25 @@ class MMG_Logger {
 	 *
 	 * @param string $message Message.
 	 * @param string $level   'info' | 'warning' | 'error'.
+	 * @param string $context Context (api-requests, webhooks, errors).
 	 */
-	public static function log( $message, $level = 'info' ) {
+	public static function log( $message, $level = 'info', $context = 'api-requests' ) {
+		// 1. Forward to WooCommerce Logger for file-based persistence.
+		if ( function_exists( 'wc_get_logger' ) ) {
+			$logger = wc_get_logger();
+			$logger->log( $level, $message, array( 'source' => 'mmg-' . $context ) );
+		}
+
+		// 2. Forward to PHP error log.
 		// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_error_log
-		error_log( '[MMG][' . strtoupper( $level ) . '] ' . $message );
+		error_log( '[MMG][' . strtoupper( $level ) . '][' . strtoupper( $context ) . '] ' . $message );
 		// phpcs:enable
 
+		// 3. Persist to internal circular buffer for dashboard display.
 		$entry = array(
 			'ts'  => time(),
 			'lvl' => $level,
+			'ctx' => $context,
 			'msg' => $message,
 		);
 
